@@ -11,12 +11,13 @@ const CATALOGO_ACTAS = [
   { id: "comunicacion", titulo: "09. Acta de Comunicación Telefónica", archivo: "plantilla/acta_comunicacion.docx", ebriedad: false, flagrancia: false, identidad: false }
 ];
 
+// Carga inicial al abrir el formulario
 document.addEventListener('DOMContentLoaded', () => {
   const tipoProtocolo = localStorage.getItem('protocolo_seleccionado') || 'ebriedad';
   const contenedorUI = document.getElementById('checklistContenedor');
   const protocoloNombre = document.getElementById('protocoloNombre');
 
-  // Ajustar título dinámico según selección del menú
+  // Título dinámico
   if (protocoloNombre) {
     const nombresProtocolos = {
       ebriedad: "Conducción en Estado de Ebriedad / Drogadicción",
@@ -27,14 +28,13 @@ document.addEventListener('DOMContentLoaded', () => {
     protocoloNombre.innerText = "📋 Protocolo: " + (nombresProtocolos[tipoProtocolo] || "General");
   }
 
-  // Generar las casillas (checkboxes) interactivas en pantalla
+  // Generar las casillas (checkboxes) en la interfaz
   if (contenedorUI) {
     contenedorUI.innerHTML = "";
 
     CATALOGO_ACTAS.forEach((acta) => {
       let estaMarcada = false;
       
-      // Activar check por defecto según el protocolo elegido en el menú
       if (tipoProtocolo === 'ebriedad' && acta.ebriedad) estaMarcada = true;
       if (tipoProtocolo === 'identidad' && acta.identidad) estaMarcada = true;
       if (tipoProtocolo === 'flagrancia' && acta.flagrancia) estaMarcada = true;
@@ -49,26 +49,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Establecer fecha y hora actual automáticamente
+  // Auto-completar Fecha y Hora actuales
   const fechaInput = document.getElementById('fecha');
   const hora1Input = document.getElementById('hora1');
   if (fechaInput) fechaInput.value = new Date().toISOString().split('T')[0];
   if (hora1Input) hora1Input.value = new Date().toTimeString().slice(0, 5);
 });
 
-// Botones de apoyo para Seleccionar o Deseleccionar todo rápido
-function marcarTodas(estado) {
-  CATALOGO_ACTAS.forEach(acta => {
-    const chk = document.getElementById(`chk_${acta.id}`);
-    if (chk) chk.checked = estado;
+// FUNCIÓN CORREGIDA: Seleccionar / Deseleccionar directamente los elementos de la pantalla
+window.marcarTodas = function(estado) {
+  const checkboxes = document.querySelectorAll('#checklistContenedor input[type="checkbox"]');
+  checkboxes.forEach(chk => {
+    chk.checked = estado;
   });
-}
+};
 
-// Procesar y Generar Expediente al enviar formulario
+// Generar Expediente al enviar el formulario
 document.getElementById('expedienteForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  // 1. Obtener únicamente las actas que tienen el check marcado (☑️)
+  // Filtrar solo las actas con check (☑️)
   const actasAProcesar = CATALOGO_ACTAS.filter(acta => {
     const chk = document.getElementById(`chk_${acta.id}`);
     return chk && chk.checked;
@@ -84,7 +84,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
   statusMsg.style.display = "block";
   statusMsg.innerText = `Generando ${actasAProcesar.length} documento(s)... Por favor espere.`;
 
-  // 2. Recopilar los datos cargados en las casillas del formulario
+  // Datos recopilados
   const placaInput = document.getElementById('placa_vehiculo');
   const marcaInput = document.getElementById('marca_vehiculo');
   const colorInput = document.getElementById('color_vehiculo');
@@ -105,7 +105,6 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     domicilio: document.getElementById('domicilio').value,
     asistido_confianza: document.getElementById('asistido_confianza').value,
     
-    // Campos vehiculares con valor por defecto si están vacíos
     placa_vehiculo: placaInput ? (placaInput.value || "NO REGISTRA") : "NO REGISTRA",
     marca_vehiculo: marcaInput ? (marcaInput.value || "NO REGISTRA") : "NO REGISTRA",
     color_vehiculo: colorInput ? (colorInput.value || "NO REGISTRA") : "NO REGISTRA",
@@ -122,7 +121,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
   };
 
   try {
-    // 3. Registrar bitácora en Supabase (si hay conexión a internet)
+    // Guardar log en Supabase
     try {
       if (typeof supabaseClient !== 'undefined') {
         await supabaseClient.from('intervenciones').insert([{
@@ -136,24 +135,22 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
         }]);
       }
     } catch (errSupabase) {
-      console.warn("Aviso: Ejecutando en modo offline o sin conexión a Supabase.");
+      console.warn("Ejecutando en modo offline.");
     }
 
-    // 4. Descarga de archivos según la cantidad de actas seleccionadas
+    // Descarga de archivos
     if (actasAProcesar.length === 1) {
-      // Descarga directa en .docx si es una sola acta
       const acta = actasAProcesar[0];
       const blobDoc = await generarDocumentoWord(acta.archivo, formData);
       saveAs(blobDoc, `${acta.id}_${formData.intervenido_dni}.docx`);
     } else {
-      // Descarga comprimida en .ZIP si son varias actas
       const zip = new JSZip();
       for (let acta of actasAProcesar) {
         try {
           const blobDoc = await generarDocumentoWord(acta.archivo, formData);
           zip.file(`${acta.titulo}.docx`, blobDoc);
         } catch (err) {
-          console.warn(`Plantilla no encontrada en GitHub: ${acta.archivo}`);
+          console.warn(`Plantilla no encontrada: ${acta.archivo}`);
         }
       }
       const zipContent = await zip.generateAsync({ type: "blob" });
@@ -164,21 +161,20 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
 
   } catch (err) {
     statusMsg.className = "alert-msg alert-danger";
-    statusMsg.innerText = "Error al procesar el expediente: " + err.message;
+    statusMsg.innerText = "Error al procesar expediente: " + err.message;
   }
 });
 
-// Función auxiliar para descargar y rellenar la plantilla de Word
+// Cargar y rellenar plantilla Word
 async function generarDocumentoWord(rutaPlantilla, datos) {
   const response = await fetch(rutaPlantilla);
   if (!response.ok) {
-    throw new Error(`No se pudo cargar la plantilla desde la ruta: ${rutaPlantilla}`);
+    throw new Error(`No se pudo cargar la plantilla desde: ${rutaPlantilla}`);
   }
   const arrayBuffer = await response.arrayBuffer();
 
   const zip = new PizZip(arrayBuffer);
   const doc = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-  
   doc.render(datos);
 
   return doc.getZip().generate({
@@ -187,9 +183,9 @@ async function generarDocumentoWord(rutaPlantilla, datos) {
   });
 }
 
-// Limpiar formulario para nuevo intervenido
+// Limpiar pantalla
 function limpiarPantalla() {
-  if (confirm("¿Deseas limpiar la pantalla para registrar un nuevo intervenido?")) {
+  if (confirm("¿Deseas limpiar la pantalla para un nuevo intervenido?")) {
     document.getElementById('expedienteForm').reset();
     const fechaInput = document.getElementById('fecha');
     const hora1Input = document.getElementById('hora1');
