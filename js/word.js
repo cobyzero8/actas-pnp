@@ -1,98 +1,66 @@
-// CATÁLOGO COMPLETO DE ACTAS DISPONIBLES EN EL SISTEMA
+// CATÁLOGO COMPLETO DE ACTAS
 const CATALOGO_ACTAS = [
-  { id: "reg_personal", titulo: "01. Acta de Registro Personal", archivo: "plantilla/acta_registro_personal.docx", ebriedad: true, flagrancia: true, identidad: true },
-  { id: "lectura_derechos", titulo: "02. Acta de Lectura de Derechos", archivo: "plantilla/acta_lectura_derechos.docx", ebriedad: true, flagrancia: true, identidad: false },
-  { id: "detencion", titulo: "03. Acta de Detención Policial", archivo: "plantilla/acta_detencion.docx", ebriedad: true, flagrancia: true, identidad: false },
-  { id: "buen_trato", titulo: "04. Constancia de Buen Trato", archivo: "plantilla/acta_buen_trato.docx", ebriedad: true, flagrancia: true, identidad: false },
-  { id: "sit_vehicular", titulo: "05. Acta de Situación Vehicular", archivo: "plantilla/acta_situacion_vehicular.docx", ebriedad: true, flagrancia: false, identidad: false },
-  { id: "reg_vehicular", titulo: "06. Acta de Registro Vehicular", archivo: "plantilla/acta_registro_vehicular.docx", ebriedad: false, flagrancia: false, identidad: false },
-  { id: "intervencion", titulo: "07. Acta de Intervención Policial", archivo: "plantilla/acta_intervencion.docx", ebriedad: true, flagrancia: true, identidad: true },
-  { id: "lacrado", titulo: "08. Acta de Lacrado / Cadena de Custodia", archivo: "plantilla/acta_lacrado.docx", ebriedad: false, flagrancia: false, identidad: false },
-  { id: "comunicacion", titulo: "09. Acta de Comunicación Telefónica", archivo: "plantilla/acta_comunicacion.docx", ebriedad: false, flagrancia: false, identidad: false }
+  { id: "reg_personal", titulo: "01. Acta de Registro Personal", archivo: "plantilla/acta_registro_personal.docx" },
+  { id: "lectura_derechos", titulo: "02. Acta de Lectura de Derechos", archivo: "plantilla/acta_lectura_derechos.docx" },
+  { id: "detencion", titulo: "03. Acta de Detención Policial", archivo: "plantilla/acta_detencion.docx" },
+  { id: "buen_trato", titulo: "04. Constancia de Buen Trato", archivo: "plantilla/acta_buen_trato.docx" },
+  { id: "sit_vehicular", titulo: "05. Acta de Situación Vehicular", archivo: "plantilla/acta_situacion_vehicular.docx" },
+  { id: "reg_vehicular", titulo: "06. Acta de Registro Vehicular", archivo: "plantilla/acta_registro_vehicular.docx" },
+  { id: "intervencion", titulo: "07. Acta de Intervención Policial", archivo: "plantilla/acta_intervencion.docx" },
+  { id: "lacrado", titulo: "08. Acta de Lacrado / Cadena de Custodia", archivo: "plantilla/acta_lacrado.docx" },
+  { id: "comunicacion", titulo: "09. Acta de Comunicación Telefónica", archivo: "plantilla/acta_comunicacion.docx" }
 ];
 
-// Carga inicial al abrir el formulario
+let delitoConfigurado = "";
+let idsActasConfiguradas = [];
+
 document.addEventListener('DOMContentLoaded', () => {
-  const tipoProtocolo = localStorage.getItem('protocolo_seleccionado') || 'ebriedad';
-  const contenedorUI = document.getElementById('checklistContenedor');
-  const protocoloNombre = document.getElementById('protocoloNombre');
+  // 1. Cargar selección previa realizada en menu.html desde localStorage
+  delitoConfigurado = localStorage.getItem('pnp_delito_seleccionado') || "CONTROL DE IDENTIDAD POLICIAL";
+  const actasJSON = localStorage.getItem('pnp_actas_seleccionadas');
+  idsActasConfiguradas = actasJSON ? JSON.parse(actasJSON) : ["reg_personal"];
 
-  // Título dinámico
-  if (protocoloNombre) {
-    const nombresProtocolos = {
-      ebriedad: "Conducción en Estado de Ebriedad / Drogadicción",
-      identidad: "Control de Identidad Policial",
-      flagrancia: "Delito Común / Flagrancia Delictiva",
-      individual: "Selección Manual de Actas"
-    };
-    protocoloNombre.innerText = "📋 Protocolo: " + (nombresProtocolos[tipoProtocolo] || "General");
-  }
+  // 2. Mostrar resumen en el banner azul superior
+  const resDelito = document.getElementById('resumenDelito');
+  const resCant = document.getElementById('resumenActasCant');
+  if (resDelito) resDelito.innerText = delitoConfigurado;
+  if (resCant) resCant.innerText = `📄 ${idsActasConfiguradas.length} acta(s) seleccionada(s) para generar`;
 
-  // Generar las casillas (checkboxes) en la interfaz
-  if (contenedorUI) {
-    contenedorUI.innerHTML = "";
-
-    CATALOGO_ACTAS.forEach((acta) => {
-      let estaMarcada = false;
-      
-      if (tipoProtocolo === 'ebriedad' && acta.ebriedad) estaMarcada = true;
-      if (tipoProtocolo === 'identidad' && acta.identidad) estaMarcada = true;
-      if (tipoProtocolo === 'flagrancia' && acta.flagrancia) estaMarcada = true;
-      if (tipoProtocolo === 'individual' && acta.id === 'reg_personal') estaMarcada = true;
-
-      contenedorUI.innerHTML += `
-        <label style="display: flex; align-items: center; gap: 10px; font-weight: normal; cursor: pointer; background: #fff; padding: 8px 12px; border-radius: 5px; border: 1px solid #cbd5e1;">
-          <input type="checkbox" id="chk_${acta.id}" value="${acta.id}" ${estaMarcada ? 'checked' : ''} style="width: 18px; height: 18px; cursor: pointer;">
-          <span style="font-size: 13px;">📄 <strong>${acta.titulo}</strong></span>
-        </label>
-      `;
-    });
-  }
-
-  // Auto-completar Fecha y Hora actuales
+  // 3. Auto-completar fecha y hora actual
   const fechaInput = document.getElementById('fecha');
   const hora1Input = document.getElementById('hora1');
   if (fechaInput) fechaInput.value = new Date().toISOString().split('T')[0];
   if (hora1Input) hora1Input.value = new Date().toTimeString().slice(0, 5);
 });
 
-// FUNCIÓN CORREGIDA: Seleccionar / Deseleccionar directamente los elementos de la pantalla
-window.marcarTodas = function(estado) {
-  const checkboxes = document.querySelectorAll('#checklistContenedor input[type="checkbox"]');
-  checkboxes.forEach(chk => {
-    chk.checked = estado;
-  });
-};
-
-// Generar Expediente al enviar el formulario
+// Generar Expediente al enviar formulario
 document.getElementById('expedienteForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-
-  // Filtrar solo las actas con check (☑️)
-  const actasAProcesar = CATALOGO_ACTAS.filter(acta => {
-    const chk = document.getElementById(`chk_${acta.id}`);
-    return chk && chk.checked;
-  });
-
-  if (actasAProcesar.length === 0) {
-    alert("⚠️ Por favor selecciona al menos una (01) acta para generar.");
-    return;
-  }
 
   const statusMsg = document.getElementById('statusMsg');
   statusMsg.className = "alert-msg alert-success";
   statusMsg.style.display = "block";
-  statusMsg.innerText = `Generando ${actasAProcesar.length} documento(s)... Por favor espere.`;
+  statusMsg.innerText = `Procesando ${idsActasConfiguradas.length} acta(s)... Por favor espere.`;
 
-  // Datos recopilados
+  // Filtrar las actas seleccionadas
+  const actasAProcesar = CATALOGO_ACTAS.filter(acta => idsActasConfiguradas.includes(acta.id));
+
+  if (actasAProcesar.length === 0) {
+    alert("⚠️ No hay actas seleccionadas. Regrese al menú para configurar la intervención.");
+    return;
+  }
+
+  // Captura de datos sincronizada con los IDs de formulario.html
   const placaInput = document.getElementById('placa_vehiculo');
   const marcaInput = document.getElementById('marca_vehiculo');
+  const modeloInput = document.getElementById('modelo_vehiculo');
   const colorInput = document.getElementById('color_vehiculo');
 
   const formData = {
+    delito: delitoConfigurado,
     distrito: document.getElementById('distrito').value,
     provincia: document.getElementById('provincia').value,
-    region: document.getElementById('provincia').value,
+    region: document.getElementById('region').value,
     fecha: document.getElementById('fecha').value,
     hora1: document.getElementById('hora1').value,
     hora2: document.getElementById('hora2').value,
@@ -107,6 +75,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     
     placa_vehiculo: placaInput ? (placaInput.value || "NO REGISTRA") : "NO REGISTRA",
     marca_vehiculo: marcaInput ? (marcaInput.value || "NO REGISTRA") : "NO REGISTRA",
+    modelo_vehiculo: modeloInput ? (modeloInput.value || "NO REGISTRA") : "NO REGISTRA",
     color_vehiculo: colorInput ? (colorInput.value || "NO REGISTRA") : "NO REGISTRA",
 
     drogas: document.getElementById('drogas').value,
@@ -115,6 +84,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     municion: document.getElementById('municion').value,
     otros: document.getElementById('otros').value,
     narrar_positivo: document.getElementById('narrar_positivo').value,
+    
     personal_interviniente: document.getElementById('personal_interviniente').value,
     grado: document.getElementById('grado').value,
     cip: document.getElementById('cip').value
@@ -125,7 +95,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     try {
       if (typeof supabaseClient !== 'undefined') {
         await supabaseClient.from('intervenciones').insert([{
-          tipo_delito: `Expediente (${actasAProcesar.length} actas)`,
+          tipo_delito: delitoConfigurado,
           fecha: formData.fecha,
           hora: formData.hora1,
           lugar: formData.lugar,
@@ -138,7 +108,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
       console.warn("Ejecutando en modo offline.");
     }
 
-    // Descarga de archivos
+    // Descarga de archivos (si es 1 descarga .docx, si son varias descarga .ZIP)
     if (actasAProcesar.length === 1) {
       const acta = actasAProcesar[0];
       const blobDoc = await generarDocumentoWord(acta.archivo, formData);
@@ -185,7 +155,7 @@ async function generarDocumentoWord(rutaPlantilla, datos) {
 
 // Limpiar pantalla
 function limpiarPantalla() {
-  if (confirm("¿Deseas limpiar la pantalla para un nuevo intervenido?")) {
+  if (confirm("¿Deseas limpiar la pantalla para registrar un nuevo intervenido?")) {
     document.getElementById('expedienteForm').reset();
     const fechaInput = document.getElementById('fecha');
     const hora1Input = document.getElementById('hora1');
