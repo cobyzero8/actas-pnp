@@ -1,1 +1,154 @@
+:root {
+  --primary: #003366;
+  --primary-dark: #002244;
+  --accent: #d4af37;
+  --bg: #f4f6f9;
+  --card: #ffffff;
+  --text: #212529;
+  --border: #ced4da;
+  --success: #198754;
+}
 
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 15px;
+}
+
+.container {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 22px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+}
+
+.header-title {
+  text-align: center;
+  color: var(--primary);
+  margin-top: 0;
+  margin-bottom: 5px;
+  font-size: 22px;
+  text-transform: uppercase;
+}
+
+.sub-title {
+  text-align: center;
+  color: #6c757d;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.full { grid-column: span 2; }
+
+label {
+  font-weight: 600;
+  font-size: 13px;
+  display: block;
+  margin-bottom: 4px;
+  color: #495057;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.15);
+}
+
+textarea { height: 70px; resize: vertical; }
+
+.btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: block;
+  text-align: center;
+  box-sizing: border-box;
+  text-decoration: none;
+}
+
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); }
+
+.btn-success { background: var(--success); color: #fff; }
+.btn-secondary { background: #6c757d; color: #fff; margin-top: 10px; }
+
+/* Protocol Checklist Card */
+.protocol-box {
+  background: #eef4fc;
+  border-left: 5px solid var(--primary);
+  padding: 12px 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.protocol-box h4 { margin: 0 0 8px 0; color: var(--primary); }
+
+.checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.checklist li {
+  padding: 6px 0;
+  font-size: 13px;
+  border-bottom: 1px dashed #cbd5e1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checklist li:last-child { border-bottom: none; }
+
+.badge-num {
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.alert-msg {
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  text-align: center;
+  margin-bottom: 15px;
+  display: none;
+}
+.alert-danger { background: #f8d7da; color: #721c24; }
+.alert-success { background: #d4edda; color: #155724; }
