@@ -3,7 +3,7 @@ const CATALOGO_ACTAS = [
   { id: "reg_personal", aliases: ["reg_personal", "acta_registro_personal", "registro_personal"], titulo: "01. Acta de Registro Personal", archivo: "plantilla/acta_registro_personal.docx", llevaHora: true },
   { id: "lectura_derechos", aliases: ["lectura_derechos", "acta_lectura_derechos"], titulo: "02. Acta de Lectura de Derechos", archivo: "plantilla/acta_lectura_derechos.docx", llevaHora: true },
   { id: "detencion", aliases: ["detencion", "acta_detencion"], titulo: "03. Acta de Detención Policial", archivo: "plantilla/acta_detencion.docx", llevaHora: true },
-  { id: "buen_trato", aliases: ["buen_trato", "constancia_buen_trato", "buentrato", "acta_buen_trato"], titulo: "04. Constancia de Buen Trato", archivo: "plantilla/acta_buen_trato.docx", llevaHora: false }, // <--- NO LLEVA HORA
+  { id: "buen_trato", aliases: ["buen_trato", "constancia_buen_trato", "buentrato", "acta_buen_trato"], titulo: "04. Constancia de Buen Trato", archivo: "plantilla/acta_buen_trato.docx", llevaHora: false },
   { id: "sit_vehicular", aliases: ["sit_vehicular", "acta_situacion_vehicular", "situacion_vehicular"], titulo: "05. Acta de Situación Vehicular", archivo: "plantilla/acta_situacion_vehicular.docx", llevaHora: true },
   { id: "reg_vehicular", aliases: ["reg_vehicular", "acta_registro_vehicular", "registro_vehicular"], titulo: "06. Acta de Registro Vehicular", archivo: "plantilla/acta_registro_vehicular.docx", llevaHora: true },
   { id: "intervencion", aliases: ["intervencion", "acta_intervencion"], titulo: "07. Acta de Intervención Policial", archivo: "plantilla/acta_intervencion.docx", llevaHora: true },
@@ -14,13 +14,11 @@ const CATALOGO_ACTAS = [
 let delitoConfigurado = "";
 let idsActasConfiguradas = [];
 
-// VARIABLES PARA EL FLUJO INTERACTIVO DE HORARIOS
 let actasAProcesarSecuencia = [];
 let indiceActaActual = 0;
 let datosFormularioBase = {};
 let horariosPorActa = {};
 
-// CONVERSOR UNIVERSAL A FORMATO POLICIAL (Ejemplo: 2026-09-09 -> 09SEP2026)
 function formatearFechaPolicial(fechaCadena) {
   if (!fechaCadena) return "";
 
@@ -56,7 +54,6 @@ function formatearFechaPolicial(fechaCadena) {
   return fechaCadena;
 }
 
-// FUNCIÓN AUXILIAR PARA SUMAR MINUTOS A UNA HORA HH:MM
 function sumarMinutosAHora(horaStr, minutosASumar) {
   if (!horaStr) return "00:00";
   const partes = horaStr.split(':');
@@ -89,17 +86,15 @@ document.addEventListener('DOMContentLoaded', () => {
   if (hora1Input) hora1Input.value = new Date().toTimeString().slice(0, 5);
 });
 
-// INICIO DEL PROCESO: CAPTURA DE DATOS Y BÚSQUEDA DE LA PRIMERA ACTA QUE LLEVE HORA
 document.getElementById('expedienteForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  // FILTRADO CON COMPATIBILIDAD DE ALIAS DE IDs
   actasAProcesarSecuencia = CATALOGO_ACTAS.filter(acta => 
     idsActasConfiguradas.some(idSel => acta.aliases.includes(idSel) || acta.id === idSel)
   );
 
   if (actasAProcesarSecuencia.length === 0) {
-    alert(`⚠️ No se encontraron coincidencias para las actas seleccionadas. Regrese al menú.`);
+    alert(`⚠️ No se encontraron coincidencias para las actas seleccionadas.`);
     return;
   }
 
@@ -148,7 +143,6 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     cip: document.getElementById('cip').value
   };
 
-  // REINICIAR SECUENCIA DE HORARIOS
   indiceActaActual = 0;
   horariosPorActa = {};
 
@@ -156,32 +150,27 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
   avanzarAoSaltarAQuienLleveHora(horaInicialBase);
 });
 
-// BUSCA LA SIGUIENTE ACTA QUE REQUIERA HORA, SALTANDO LAS QUE NO (COMO BUEN TRATO)
 function avanzarAoSaltarAQuienLleveHora(horaSugeridaInicio) {
   while (indiceActaActual < actasAProcesarSecuencia.length) {
     const actaActual = actasAProcesarSecuencia[indiceActaActual];
-    if (actaActual.llevaHora) {
-      mostrarModalHoraActa(indiceActaActual, horaSugeridaInicio);
-      return;
-    } else {
-      // Si no lleva hora (ej. Constancia de Buen Trato), se le asigna valor vacío por defecto y avanza
+    
+    // EXCLUSIÓN EXPLÍCITA: Si es la constancia de buen trato, saltar el modal de hora
+    if (actaActual.id === "buen_trato" || actaActual.llevaHora === false) {
       horariosPorActa[actaActual.id] = { horaInicio: "", horaTermino: "" };
       indiceActaActual++;
+    } else {
+      mostrarModalHoraActa(indiceActaActual, horaSugeridaInicio);
+      return;
     }
   }
 
-  // Si ya se evaluaron todas las actas, pasa directamente a generar
   document.getElementById('modalHoras').style.display = 'none';
   ejecutarGeneracionFinalExpediente();
 }
 
-// DESPLIEGA EL MODAL PARA EL ACTA ACTUAL QUE SÍ LLEVA HORA
 function mostrarModalHoraActa(index, horaSugeridaInicio) {
   const modalElem = document.getElementById('modalHoras');
-  if (!modalElem) {
-    alert("⚠️ Falta integrar el contenedor 'modalHoras' en formulario.html.");
-    return;
-  }
+  if (!modalElem) return;
 
   const acta = actasAProcesarSecuencia[index];
   const total = actasAProcesarSecuencia.length;
@@ -195,8 +184,7 @@ function mostrarModalHoraActa(index, horaSugeridaInicio) {
   document.getElementById('modalHoraTermino').value = horaTerminoSugerida;
 
   const btnSiguiente = document.getElementById('btnSiguienteHora');
-  // Verificar si ya no quedan más actas con hora pendientes
-  const quedanMasConHora = actasAProcesarSecuencia.slice(index + 1).some(a => a.llevaHora);
+  const quedanMasConHora = actasAProcesarSecuencia.slice(index + 1).some(a => a.id !== "buen_trato" && a.llevaHora !== false);
 
   if (!quedanMasConHora) {
     btnSiguiente.innerHTML = "📦 Generar Expediente";
@@ -214,7 +202,6 @@ function cancelarProcesoHoras() {
   if (modalElem) modalElem.style.display = 'none';
 }
 
-// CONFIRMA LA HORA DE LA ACTA EN CURSO Y BUSCA LA SIGUIENTE
 async function confirmarHoraActaActual() {
   const hInicio = document.getElementById('modalHoraInicio').value;
   const hTermino = document.getElementById('modalHoraTermino').value;
@@ -241,7 +228,6 @@ async function confirmarHoraActaActual() {
   }
 }
 
-// PROCESA LA GENERACIÓN DE DOCUMENTOS
 async function ejecutarGeneracionFinalExpediente() {
   const statusMsg = document.getElementById('statusMsg');
   statusMsg.className = "alert-msg alert-success";
@@ -249,7 +235,7 @@ async function ejecutarGeneracionFinalExpediente() {
   statusMsg.innerText = `Procesando ${actasAProcesarSecuencia.length} acta(s)... Por favor espere.`;
 
   try {
-    const primeraActaConHora = actasAProcesarSecuencia.find(a => a.llevaHora);
+    const primeraActaConHora = actasAProcesarSecuencia.find(a => a.id !== "buen_trato" && a.llevaHora !== false);
     const primerHorario = primeraActaConHora ? horariosPorActa[primeraActaConHora.id] : { horaInicio: "08:00", horaTermino: "08:05" };
 
     const actaDerechos = actasAProcesarSecuencia.find(a => a.id === "lectura_derechos");
@@ -263,7 +249,6 @@ async function ejecutarGeneracionFinalExpediente() {
       hora4: horarioDerechos ? horarioDerechos.horaTermino : sumarMinutosAHora(primerHorario ? primerHorario.horaTermino : "08:05", 6)
     };
 
-    // GUARDAR EN SUPABASE
     try {
       if (typeof supabaseClient !== 'undefined' && supabaseClient.from) {
         await supabaseClient.from('intervenciones').insert([{
@@ -280,7 +265,6 @@ async function ejecutarGeneracionFinalExpediente() {
       console.warn("Ejecutando en modo offline.");
     }
 
-    // GENERAR UN SOLO DOCX O UN ARCHIVO ZIP COMPRIMIDO
     if (actasAProcesarSecuencia.length === 1) {
       const acta = actasAProcesarSecuencia[0];
       const hor = horariosPorActa[acta.id] || { horaInicio: datosFinales.hora1, horaTermino: datosFinales.hora2 };
@@ -308,7 +292,6 @@ async function ejecutarGeneracionFinalExpediente() {
           archivosAgregados++;
         } catch (err) {
           console.error(`Error al cargar la plantilla ${acta.archivo}:`, err);
-          alert(`⚠️ No se encontró la plantilla "${acta.archivo}" en GitHub.`);
         }
       }
 
@@ -330,16 +313,12 @@ async function generarDocumentoWord(rutaPlantilla, datos) {
   const PizZipLib = window.PizZip || (typeof PizZip !== 'undefined' ? PizZip : null);
   const DocxLib = window.docxtemplater || (typeof docxtemplater !== 'undefined' ? docxtemplater : null);
 
-  if (!PizZipLib) {
-    throw new Error("No se pudo cargar la librería PizZip.");
-  }
+  if (!PizZipLib) throw new Error("No se pudo cargar PizZip.");
 
   const response = await fetch(rutaPlantilla);
-  if (!response.ok) {
-    throw new Error(`No se encontró el archivo de la plantilla en: ${rutaPlantilla}`);
-  }
+  if (!response.ok) throw new Error(`Plantilla no encontrada: ${rutaPlantilla}`);
+  
   const arrayBuffer = await response.arrayBuffer();
-
   const zip = new PizZipLib(arrayBuffer);
 
   const doc = new DocxLib(zip, { 
