@@ -15,25 +15,25 @@ let delitoConfigurado = "";
 let idsActasConfiguradas = [];
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Cargar selección previa realizada en menu.html desde localStorage
+  // Cargar datos de menú
   delitoConfigurado = localStorage.getItem('pnp_delito_seleccionado') || "CONTROL DE IDENTIDAD POLICIAL";
   const actasJSON = localStorage.getItem('pnp_actas_seleccionadas');
   idsActasConfiguradas = actasJSON ? JSON.parse(actasJSON) : ["reg_personal"];
 
-  // 2. Mostrar resumen en el banner azul superior
+  // Mostrar resumen
   const resDelito = document.getElementById('resumenDelito');
   const resCant = document.getElementById('resumenActasCant');
   if (resDelito) resDelito.innerText = delitoConfigurado;
   if (resCant) resCant.innerText = `📄 ${idsActasConfiguradas.length} acta(s) seleccionada(s) para generar`;
 
-  // 3. Auto-completar fecha y hora actual
+  // Fecha y hora actual por defecto
   const fechaInput = document.getElementById('fecha');
   const hora1Input = document.getElementById('hora1');
   if (fechaInput) fechaInput.value = new Date().toISOString().split('T')[0];
   if (hora1Input) hora1Input.value = new Date().toTimeString().slice(0, 5);
 });
 
-// Generar Expediente al enviar formulario
+// Generar Expediente
 document.getElementById('expedienteForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -42,7 +42,6 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
   statusMsg.style.display = "block";
   statusMsg.innerText = `Procesando ${idsActasConfiguradas.length} acta(s)... Por favor espere.`;
 
-  // Filtrar las actas seleccionadas
   const actasAProcesar = CATALOGO_ACTAS.filter(acta => idsActasConfiguradas.includes(acta.id));
 
   if (actasAProcesar.length === 0) {
@@ -50,7 +49,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     return;
   }
 
-  // Captura de datos sincronizada con los IDs de formulario.html
+  // Recopilar datos
   const placaInput = document.getElementById('placa_vehiculo');
   const marcaInput = document.getElementById('marca_vehiculo');
   const modeloInput = document.getElementById('modelo_vehiculo');
@@ -91,9 +90,9 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
   };
 
   try {
-    // Guardar log en Supabase
+    // Guardar en Supabase (si está disponible)
     try {
-      if (typeof supabaseClient !== 'undefined') {
+      if (typeof supabaseClient !== 'undefined' && supabaseClient.from) {
         await supabaseClient.from('intervenciones').insert([{
           tipo_delito: delitoConfigurado,
           fecha: formData.fecha,
@@ -108,7 +107,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
       console.warn("Ejecutando en modo offline.");
     }
 
-    // Descarga de archivos (si es 1 descarga .docx, si son varias descarga .ZIP)
+    // Generar documentos
     if (actasAProcesar.length === 1) {
       const acta = actasAProcesar[0];
       const blobDoc = await generarDocumentoWord(acta.archivo, formData);
@@ -135,16 +134,23 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
   }
 });
 
-// Cargar y rellenar plantilla Word
+// Función con detección robusta de PizZip y Docxtemplater
 async function generarDocumentoWord(rutaPlantilla, datos) {
+  const PizZipLib = window.PizZip || (typeof PizZip !== 'undefined' ? PizZip : null);
+  const DocxLib = window.docxtemplater || (typeof docxtemplater !== 'undefined' ? docxtemplater : null);
+
+  if (!PizZipLib) {
+    throw new Error("No se pudo cargar la librería PizZip en el navegador.");
+  }
+
   const response = await fetch(rutaPlantilla);
   if (!response.ok) {
-    throw new Error(`No se pudo cargar la plantilla desde: ${rutaPlantilla}`);
+    throw new Error(`No se encontró el archivo de la plantilla en: ${rutaPlantilla}`);
   }
   const arrayBuffer = await response.arrayBuffer();
 
-  const zip = new PizZip(arrayBuffer);
-  const doc = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+  const zip = new PizZipLib(arrayBuffer);
+  const doc = new DocxLib(zip, { paragraphLoop: true, linebreaks: true });
   doc.render(datos);
 
   return doc.getZip().generate({
@@ -153,7 +159,6 @@ async function generarDocumentoWord(rutaPlantilla, datos) {
   });
 }
 
-// Limpiar pantalla
 function limpiarPantalla() {
   if (confirm("¿Deseas limpiar la pantalla para registrar un nuevo intervenido?")) {
     document.getElementById('expedienteForm').reset();
