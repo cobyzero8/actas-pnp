@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de Actas PNP</title>
+  <style>
+    :root { --primary: #003366; --bg: #f4f6f9; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); margin: 0; padding: 15px; }
+    .card { max-width: 650px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    h2 { color: var(--primary); text-align: center; margin-top: 0; border-bottom: 2px solid var(--primary); padding-bottom: 8px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .full { grid-column: span 2; }
+    label { font-weight: bold; font-size: 13px; display: block; margin-top: 10px; }
+    input, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
+    textarea { height: 60px; }
+    button { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; margin-top: 15px; font-weight: bold; border-radius: 5px; cursor: pointer; }
+    .btn-clear { background: #6c757d; margin-top: 8px; }
+  </style>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.4/pizzip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.11/docxtemplater.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+
+<div class="card">
+  <h2>ACTA DE REGISTRO PERSONAL</h2>
+  <form id="actaForm">
+    
+    <div class="grid">
+      <div>
+        <label>Distrito</label>
+        <input type="text" id="distrito" value="Huanta" required>
+      </div>
+      <div>
+        <label>Provincia / Región</label>
+        <input type="text" id="provincia" value="Huanta" required>
+      </div>
+      <div>
+        <label>Fecha</label>
+        <input type="date" id="fecha" required>
+      </div>
+      <div>
+        <label>Hora Inicio / Hora Fin</label>
+        <div style="display:flex; gap:5px;">
+          <input type="time" id="hora1" required>
+          <input type="time" id="hora2" required>
+        </div>
+      </div>
+      <div class="full">
+        <label>Lugar de Intervención</label>
+        <input type="text" id="lugar" placeholder="Ej: Av. San Martín Cdra. 2" required>
+      </div>
+    </div>
+
+    <hr style="margin-top:15px;">
+
+    <div class="grid">
+      <div class="full">
+        <label>Nombre del Intervenido</label>
+        <input type="text" id="intervenido_nombre" required>
+      </div>
+      <div>
+        <label>DNI / Documento</label>
+        <input type="text" id="intervenido_dni" required>
+      </div>
+      <div>
+        <label>Edad / Natural de</label>
+        <div style="display:flex; gap:5px;">
+          <input type="number" id="edad" placeholder="Edad" required>
+          <input type="text" id="natural" placeholder="Origen" required>
+        </div>
+      </div>
+      <div>
+        <label>Ocupación</label>
+        <input type="text" id="ocupacion" value="Su casa" required>
+      </div>
+      <div>
+        <label>Domicilio</label>
+        <input type="text" id="domicilio" placeholder="Dirección del intervenido" required>
+      </div>
+      <div class="full">
+        <label>Persona de Confianza (Asistencia)</label>
+        <input type="text" id="asistido_confianza" value="no deseando ser asistido por ninguna persona" required>
+      </div>
+    </div>
+
+    <hr style="margin-top:15px;">
+
+    <div class="grid">
+      <div><label>01. Drogas / Insumos</label><input type="text" id="drogas" value="NEGATIVO"></div>
+      <div><label>02. Moneda Nac / Ext</label><input type="text" id="moneda" value="NEGATIVO"></div>
+      <div><label>03. Joyas / Alhajas</label><input type="text" id="joyas" value="NEGATIVO"></div>
+      <div><label>04. Armas / Explosivos</label><input type="text" id="municion" value="NEGATIVO"></div>
+      <div class="full"><label>05. Otros</label><input type="text" id="otros" value="NEGATIVO"></div>
+      <div class="full"><label>Resultado Positivo (Detalle de hallazgos)</label><textarea id="narrar_positivo">NINGUNO</textarea></div>
+    </div>
+
+    <hr style="margin-top:15px;">
+
+    <div class="grid">
+      <div>
+        <label>Efectivo Interviniente</label>
+        <input type="text" id="personal_interviniente" placeholder="Nombres y Apellidos" required>
+      </div>
+      <div>
+        <label>Grado / CIP</label>
+        <div style="display:flex; gap:5px;">
+          <input type="text" id="grado" placeholder="Ej: S2" required>
+          <input type="text" id="cip" placeholder="CIP / OA" required>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit">Guardar en Supabase y Generar Word (.docx)</button>
+    <button type="button" class="btn-clear" onclick="limpiarFormulario()">Finalizar e Iniciar Nueva Intervención</button>
+  </form>
+</div>
+
+<script>
+  // Datos de Supabase
+  const SUPABASE_URL = 'https://TU-PROYECTO.supabase.co';
+  const SUPABASE_ANON_KEY = 'TU-CLAVE-ANONIMA';
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Auto-completar fecha y hora actual
+  document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('hora1').value = new Date().toTimeString().slice(0, 5);
+
+  document.getElementById('actaForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    // Recopilar todos los datos
+    const data = {
+      distrito: document.getElementById('distrito').value,
+      provincia: document.getElementById('provincia').value,
+      region: document.getElementById('provincia').value,
+      fecha: document.getElementById('fecha').value,
+      hora1: document.getElementById('hora1').value,
+      hora2: document.getElementById('hora2').value,
+      lugar: document.getElementById('lugar').value,
+      intervenido_nombre: document.getElementById('intervenido_nombre').value,
+      intervenido_dni: document.getElementById('intervenido_dni').value,
+      edad: document.getElementById('edad').value,
+      natural: document.getElementById('natural').value,
+      ocupacion: document.getElementById('ocupacion').value,
+      domicilio: document.getElementById('domicilio').value,
+      asistido_confianza: document.getElementById('asistido_confianza').value,
+      drogas: document.getElementById('drogas').value,
+      moneda: document.getElementById('moneda').value,
+      joyas: document.getElementById('joyas').value,
+      municion: document.getElementById('municion').value,
+      otros: document.getElementById('otros').value,
+      narrar_positivo: document.getElementById('narrar_positivo').value,
+      personal_interviniente: document.getElementById('personal_interviniente').value,
+      grado: document.getElementById('grado').value,
+      cip: document.getElementById('cip').value
+    };
+
+    // 1. Guardar registro en Supabase
+    try {
+      await supabaseClient.from('intervenciones').insert([{
+        tipo_delito: 'Registro Personal',
+        fecha: data.fecha,
+        hora: data.hora1,
+        lugar: data.lugar,
+        intervenido_nombre: data.intervenido_nombre,
+        intervenido_dni: data.intervenido_dni,
+        efectivo_cargo: `${data.grado} ${data.personal_interviniente}`
+      }]);
+    } catch(err) { console.warn("Modo offline activo:", err); }
+
+    // 2. Cargar plantilla .docx y rellenar
+    const response = await fetch('plantillas/acta_registro_personal.docx');
+    const blob = await response.blob();
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      const zip = new PizZip(e.target.result);
+      const doc = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+      doc.render(data);
+
+      const out = doc.getZip().generate({
+        type: "blob",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      });
+
+      saveAs(out, `Acta_Reg_Personal_${data.intervenido_dni}.docx`);
+    };
+    reader.readAsArrayBuffer(blob);
+  });
+
+  function limpiarFormulario() {
+    if(confirm("¿Deseas limpiar la pantalla para un nuevo intervenido?")) {
+      document.getElementById('actaForm').reset();
+      document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+      document.getElementById('hora1').value = new Date().toTimeString().slice(0, 5);
+    }
+  }
+</script>
+
+</body>
+</html>
