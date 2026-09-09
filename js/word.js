@@ -154,7 +154,7 @@ function avanzarAoSaltarAQuienLleveHora(horaSugeridaInicio) {
   while (indiceActaActual < actasAProcesarSecuencia.length) {
     const actaActual = actasAProcesarSecuencia[indiceActaActual];
     
-    // EXCLUSIÓN EXPLÍCITA: Si es la constancia de buen trato, saltar el modal de hora
+    // EXCLUSIÓN EXPLÍCITA: Si es la constancia de buen trato (por id o propiedad llevaHora), saltar el modal
     if (actaActual.id === "buen_trato" || actaActual.llevaHora === false) {
       horariosPorActa[actaActual.id] = { horaInicio: "", horaTermino: "" };
       indiceActaActual++;
@@ -235,18 +235,23 @@ async function ejecutarGeneracionFinalExpediente() {
   statusMsg.innerText = `Procesando ${actasAProcesarSecuencia.length} acta(s)... Por favor espere.`;
 
   try {
-    const primeraActaConHora = actasAProcesarSecuencia.find(a => a.id !== "buen_trato" && a.llevaHora !== false);
-    const primerHorario = primeraActaConHora ? horariosPorActa[primeraActaConHora.id] : { horaInicio: "08:00", horaTermino: "08:05" };
+    const regPersonal = horariosPorActa['reg_personal'] || { horaInicio: "08:00", horaTermino: "08:05" };
+    const lecturaDerechos = horariosPorActa['lectura_derechos'] || { horaInicio: "08:06", horaTermino: "08:11" };
+    const detencionHorario = horariosPorActa['detencion'] || { horaInicio: "08:12", horaTermino: "08:17" };
 
-    const actaDerechos = actasAProcesarSecuencia.find(a => a.id === "lectura_derechos");
-    const horarioDerechos = actaDerechos ? horariosPorActa["lectura_derechos"] : null;
+    const hora5Val = detencionHorario.horaInicio || sumarMinutosAHora(lecturaDerechos.horaTermino, 1);
+    const hora6Val = detencionHorario.horaTermino || sumarMinutosAHora(hora5Val, 5);
+    const horaDetencionVal = sumarMinutosAHora(hora6Val, 2);
 
     const datosFinales = {
       ...datosFormularioBase,
-      hora1: primerHorario ? primerHorario.horaInicio : "08:00",
-      hora2: primerHorario ? primerHorario.horaTermino : "08:05",
-      hora3: horarioDerechos ? horarioDerechos.horaInicio : sumarMinutosAHora(primerHorario ? primerHorario.horaTermino : "08:05", 1),
-      hora4: horarioDerechos ? horarioDerechos.horaTermino : sumarMinutosAHora(primerHorario ? primerHorario.horaTermino : "08:05", 6)
+      hora1: regPersonal.horaInicio,
+      hora2: regPersonal.horaTermino,
+      hora3: lecturaDerechos.horaInicio,
+      hora4: lecturaDerechos.horaTermino,
+      hora5: hora5Val,
+      hora6: hora6Val,
+      hora_detencion: horaDetencionVal
     };
 
     try {
