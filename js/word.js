@@ -1,14 +1,14 @@
-// CATÁLOGO COMPLETO DE ACTAS
+// CATÁLOGO COMPLETO DE ACTAS CON ALIAS FLEXIBLES
 const CATALOGO_ACTAS = [
-  { id: "reg_personal", titulo: "01. Acta de Registro Personal", archivo: "plantilla/acta_registro_personal.docx" },
-  { id: "lectura_derechos", titulo: "02. Acta de Lectura de Derechos", archivo: "plantilla/acta_lectura_derechos.docx" },
-  { id: "detencion", titulo: "03. Acta de Detención Policial", archivo: "plantilla/acta_detencion.docx" },
-  { id: "buen_trato", titulo: "04. Constancia de Buen Trato", archivo: "plantilla/acta_buen_trato.docx" },
-  { id: "sit_vehicular", titulo: "05. Acta de Situación Vehicular", archivo: "plantilla/acta_situacion_vehicular.docx" },
-  { id: "reg_vehicular", titulo: "06. Acta de Registro Vehicular", archivo: "plantilla/acta_registro_vehicular.docx" },
-  { id: "intervencion", titulo: "07. Acta de Intervención Policial", archivo: "plantilla/acta_intervencion.docx" },
-  { id: "lacrado", titulo: "08. Acta de Lacrado / Cadena de Custodia", archivo: "plantilla/acta_lacrado.docx" },
-  { id: "comunicacion", titulo: "09. Acta de Comunicación Telefónica", archivo: "plantilla/acta_comunicacion.docx" }
+  { id: "reg_personal", aliases: ["reg_personal", "acta_registro_personal", "registro_personal"], titulo: "01. Acta de Registro Personal", archivo: "plantilla/acta_registro_personal.docx" },
+  { id: "lectura_derechos", aliases: ["lectura_derechos", "acta_lectura_derechos"], titulo: "02. Acta de Lectura de Derechos", archivo: "plantilla/acta_lectura_derechos.docx" },
+  { id: "detencion", aliases: ["detencion", "acta_detencion"], titulo: "03. Acta de Detención Policial", archivo: "plantilla/acta_detencion.docx" },
+  { id: "buen_trato", aliases: ["buen_trato", "constancia_buen_trato", "buentrato", "acta_buen_trato"], titulo: "04. Constancia de Buen Trato", archivo: "plantilla/acta_buen_trato.docx" },
+  { id: "sit_vehicular", aliases: ["sit_vehicular", "acta_situacion_vehicular", "situacion_vehicular"], titulo: "05. Acta de Situación Vehicular", archivo: "plantilla/acta_situacion_vehicular.docx" },
+  { id: "reg_vehicular", aliases: ["reg_vehicular", "acta_registro_vehicular", "registro_vehicular"], titulo: "06. Acta de Registro Vehicular", archivo: "plantilla/acta_registro_vehicular.docx" },
+  { id: "intervencion", aliases: ["intervencion", "acta_intervencion"], titulo: "07. Acta de Intervención Policial", archivo: "plantilla/acta_intervencion.docx" },
+  { id: "lacrado", aliases: ["lacrado", "acta_lacrado"], titulo: "08. Acta de Lacrado / Cadena de Custodia", archivo: "plantilla/acta_lacrado.docx" },
+  { id: "comunicacion", aliases: ["comunicacion", "acta_comunicacion"], titulo: "09. Acta de Comunicación Telefónica", archivo: "plantilla/acta_comunicacion.docx" }
 ];
 
 let delitoConfigurado = "";
@@ -23,7 +23,6 @@ function formatearFechaPolicial(fechaCadena) {
     "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"
   ];
 
-  // Si viene en formato ISO (YYYY-MM-DD)
   if (fechaCadena.includes('-')) {
     const partes = fechaCadena.split('-');
     if (partes.length === 3) {
@@ -36,7 +35,6 @@ function formatearFechaPolicial(fechaCadena) {
     }
   }
 
-  // Si viene en formato con barras (DD/MM/YYYY)
   if (fechaCadena.includes('/')) {
     const partes = fechaCadena.split('/');
     if (partes.length === 3) {
@@ -53,18 +51,15 @@ function formatearFechaPolicial(fechaCadena) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Cargar datos de menú
   delitoConfigurado = localStorage.getItem('pnp_delito_seleccionado') || "CONTROL DE IDENTIDAD POLICIAL";
   const actasJSON = localStorage.getItem('pnp_actas_seleccionadas');
   idsActasConfiguradas = actasJSON ? JSON.parse(actasJSON) : ["reg_personal"];
 
-  // Mostrar resumen
   const resDelito = document.getElementById('resumenDelito');
   const resCant = document.getElementById('resumenActasCant');
   if (resDelito) resDelito.innerText = delitoConfigurado;
   if (resCant) resCant.innerText = `📄 ${idsActasConfiguradas.length} acta(s) seleccionada(s) para generar`;
 
-  // Fecha y hora actual por defecto
   const fechaInput = document.getElementById('fecha');
   const hora1Input = document.getElementById('hora1');
   if (fechaInput) fechaInput.value = new Date().toISOString().split('T')[0];
@@ -80,21 +75,22 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
   statusMsg.style.display = "block";
   statusMsg.innerText = `Procesando ${idsActasConfiguradas.length} acta(s)... Por favor espere.`;
 
-  const actasAProcesar = CATALOGO_ACTAS.filter(acta => idsActasConfiguradas.includes(acta.id));
+  // FILTRADO CON COMPATIBILIDAD DE ALIAS DE IDs
+  const actasAProcesar = CATALOGO_ACTAS.filter(acta => 
+    idsActasConfiguradas.some(idSel => acta.aliases.includes(idSel) || acta.id === idSel)
+  );
 
   if (actasAProcesar.length === 0) {
-    alert("⚠️ No hay actas seleccionadas. Regrese al menú para configurar la intervención.");
+    alert(`⚠️ No se encontraron coincidencias para las actas seleccionadas: [${idsActasConfiguradas.join(', ')}]. Regrese al menú.`);
     return;
   }
 
-  // Recopilar datos
   const placaInput = document.getElementById('placa_vehiculo');
   const marcaInput = document.getElementById('marca_vehiculo');
   const modeloInput = document.getElementById('modelo_vehiculo');
   const colorInput = document.getElementById('color_vehiculo');
   const fechaRaw = document.getElementById('fecha').value;
 
-  // CONVERSIÓN A FORMATO POLICIAL
   const fechaPolicial = formatearFechaPolicial(fechaRaw);
 
   const formData = {
@@ -111,12 +107,10 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     edad: document.getElementById('edad').value,
     natural: document.getElementById('natural').value,
 
-    // DATOS DE FILIACIÓN Y CONTACTO
     celular1: document.getElementById('celular1') ? (document.getElementById('celular1').value.trim() || "S/N") : "S/N",
     papa: document.getElementById('papa') ? (document.getElementById('papa').value.trim() || "S/D") : "S/D",
     mama: document.getElementById('mama') ? (document.getElementById('mama').value.trim() || "S/D") : "S/D",
 
-    // MOTIVO JUSTIFICATORIO DE SEGURIDAD
     motivo_justificatorio: document.getElementById('motivo_justificatorio') ? document.getElementById('motivo_justificatorio').value : "",
 
     ocupacion: document.getElementById('ocupacion').value,
@@ -141,7 +135,6 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
   };
 
   try {
-    // Guardar en Supabase (si está disponible)
     try {
       if (typeof supabaseClient !== 'undefined' && supabaseClient.from) {
         await supabaseClient.from('intervenciones').insert([{
@@ -165,16 +158,23 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
       saveAs(blobDoc, `${acta.id}_${formData.intervenido_dni}.docx`);
     } else {
       const zip = new JSZip();
+      let archivosAgregados = 0;
+
       for (let acta of actasAProcesar) {
         try {
           const blobDoc = await generarDocumentoWord(acta.archivo, formData);
           zip.file(`${acta.titulo}.docx`, blobDoc);
+          archivosAgregados++;
         } catch (err) {
-          console.warn(`Plantilla no encontrada: ${acta.archivo}`);
+          console.error(`Error al cargar la plantilla ${acta.archivo}:`, err);
+          alert(`⚠️ No se encontró la plantilla "${acta.archivo}". Por favor verifica que el archivo exista en la carpeta "plantilla/" en GitHub con ese nombre exacto.`);
         }
       }
-      const zipContent = await zip.generateAsync({ type: "blob" });
-      saveAs(zipContent, `Expediente_${formData.intervenido_dni}_${formData.fecha}.zip`);
+
+      if (archivosAgregados > 0) {
+        const zipContent = await zip.generateAsync({ type: "blob" });
+        saveAs(zipContent, `Expediente_${formData.intervenido_dni}_${formData.fecha}.zip`);
+      }
     }
 
     statusMsg.innerText = "¡Expediente generado exitosamente!";
@@ -185,7 +185,6 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
   }
 });
 
-// Función con detección de PizZip y nullGetter
 async function generarDocumentoWord(rutaPlantilla, datos) {
   const PizZipLib = window.PizZip || (typeof PizZip !== 'undefined' ? PizZip : null);
   const DocxLib = window.docxtemplater || (typeof docxtemplater !== 'undefined' ? docxtemplater : null);
