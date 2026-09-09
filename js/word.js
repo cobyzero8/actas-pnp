@@ -14,6 +14,25 @@ const CATALOGO_ACTAS = [
 let delitoConfigurado = "";
 let idsActasConfiguradas = [];
 
+// FUNCIÓN PARA CONVERTIR FECHA ISO 'YYYY-MM-DD' AL FORMATO POLICIAL 'DDMMMAAAA' (Ej: 09SEP2026)
+function formatearFechaPolicial(fechaISO) {
+  if (!fechaISO) return "";
+  const partes = fechaISO.split('-');
+  if (partes.length !== 3) return fechaISO;
+
+  const anio = partes[0];
+  const mesIndex = parseInt(partes[1], 10) - 1;
+  const dia = partes[2].padStart(2, '0');
+
+  const mesesPoliciales = [
+    "ENE", "FEB", "MAR", "ABR", "MAY", "JUN",
+    "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"
+  ];
+
+  const mesTexto = mesesPoliciales[mesIndex] || "";
+  return `${dia}${mesTexto}${anio}`;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // Cargar datos de menú
   delitoConfigurado = localStorage.getItem('pnp_delito_seleccionado') || "CONTROL DE IDENTIDAD POLICIAL";
@@ -54,13 +73,17 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
   const marcaInput = document.getElementById('marca_vehiculo');
   const modeloInput = document.getElementById('modelo_vehiculo');
   const colorInput = document.getElementById('color_vehiculo');
+  const fechaRaw = document.getElementById('fecha').value;
 
   const formData = {
     delito: delitoConfigurado,
     distrito: document.getElementById('distrito').value,
     provincia: document.getElementById('provincia').value,
     region: document.getElementById('region').value,
-    fecha: document.getElementById('fecha').value,
+    
+    // FORMATO DE FECHA POLICIAL CONVERTIDO (Ej: 09SEP2026)
+    fecha: formatearFechaPolicial(fechaRaw),
+    
     hora1: document.getElementById('hora1').value,
     hora2: document.getElementById('hora2').value,
     lugar: document.getElementById('lugar').value,
@@ -134,7 +157,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
   }
 });
 
-// Función con detección robusta de PizZip y Docxtemplater + nullGetter anti-undefined
+// Función con detección robusta de PizZip y Docxtemplater + nullGetter
 async function generarDocumentoWord(rutaPlantilla, datos) {
   const PizZipLib = window.PizZip || (typeof PizZip !== 'undefined' ? PizZip : null);
   const DocxLib = window.docxtemplater || (typeof docxtemplater !== 'undefined' ? docxtemplater : null);
@@ -151,7 +174,6 @@ async function generarDocumentoWord(rutaPlantilla, datos) {
 
   const zip = new PizZipLib(arrayBuffer);
 
-  // nullGetter garantiza reemplazar etiquetas sin valor por texto vacío "" en vez de "undefined"
   const doc = new DocxLib(zip, { 
     paragraphLoop: true, 
     linebreaks: true,
