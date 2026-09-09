@@ -134,7 +134,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
   }
 });
 
-// Función con detección robusta de PizZip y Docxtemplater
+// Función con detección robusta de PizZip y Docxtemplater + nullGetter anti-undefined
 async function generarDocumentoWord(rutaPlantilla, datos) {
   const PizZipLib = window.PizZip || (typeof PizZip !== 'undefined' ? PizZip : null);
   const DocxLib = window.docxtemplater || (typeof docxtemplater !== 'undefined' ? docxtemplater : null);
@@ -150,7 +150,14 @@ async function generarDocumentoWord(rutaPlantilla, datos) {
   const arrayBuffer = await response.arrayBuffer();
 
   const zip = new PizZipLib(arrayBuffer);
-  const doc = new DocxLib(zip, { paragraphLoop: true, linebreaks: true });
+
+  // nullGetter garantiza reemplazar etiquetas sin valor por texto vacío "" en vez de "undefined"
+  const doc = new DocxLib(zip, { 
+    paragraphLoop: true, 
+    linebreaks: true,
+    nullGetter: function() { return ""; }
+  });
+
   doc.render(datos);
 
   return doc.getZip().generate({
