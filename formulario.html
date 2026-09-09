@@ -75,6 +75,38 @@
   </div>
 </div>
 
+<!-- CUADRO FLOTANTE (MODAL) PARA REGISTRO CRONOLÓGICO DE HORAS DE CADA ACTA -->
+<div id="modalHoras" class="modal-overlay">
+  <div class="modal-content" style="max-width: 420px;">
+    <h3 id="modalHorasTitulo" style="margin-top: 0; color: #003366; font-size: 16px; border-bottom: 2px solid #003366; padding-bottom: 8px;">
+      ⏰ Horas de la Diligencia
+    </h3>
+    <p id="modalHorasSubtitulo" style="font-size: 13px; font-weight: bold; color: #555; margin-bottom: 15px;">
+      Ajuste el horario para la siguiente acta:
+    </p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+      <div>
+        <label style="font-size: 12px; font-weight: bold; color: #333; display: block; margin-bottom: 4px;">Hora Inicio:</label>
+        <input type="time" id="modalHoraInicio" style="width: 100%; box-sizing: border-box; padding: 8px; font-size: 14px; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; text-align: center;">
+      </div>
+      <div>
+        <label style="font-size: 12px; font-weight: bold; color: #333; display: block; margin-bottom: 4px;">Hora Término:</label>
+        <input type="time" id="modalHoraTermino" style="width: 100%; box-sizing: border-box; padding: 8px; font-size: 14px; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; text-align: center;">
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+      <button type="button" class="btn btn-secondary" onclick="cancelarProcesoHoras()" style="width: auto; padding: 8px 12px; font-size: 12px;">
+        Cancelar
+      </button>
+      <button type="button" class="btn btn-success" id="btnSiguienteHora" onclick="confirmarHoraActaActual()" style="width: auto; padding: 8px 16px; font-size: 13px;">
+        Siguiente ➡️
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="container">
   <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -112,11 +144,11 @@
           <input type="date" id="fecha" required>
         </div>
         <div>
-          <label>Hora Inicio</label>
+          <label>Hora Inicio (General)</label>
           <input type="time" id="hora1" required>
         </div>
         <div>
-          <label>Hora Término</label>
+          <label>Hora Término (General)</label>
           <input type="time" id="hora2" required>
         </div>
         <div class="full">
@@ -279,7 +311,7 @@
 </div>
 
 <script src="js/auth.js"></script>
-<script src="js/word.js?v=4"></script>
+<script src="js/word.js?v=5"></script>
   
 <script>
   // DICCIONARIO PARA GUARDAR DETALLES DE CADA ESPECIE
