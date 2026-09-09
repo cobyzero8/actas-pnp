@@ -116,6 +116,9 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     papa: document.getElementById('papa') ? (document.getElementById('papa').value.trim() || "S/D") : "S/D",
     mama: document.getElementById('mama') ? (document.getElementById('mama').value.trim() || "S/D") : "S/D",
 
+    // MOTIVO JUSTIFICATORIO DE SEGURIDAD
+    motivo_justificatorio: document.getElementById('motivo_justificatorio') ? document.getElementById('motivo_justificatorio').value : "",
+
     ocupacion: document.getElementById('ocupacion').value,
     domicilio: document.getElementById('domicilio').value,
     asistido_confianza: document.getElementById('asistido_confianza').value,
