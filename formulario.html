@@ -22,11 +22,20 @@
       <button onclick="cerrarSesion()" class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size: 11px;">Salir</button>
     </div>
 
-    <!-- Guía Inteligente del Protocolo -->
-    <div class="protocol-box">
-      <h4 id="protocoloNombre">Cargando protocolo...</h4>
-      <p style="font-size: 12px; margin-bottom: 8px;">Documentos obligatorios requeridos para este expediente:</p>
-      <ul class="checklist" id="checklistContenedor"></ul>
+    <!-- Checklist Interactivo con Casillas (Checkboxes) -->
+    <div class="protocol-box" style="background: #eef4fc; border-left: 5px solid var(--primary); padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+      <h4 id="protocoloNombre" style="margin: 0 0 5px 0; color: var(--primary);">Selección de Actas para el Expediente</h4>
+      <p style="font-size: 12px; margin-bottom: 10px; color: #555;">
+        Marca o desmarca las actas que realmente vas a adjuntar en esta intervención:
+      </p>
+      
+      <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <button type="button" onclick="marcarTodas(true)" style="font-size: 11px; padding: 4px 8px; cursor: pointer;">☑️ Marcar Todas</button>
+        <button type="button" onclick="marcarTodas(false)" style="font-size: 11px; padding: 4px 8px; cursor: pointer;">◻️ Desmarcar Todas</button>
+      </div>
+
+      <!-- Contenedor dinámico de casillas -->
+      <div id="checklistContenedor" style="display: grid; grid-template-columns: 1fr; gap: 8px;"></div>
     </div>
 
     <div id="statusMsg" class="alert-msg"></div>
@@ -95,6 +104,27 @@
 
       <hr style="margin: 15px 0;">
 
+      <!-- DATOS DEL VEHÍCULO (OPCIONAL / SI APLICA) -->
+      <div class="grid">
+        <div class="full">
+          <label style="color: var(--primary);">🚘 Datos Vehiculares (Si se incluye Acta Vehicular)</label>
+        </div>
+        <div>
+          <label>Placa del Vehículo</label>
+          <input type="text" id="placa_vehiculo" placeholder="Ej: ABC-123">
+        </div>
+        <div>
+          <label>Marca / Modelo</label>
+          <input type="text" id="marca_vehiculo" placeholder="Ej: Toyota Yaris">
+        </div>
+        <div class="full">
+          <label>Color / Estado del Vehículo</label>
+          <input type="text" id="color_vehiculo" placeholder="Ej: Negro / Regular estado de conservación">
+        </div>
+      </div>
+
+      <hr style="margin: 15px 0;">
+
       <!-- REGISTRO DE ESPECIES -->
       <div class="grid">
         <div><label>01. Drogas / Insumos</label><input type="text" id="drogas" value="NEGATIVO"></div>
@@ -102,7 +132,7 @@
         <div><label>03. Joyas / Alhajas</label><input type="text" id="joyas" value="NEGATIVO"></div>
         <div><label>04. Armas / Explosivos</label><input type="text" id="municion" value="NEGATIVO"></div>
         <div class="full"><label>05. Otros</label><input type="text" id="otros" value="NEGATIVO"></div>
-        <div class="full"><label>Resultado Positivo (Detalle de hallazgos)</label><textarea id="narrar_positivo">NINGUNO</textarea></div>
+        <div class="full"><label>Resultado Positivo (Detalle de hallazgos / Narrativa)</label><textarea id="narrar_positivo">NINGUNO</textarea></div>
       </div>
 
       <hr style="margin: 15px 0;">
