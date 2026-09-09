@@ -102,10 +102,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     distrito: document.getElementById('distrito').value,
     provincia: document.getElementById('provincia').value,
     region: document.getElementById('region').value,
-    
-    // FORMATO POLICIAL CONVERTIDO
     fecha: fechaPolicial,
-    
     hora1: document.getElementById('hora1').value,
     hora2: document.getElementById('hora2').value,
     lugar: document.getElementById('lugar').value,
@@ -113,6 +110,12 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     intervenido_dni: document.getElementById('intervenido_dni').value,
     edad: document.getElementById('edad').value,
     natural: document.getElementById('natural').value,
+
+    // DATOS DE FILIACIÓN Y CONTACTO
+    celular1: document.getElementById('celular1') ? (document.getElementById('celular1').value.trim() || "S/N") : "S/N",
+    papa: document.getElementById('papa') ? (document.getElementById('papa').value.trim() || "S/D") : "S/D",
+    mama: document.getElementById('mama') ? (document.getElementById('mama').value.trim() || "S/D") : "S/D",
+
     ocupacion: document.getElementById('ocupacion').value,
     domicilio: document.getElementById('domicilio').value,
     asistido_confianza: document.getElementById('asistido_confianza').value,
