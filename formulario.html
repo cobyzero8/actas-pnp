@@ -1,1 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulario de Actas - PNP</title>
+  <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- Librerías JS necesarias -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.4/pizzip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.11/docxtemplater.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
 
+<div class="container">
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <a href="menu.html" style="text-decoration: none; color: var(--primary); font-weight: bold; font-size: 13px;">← Volver al Menú</a>
+      <button onclick="cerrarSesion()" class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size: 11px;">Salir</button>
+    </div>
+
+    <!-- Guía Inteligente del Protocolo -->
+    <div class="protocol-box">
+      <h4 id="protocoloNombre">Cargando protocolo...</h4>
+      <p style="font-size: 12px; margin-bottom: 8px;">Documentos obligatorios requeridos para este expediente:</p>
+      <ul class="checklist" id="checklistContenedor"></ul>
+    </div>
+
+    <div id="statusMsg" class="alert-msg"></div>
+
+    <form id="expedienteForm">
+      
+      <!-- LUGAR Y TIEMPO -->
+      <div class="grid">
+        <div>
+          <label>Distrito</label>
+          <input type="text" id="distrito" value="Huanta" required>
+        </div>
+        <div>
+          <label>Provincia / Región</label>
+          <input type="text" id="provincia" value="Huanta" required>
+        </div>
+        <div>
+          <label>Fecha</label>
+          <input type="date" id="fecha" required>
+        </div>
+        <div>
+          <label>Hora Inicio / Fin</label>
+          <div style="display:flex; gap:5px;">
+            <input type="time" id="hora1" required>
+            <input type="time" id="hora2" required>
+          </div>
+        </div>
+        <div class="full">
+          <label>Lugar Exacto de Intervención</label>
+          <input type="text" id="lugar" placeholder="Ej: Av. San Martín Cdra. 2" required>
+        </div>
+      </div>
+
+      <hr style="margin: 15px 0;">
+
+      <!-- INTERVENIDO -->
+      <div class="grid">
+        <div class="full">
+          <label>Nombres y Apellidos del Intervenido</label>
+          <input type="text" id="intervenido_nombre" placeholder="Nombre completo" required>
+        </div>
+        <div>
+          <label>DNI / Documento</label>
+          <input type="text" id="intervenido_dni" placeholder="N° DNI" required>
+        </div>
+        <div>
+          <label>Edad / Origen</label>
+          <div style="display:flex; gap:5px;">
+            <input type="number" id="edad" placeholder="Edad" required>
+            <input type="text" id="natural" placeholder="Natural de" required>
+          </div>
+        </div>
+        <div>
+          <label>Ocupación</label>
+          <input type="text" id="ocupacion" value="Su casa" required>
+        </div>
+        <div>
+          <label>Domicilio</label>
+          <input type="text" id="domicilio" placeholder="Dirección actual" required>
+        </div>
+        <div class="full">
+          <label>Persona de Confianza (Asistencia)</label>
+          <input type="text" id="asistido_confianza" value="no deseando ser asistido por ninguna persona" required>
+        </div>
+      </div>
+
+      <hr style="margin: 15px 0;">
+
+      <!-- REGISTRO DE ESPECIES -->
+      <div class="grid">
+        <div><label>01. Drogas / Insumos</label><input type="text" id="drogas" value="NEGATIVO"></div>
+        <div><label>02. Moneda Nac / Ext</label><input type="text" id="moneda" value="NEGATIVO"></div>
+        <div><label>03. Joyas / Alhajas</label><input type="text" id="joyas" value="NEGATIVO"></div>
+        <div><label>04. Armas / Explosivos</label><input type="text" id="municion" value="NEGATIVO"></div>
+        <div class="full"><label>05. Otros</label><input type="text" id="otros" value="NEGATIVO"></div>
+        <div class="full"><label>Resultado Positivo (Detalle de hallazgos)</label><textarea id="narrar_positivo">NINGUNO</textarea></div>
+      </div>
+
+      <hr style="margin: 15px 0;">
+
+      <!-- PERSONAL PNP -->
+      <div class="grid">
+        <div>
+          <label>Efectivo Interviniente</label>
+          <input type="text" id="personal_interviniente" placeholder="Nombres y Apellidos" required>
+        </div>
+        <div>
+          <label>Grado / CIP</label>
+          <div style="display:flex; gap:5px;">
+            <input type="text" id="grado" placeholder="Ej: S2" required>
+            <input type="text" id="cip" placeholder="CIP / OA" required>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-success" style="margin-top: 20px;">📦 Generar Documento / Expediente (.docx / .zip)</button>
+      <button type="button" class="btn btn-secondary" onclick="limpiarPantalla()">Finalizar e Iniciar Nueva Intervención</button>
+    </form>
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/word.js"></script>
+</body>
+</html>
