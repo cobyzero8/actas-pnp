@@ -14,6 +14,12 @@ const CATALOGO_ACTAS = [
 let delitoConfigurado = "";
 let idsActasConfiguradas = [];
 
+// VARIABLES PARA EL FLUJO INTERACTIVO DE HORARIOS
+let actasAProcesarSecuencia = [];
+let indiceActaActual = 0;
+let datosFormularioBase = {};
+let horariosPorActa = {};
+
 // CONVERSOR UNIVERSAL A FORMATO POLICIAL (Ejemplo: 2026-09-09 -> 09SEP2026)
 function formatearFechaPolicial(fechaCadena) {
   if (!fechaCadena) return "";
@@ -50,6 +56,23 @@ function formatearFechaPolicial(fechaCadena) {
   return fechaCadena;
 }
 
+// FUNCIÓN AUXILIAR PARA SUMAR MINUTOS A UNA HORA HH:MM
+function sumarMinutosAHora(horaStr, minutosASumar) {
+  if (!horaStr) return "00:00";
+  const partes = horaStr.split(':');
+  let horas = parseInt(partes[0], 10);
+  let minutos = parseInt(partes[1], 10) + minutosASumar;
+
+  while (minutos >= 60) {
+    minutos -= 60;
+    horas = (horas + 1) % 24;
+  }
+
+  const h = horas.toString().padStart(2, '0');
+  const m = minutos.toString().padStart(2, '0');
+  return `${h}:${m}`;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   delitoConfigurado = localStorage.getItem('pnp_delito_seleccionado') || "CONTROL DE IDENTIDAD POLICIAL";
   const actasJSON = localStorage.getItem('pnp_actas_seleccionadas');
@@ -66,21 +89,16 @@ document.addEventListener('DOMContentLoaded', () => {
   if (hora1Input) hora1Input.value = new Date().toTimeString().slice(0, 5);
 });
 
-// Generar Expediente
+// INICIO DEL PROCESO: CAPTURA DE DATOS Y DESPLIEGUE DEL PRIMER MODAL DE HORARIOS
 document.getElementById('expedienteForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const statusMsg = document.getElementById('statusMsg');
-  statusMsg.className = "alert-msg alert-success";
-  statusMsg.style.display = "block";
-  statusMsg.innerText = `Procesando ${idsActasConfiguradas.length} acta(s)... Por favor espere.`;
-
   // FILTRADO CON COMPATIBILIDAD DE ALIAS DE IDs
-  const actasAProcesar = CATALOGO_ACTAS.filter(acta => 
+  actasAProcesarSecuencia = CATALOGO_ACTAS.filter(acta => 
     idsActasConfiguradas.some(idSel => acta.aliases.includes(idSel) || acta.id === idSel)
   );
 
-  if (actasAProcesar.length === 0) {
+  if (actasAProcesarSecuencia.length === 0) {
     alert(`⚠️ No se encontraron coincidencias para las actas seleccionadas: [${idsActasConfiguradas.join(', ')}]. Regrese al menú.`);
     return;
   }
@@ -91,16 +109,12 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
   const colorInput = document.getElementById('color_vehiculo');
   const fechaRaw = document.getElementById('fecha').value;
 
-  const fechaPolicial = formatearFechaPolicial(fechaRaw);
-
-  const formData = {
+  datosFormularioBase = {
     delito: delitoConfigurado,
     distrito: document.getElementById('distrito').value,
     provincia: document.getElementById('provincia').value,
     region: document.getElementById('region').value,
-    fecha: fechaPolicial,
-    hora1: document.getElementById('hora1').value,
-    hora2: document.getElementById('hora2').value,
+    fecha: formatearFechaPolicial(fechaRaw),
     lugar: document.getElementById('lugar').value,
     intervenido_nombre: document.getElementById('intervenido_nombre').value,
     intervenido_dni: document.getElementById('intervenido_dni').value,
@@ -134,35 +148,142 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     cip: document.getElementById('cip').value
   };
 
+  // REINICIAR SECUENCIA DE HORARIOS INTERACTIVOS
+  indiceActaActual = 0;
+  horariosPorActa = {};
+
+  const horaInicialBase = document.getElementById('hora1').value || "08:00";
+  mostrarModalHoraActa(indiceActaActual, horaInicialBase);
+});
+
+// DESPLIEGA EL MODAL PARA EL ACTA ACTUAL
+function mostrarModalHoraActa(index, horaSugeridaInicio) {
+  const modalElem = document.getElementById('modalHoras');
+  if (!modalElem) {
+    alert("⚠️ Falta integrar el contenedor 'modalHoras' en formulario.html.");
+    return;
+  }
+
+  const acta = actasAProcesarSecuencia[index];
+  const total = actasAProcesarSecuencia.length;
+
+  document.getElementById('modalHorasTitulo').innerText = `⏰ Horario (${index + 1}/${total}): ${acta.titulo}`;
+  document.getElementById('modalHorasSubtitulo').innerText = `Especifique hora de inicio y término para "${acta.titulo}":`;
+
+  const horaTerminoSugerida = sumarMinutosAHora(horaSugeridaInicio, 5);
+
+  document.getElementById('modalHoraInicio').value = horaSugeridaInicio;
+  document.getElementById('modalHoraTermino').value = horaTerminoSugerida;
+
+  const btnSiguiente = document.getElementById('btnSiguienteHora');
+  if (index === total - 1) {
+    btnSiguiente.innerHTML = "📦 Generar Expediente";
+    btnSiguiente.className = "btn btn-success";
+  } else {
+    btnSiguiente.innerHTML = "Siguiente ➡️";
+    btnSiguiente.className = "btn btn-primary";
+  }
+
+  modalElem.style.display = 'flex';
+}
+
+function cancelarProcesoHoras() {
+  const modalElem = document.getElementById('modalHoras');
+  if (modalElem) modalElem.style.display = 'none';
+}
+
+// CONFIRMA LA HORA DE LA ACTA EN CURSO Y CONTINÚA A LA SIGUIENTE
+async function confirmarHoraActaActual() {
+  const hInicio = document.getElementById('modalHoraInicio').value;
+  const hTermino = document.getElementById('modalHoraTermino').value;
+
+  if (!hInicio || !hTermino) {
+    alert("⚠️ Debe ingresar ambas horas (inicio y término).");
+    return;
+  }
+
+  const actaActual = actasAProcesarSecuencia[indiceActaActual];
+  horariosPorActa[actaActual.id] = {
+    horaInicio: hInicio,
+    horaTermino: hTermino
+  };
+
+  indiceActaActual++;
+
+  if (indiceActaActual < actasAProcesarSecuencia.length) {
+    // La hora sugerida de la siguiente acta será la de término de la anterior + 1 min
+    const siguienteSugerida = sumarMinutosAHora(hTermino, 1);
+    mostrarModalHoraActa(indiceActaActual, siguienteSugerida);
+  } else {
+    document.getElementById('modalHoras').style.display = 'none';
+    await ejecutarGeneracionFinalExpediente();
+  }
+}
+
+// PROCESA LA GENERACIÓN DE DOCUMENTOS CON SUS HORAS
+async function ejecutarGeneracionFinalExpediente() {
+  const statusMsg = document.getElementById('statusMsg');
+  statusMsg.className = "alert-msg alert-success";
+  statusMsg.style.display = "block";
+  statusMsg.innerText = `Procesando ${actasAProcesarSecuencia.length} acta(s)... Por favor espere.`;
+
   try {
+    // ASIGNACIÓN DE DERECHOS/SECUENCIA HORA1, HORA2, HORA3, HORA4
+    const primeraActa = actasAProcesarSecuencia[0];
+    const primerHorario = horariosPorActa[primeraActa.id] || { horaInicio: "08:00", horaTermino: "08:05" };
+
+    const actaDerechos = actasAProcesarSecuencia.find(a => a.id === "lectura_derechos");
+    const horarioDerechos = actaDerechos ? horariosPorActa["lectura_derechos"] : null;
+
+    const datosFinales = {
+      ...datosFormularioBase,
+      hora1: primerHorario.horaInicio,
+      hora2: primerHorario.horaTermino,
+      hora3: horarioDerechos ? horarioDerechos.horaInicio : sumarMinutosAHora(primerHorario.horaTermino, 1),
+      hora4: horarioDerechos ? horarioDerechos.horaTermino : sumarMinutosAHora(primerHorario.horaTermino, 6)
+    };
+
+    // GUARDAR EN SUPABASE
     try {
       if (typeof supabaseClient !== 'undefined' && supabaseClient.from) {
         await supabaseClient.from('intervenciones').insert([{
-          tipo_delito: delitoConfigurado,
-          fecha: formData.fecha,
-          hora: formData.hora1,
-          lugar: formData.lugar,
-          intervenido_nombre: formData.intervenido_nombre,
-          intervenido_dni: formData.intervenido_dni,
-          efectivo_cargo: `${formData.grado} ${formData.personal_interviniente}`
+          tipo_delito: datosFinales.delito,
+          fecha: datosFinales.fecha,
+          hora: datosFinales.hora1,
+          lugar: datosFinales.lugar,
+          intervenido_nombre: datosFinales.intervenido_nombre,
+          intervenido_dni: datosFinales.intervenido_dni,
+          efectivo_cargo: `${datosFinales.grado} ${datosFinales.personal_interviniente}`
         }]);
       }
     } catch (errSupabase) {
       console.warn("Ejecutando en modo offline.");
     }
 
-    // Generar documentos
-    if (actasAProcesar.length === 1) {
-      const acta = actasAProcesar[0];
-      const blobDoc = await generarDocumentoWord(acta.archivo, formData);
-      saveAs(blobDoc, `${acta.id}_${formData.intervenido_dni}.docx`);
+    // GENERAR UN SOLO DOCX O UN ARCHIVO ZIP COMPRIMIDO
+    if (actasAProcesarSecuencia.length === 1) {
+      const acta = actasAProcesarSecuencia[0];
+      const horarioEspecifico = horariosPorActa[acta.id];
+      const datosActaUnica = {
+        ...datosFinales,
+        hora1: horarioEspecifico.horaInicio,
+        hora2: horarioEspecifico.horaTermino
+      };
+      const blobDoc = await generarDocumentoWord(acta.archivo, datosActaUnica);
+      saveAs(blobDoc, `${acta.id}_${datosFinales.intervenido_dni}.docx`);
     } else {
       const zip = new JSZip();
       let archivosAgregados = 0;
 
-      for (let acta of actasAProcesar) {
+      for (let acta of actasAProcesarSecuencia) {
         try {
-          const blobDoc = await generarDocumentoWord(acta.archivo, formData);
+          const hor = horariosPorActa[acta.id];
+          const datosDocumento = {
+            ...datosFinales,
+            hora1: hor.horaInicio,
+            hora2: hor.horaTermino
+          };
+          const blobDoc = await generarDocumentoWord(acta.archivo, datosDocumento);
           zip.file(`${acta.titulo}.docx`, blobDoc);
           archivosAgregados++;
         } catch (err) {
@@ -173,7 +294,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
 
       if (archivosAgregados > 0) {
         const zipContent = await zip.generateAsync({ type: "blob" });
-        saveAs(zipContent, `Expediente_${formData.intervenido_dni}_${formData.fecha}.zip`);
+        saveAs(zipContent, `Expediente_${datosFinales.intervenido_dni}_${datosFinales.fecha}.zip`);
       }
     }
 
@@ -183,7 +304,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     statusMsg.className = "alert-msg alert-danger";
     statusMsg.innerText = "Error al procesar expediente: " + err.message;
   }
-});
+}
 
 async function generarDocumentoWord(rutaPlantilla, datos) {
   const PizZipLib = window.PizZip || (typeof PizZip !== 'undefined' ? PizZip : null);
