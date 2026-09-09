@@ -289,7 +289,6 @@
 
     detallesEspecies[campoEspecieActual] = { que, donde };
 
-    // Actualiza el campo visible a POSITIVO con resalte
     const inputElem = document.getElementById(campoEspecieActual);
     inputElem.value = "POSITIVO";
     inputElem.style.background = "#fee2e2";
@@ -311,6 +310,7 @@
     cerrarModalYActualizarNarrativa();
   }
 
+  // CADA HALLAZGO APARECERÁ EN UNA LÍNEA INDEPENDIENTE CON UN GUION (-)
   function cerrarModalYActualizarNarrativa() {
     document.getElementById('modalEspecie').style.display = 'none';
 
@@ -319,7 +319,7 @@
     for (let key in detallesEspecies) {
       const item = detallesEspecies[key];
       if (item) {
-        listaHallazgos.push(`${item.que}, hallado en ${item.donde}`);
+        listaHallazgos.push(`- ${item.que}, hallado en ${item.donde}.`);
       }
     }
 
@@ -328,7 +328,7 @@
 
     if (listaHallazgos.length > 0) {
       contenedorPositivo.style.display = 'block';
-      narrarPositivo.value = "Se encontró " + listaHallazgos.join('; ') + ".";
+      narrarPositivo.value = listaHallazgos.join('\n');
     } else {
       contenedorPositivo.style.display = 'none';
       narrarPositivo.value = "NINGUNO";
