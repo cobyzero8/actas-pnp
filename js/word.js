@@ -14,23 +14,42 @@ const CATALOGO_ACTAS = [
 let delitoConfigurado = "";
 let idsActasConfiguradas = [];
 
-// FUNCIÓN PARA CONVERTIR FECHA ISO 'YYYY-MM-DD' AL FORMATO POLICIAL 'DDMMMAAAA' (Ej: 09SEP2026)
-function formatearFechaPolicial(fechaISO) {
-  if (!fechaISO) return "";
-  const partes = fechaISO.split('-');
-  if (partes.length !== 3) return fechaISO;
-
-  const anio = partes[0];
-  const mesIndex = parseInt(partes[1], 10) - 1;
-  const dia = partes[2].padStart(2, '0');
+// CONVERSOR UNIVERSAL A FORMATO POLICIAL (Ejemplo: 2026-09-09 -> 09SEP2026)
+function formatearFechaPolicial(fechaCadena) {
+  if (!fechaCadena) return "";
 
   const mesesPoliciales = [
     "ENE", "FEB", "MAR", "ABR", "MAY", "JUN",
     "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"
   ];
 
-  const mesTexto = mesesPoliciales[mesIndex] || "";
-  return `${dia}${mesTexto}${anio}`;
+  // Si viene en formato ISO (YYYY-MM-DD)
+  if (fechaCadena.includes('-')) {
+    const partes = fechaCadena.split('-');
+    if (partes.length === 3) {
+      const anio = partes[0];
+      const mesIndex = parseInt(partes[1], 10) - 1;
+      const dia = partes[2].padStart(2, '0');
+      if (mesesPoliciales[mesIndex]) {
+        return `${dia}${mesesPoliciales[mesIndex]}${anio}`;
+      }
+    }
+  }
+
+  // Si viene en formato con barras (DD/MM/YYYY)
+  if (fechaCadena.includes('/')) {
+    const partes = fechaCadena.split('/');
+    if (partes.length === 3) {
+      const dia = partes[0].padStart(2, '0');
+      const mesIndex = parseInt(partes[1], 10) - 1;
+      const anio = partes[2];
+      if (mesesPoliciales[mesIndex]) {
+        return `${dia}${mesesPoliciales[mesIndex]}${anio}`;
+      }
+    }
+  }
+
+  return fechaCadena;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -75,14 +94,17 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
   const colorInput = document.getElementById('color_vehiculo');
   const fechaRaw = document.getElementById('fecha').value;
 
+  // CONVERSIÓN A FORMATO POLICIAL
+  const fechaPolicial = formatearFechaPolicial(fechaRaw);
+
   const formData = {
     delito: delitoConfigurado,
     distrito: document.getElementById('distrito').value,
     provincia: document.getElementById('provincia').value,
     region: document.getElementById('region').value,
     
-    // FORMATO DE FECHA POLICIAL CONVERTIDO (Ej: 09SEP2026)
-    fecha: formatearFechaPolicial(fechaRaw),
+    // FORMATO POLICIAL CONVERTIDO
+    fecha: fechaPolicial,
     
     hora1: document.getElementById('hora1').value,
     hora2: document.getElementById('hora2').value,
@@ -157,7 +179,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
   }
 });
 
-// Función con detección robusta de PizZip y Docxtemplater + nullGetter
+// Función con detección de PizZip y nullGetter
 async function generarDocumentoWord(rutaPlantilla, datos) {
   const PizZipLib = window.PizZip || (typeof PizZip !== 'undefined' ? PizZip : null);
   const DocxLib = window.docxtemplater || (typeof docxtemplater !== 'undefined' ? docxtemplater : null);
