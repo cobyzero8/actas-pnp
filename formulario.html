@@ -6,9 +6,10 @@
   <title>Llenar Datos - PNP</title>
   <link rel="stylesheet" href="css/styles.css">
   
+  <!-- LIBRERÍAS CDN A PRUEBA DE FALLOS -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.4/pizzip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.11/docxtemplater.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docxtemplater@3.37.11/build/docxtemplater.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
@@ -21,7 +22,7 @@
       <button onclick="cerrarSesion()" class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size: 11px;">Salir</button>
     </div>
 
-    <!-- RESUMEN DE SELECCIÓN -->
+    <!-- RESUMEN DE SELECCIÓN DE MENU.HTML -->
     <div style="background: #003366; color: white; padding: 12px; border-radius: 6px; margin-bottom: 15px;">
       <div style="font-size: 11px; text-transform: uppercase; opacity: 0.8;">Presunto Delito Configurado:</div>
       <div id="resumenDelito" style="font-weight: bold; font-size: 13px; margin-top: 2px;">-</div>
@@ -118,8 +119,8 @@
           <input type="text" id="modelo_vehiculo" placeholder="Ej: Yaris">
         </div>
         <div class="full">
-          <label>Color</label>
-          <input type="text" id="color_vehiculo" placeholder="Ej: Negro">
+          <label>Color / Estado del Vehículo</label>
+          <input type="text" id="color_vehiculo" placeholder="Ej: Negro / Regular estado de conservación">
         </div>
       </div>
 
@@ -184,7 +185,7 @@
 <script src="js/auth.js"></script>
 <script src="js/word.js"></script>
 <script>
-  // LÓGICA DINÁMICA DE ESPECIES Y RESULTADO POSITIVO
+  // LÓGICA DINÁMICA DE ESPECIES
   document.addEventListener('DOMContentLoaded', () => {
     const especieFields = document.querySelectorAll('.especie-field');
     const contenedorPositivo = document.getElementById('contenedorPositivo');
@@ -203,7 +204,9 @@
 
       if (hallazgos.length > 0) {
         contenedorPositivo.style.display = 'block';
-        narrarPositivo.value = "Se encontró lo siguiente: " + hallazgos.join('; ') + ".";
+        if (narrarPositivo.value === 'NINGUNO' || narrarPositivo.value === '') {
+          narrarPositivo.value = "Se encontró lo siguiente: " + hallazgos.join('; ') + ".";
+        }
       } else {
         contenedorPositivo.style.display = 'none';
         narrarPositivo.value = "NINGUNO";
