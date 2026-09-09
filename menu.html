@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Menú de Intervenciones - PNP</title>
+  <title>Configurar Intervención - PNP</title>
   <link rel="stylesheet" href="css/styles.css">
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -12,50 +12,256 @@
 <div class="container">
   <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-      <h2 class="header-title" style="margin: 0;">SELECCIONE PROTOCOLO</h2>
-      <button onclick="cerrarSesion()" class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 12px;">Salir</button>
+      <h2 class="header-title" style="margin: 0; font-size: 18px;">CONFIGURAR INTERVENCIÓN</h2>
+      <button onclick="cerrarSesion()" class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size: 11px;">Salir</button>
     </div>
-    <p class="sub-title">Seleccione el delito o tipo de operativa a realizar:</p>
 
-    <div style="display: flex; flex-direction: column; gap: 12px;">
+    <!-- PASO 1: SELECCIONAR DELITO -->
+    <div style="margin-bottom: 20px;">
+      <label for="delito_input" style="color: var(--primary); font-size: 14px; font-weight: bold;">
+        1. Busque y seleccione el Presunto Delito:
+      </label>
+      <input list="delitos_lista" id="delito_input" placeholder="Escribe para buscar (Ej: Conducción, Lesiones, Robos...)" style="border: 2px solid var(--primary); font-weight: bold; width: 100%; padding: 10px; box-sizing: border-box; margin-top: 5px;">
       
-      <!-- Opción 1 -->
-      <button class="btn btn-primary" style="text-align: left; padding: 15px;" onclick="seleccionarProtocolo('ebriedad')">
-        🚗 <strong>1. Conducción en Estado de Ebriedad / Drogadicción</strong>
-        <div style="font-size: 12px; font-weight: normal; margin-top: 4px; opacity: 0.9;">
-          Incluye 8 actas: Reg. Personal, Lectura Derechos, Detención, Buen Trato, Sit. Vehicular, Intervención, RENIEC, Llaves.
-        </div>
-      </button>
+      <datalist id="delitos_lista">
+        <!-- DELITOS CONTRA LA VIDA, EL CUERPO Y LA SALUD -->
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - HOMICIDIO SIMPLE (ART. 106 CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - PARRICIDIO (ART. 107 CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - HOMICIDIO CALIFICADO / ASESINATO (ART. 108 CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - FEMINICIDIO (ART. 108-B CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - SICARIATO (ART. 108-C CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - CONSPIRACIÓN Y OFRECIMIENTO PARA EL SICARIATO (ART. 108-D CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - HOMICIDIO POR EMOCIÓN VIOLENTA (ART. 109 CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - INFANTICIDIO (ART. 110 CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - HOMICIDIO CULPOSO (ART. 111 CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - AUXILIO O INDUCCIÓN AL SUICIDIO (ART. 113 CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - AUTOABORTO (ART. 114 CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - ABORTO SIN CONSENTIMIENTO (ART. 115 CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - ABORTO AGRAVADO POR LA MUERTE DE LA GESTANTE (ART. 116 CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - ABORTO PRETERINTENCIONAL (ART. 118 CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - LESIONES GRAVES (ART. 121 CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - LESIONES GRAVES CONTRA MUJERES O INTEGRANTES DEL GRUPO FAMILIAR (ART. 121-B CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - LESIONES LEVES (ART. 122 CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - AGRESIONES CONTRA LAS MUJERES O INTEGRANTES DEL GRUPO FAMILIAR (ART. 122-B CP / LEY 30364)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - LESIONES CULPOSAS (ART. 124 CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - DAÑO A LA SALUD MENTAL (ART. 124-B CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - EXPOSICIÓN O ABANDONO A PELIGRO DE PERSONAS INCAPACES (ART. 125 CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - OMISIÓN DE SOCORRO Y EXPOSICIÓN A PELIGRO (ART. 126 CP)">
+        <option value="DELITO CONTRA LA VIDA, EL CUERPO Y LA SALUD - OMISIÓN DE AUXILIO A PERSONA EN PELIGRO O HERIDA (ART. 127 CP)">
 
-      <!-- Opción 2 -->
-      <button class="btn btn-primary" style="text-align: left; padding: 15px; background: #00509d;" onclick="seleccionarProtocolo('identidad')">
-        🪪 <strong>2. Control de Identidad Policial</strong>
-        <div style="font-size: 12px; font-weight: normal; margin-top: 4px; opacity: 0.9;">
-          Incluye 2 actas: Intervención Policial y Hoja E-SINPOL.
-        </div>
-      </button>
+        <!-- DELITOS CONTRA EL HONOR -->
+        <option value="DELITO CONTRA EL HONOR - INJURIA (ART. 130 CP)">
+        <option value="DELITO CONTRA EL HONOR - CALUMNIA (ART. 131 CP)">
+        <option value="DELITO CONTRA EL HONOR - DIFAMACIÓN (ART. 132 CP)">
 
-      <!-- Opción 3 -->
-      <button class="btn btn-primary" style="text-align: left; padding: 15px; background: #2b2d42;" onclick="seleccionarProtocolo('flagrancia')">
-        ⚖️ <strong>3. Delito Común / Flagrancia Delictiva</strong>
-        <div style="font-size: 12px; font-weight: normal; margin-top: 4px; opacity: 0.9;">
-          Incluye 6 actas: Reg. Personal, Incautación, Lectura Derechos, Detención, Buen Trato, Intervención.
-        </div>
-      </button>
+        <!-- DELITOS CONTRA LA FAMILIA -->
+        <option value="DELITO CONTRA LA FAMILIA - MATRIMONIO ILEGAL (ART. 139 CP)">
+        <option value="DELITO CONTRA LA FAMILIA - BIGAMIA (ART. 139 CP)">
+        <option value="DELITO CONTRA LA FAMILIA - ALTERACIÓN O SUPRESIÓN DEL ESTADO CIVIL (ART. 143 CP)">
+        <option value="DELITO CONTRA LA FAMILIA - OMISIÓN DE ASISTENCIA FAMILIAR (ART. 149 CP)">
+        <option value="DELITO CONTRA LA FAMILIA - ABANDONO DE GESTANTE EN SITUACIÓN DE CRÍTICA (ART. 150 CP)">
 
-      <!-- Opción 4 -->
-      <button class="btn btn-secondary" style="text-align: left; padding: 15px;" onclick="seleccionarProtocolo('individual')">
-        📄 <strong>4. Generar Solo Acta de Registro Personal (Directo)</strong>
-      </button>
+        <!-- DELITOS CONTRA LA LIBERTAD -->
+        <option value="DELITO CONTRA LA LIBERTAD - COACCIÓN (ART. 151 CP)">
+        <option value="DELITO CONTRA LA LIBERTAD - ACOSO (ART. 151-A CP)">
+        <option value="DELITO CONTRA LA LIBERTAD - ACOSO SEXUAL (ART. 176-B CP)">
+        <option value="DELITO CONTRA LA LIBERTAD - CHANTAJE SEXUAL (ART. 176-C CP)">
+        <option value="DELITO CONTRA LA LIBERTAD - SECUESTRO (ART. 152 CP)">
+        <option value="DELITO CONTRA LA LIBERTAD - TRATA DE PERSONAS (ART. 153 CP)">
+        <option value="DELITO CONTRA LA LIBERTAD - EXPLOTACIÓN SEXUAL (ART. 153-A CP)">
+        <option value="DELITO CONTRA LA LIBERTAD - TRABAJO FORZOSO (ART. 168-B CP)">
+        <option value="DELITO CONTRA LA LIBERTAD - VIOLACIÓN DE DOMICILIO (ART. 159 CP)">
+        <option value="DELITO CONTRA LA LIBERTAD - VIOLACIÓN DEL SECRETO DE LAS COMUNICACIONES (ART. 161 CP)">
+        <option value="DELITO CONTRA LA LIBERTAD - VIOLACIÓN DE LA INTIMIDAD / DIFUSIÓN DE IMÁGENES O AUDIOS SEXUALES (ART. 154-B CP)">
+        <option value="DELITO CONTRA LA LIBERTAD SEXUAL - VIOLACIÓN SEXUAL (ART. 170 CP)">
+        <option value="DELITO CONTRA LA LIBERTAD SEXUAL - VIOLACIÓN DE PERSONA EN INCAPACIDAD DE RESISTENCIA (ART. 172 CP)">
+        <option value="DELITO CONTRA LA LIBERTAD SEXUAL - VIOLACIÓN SEXUAL DE MENOR DE EDAD (ART. 173 CP)">
+        <option value="DELITO CONTRA LA LIBERTAD SEXUAL - VIOLACIÓN SEXUAL DE PERSONA EN ESTADO DE INCONSCIENCIA (ART. 174 CP)">
+        <option value="DELITO CONTRA LA LIBERTAD SEXUAL - TOCAMIENTOS, ACTOS DE CONNOTACIÓN SEXUAL O ACTOS LIBIDINOSOS EN AGRAVIO DE MENORES (ART. 176-A CP)">
+        <option value="DELITO CONTRA LA LIBERTAD SEXUAL - PROSENETISMO / FAVORECIMIENTO A LA PROSTITUCIÓN (ART. 179 CP)">
+        <option value="DELITO CONTRA LA LIBERTAD SEXUAL - RUFIANERÍA (ART. 181 CP)">
+        <option value="DELITO CONTRA LA LIBERTAD SEXUAL - PORNOGRAFÍA INFANTIL (ART. 183-A CP)">
 
+        <!-- DELITOS CONTRA EL PATRIMONIO -->
+        <option value="DELITO CONTRA EL PATRIMONIO - HURTO SIMPLE (ART. 185 CP)">
+        <option value="DELITO CONTRA EL PATRIMONIO - HURTO AGRAVADO (ART. 186 CP)">
+        <option value="DELITO CONTRA EL PATRIMONIO - HURTO DE USO (ART. 187 CP)">
+        <option value="DELITO CONTRA EL PATRIMONIO - ROBO SIMPLE (ART. 188 CP)">
+        <option value="DELITO CONTRA EL PATRIMONIO - ROBO AGRAVADO (ART. 189 CP)">
+        <option value="DELITO CONTRA EL PATRIMONIO - ABIGEATO (ART. 189-A CP)">
+        <option value="DELITO CONTRA EL PATRIMONIO - APROPIACIÓN ILÍCITA (ART. 190 CP)">
+        <option value="DELITO CONTRA EL PATRIMONIO - SUSTRACCIÓN DE BIEN PROPIO (ART. 191 CP)">
+        <option value="DELITO CONTRA EL PATRIMONIO - RECEPTACIÓN (ART. 194 CP)">
+        <option value="DELITO CONTRA EL PATRIMONIO - RECEPTACIÓN AGRAVADA (ART. 195 CP)">
+        <option value="DELITO CONTRA EL PATRIMONIO - ESTAFA (ART. 196 CP)">
+        <option value="DELITO CONTRA EL PATRIMONIO - ESTAFA AGRAVADA (ART. 196-A CP)">
+        <option value="DELITO CONTRA EL PATRIMONIO - DEFRAUDACIÓN (ART. 197 CP)">
+        <option value="DELITO CONTRA EL PATRIMONIO - FRAUDE EN LA ADMINISTRACIÓN DE PERSONAS JURÍDICAS (ART. 198 CP)">
+        <option value="DELITO CONTRA EL PATRIMONIO - EXTORSIÓN (ART. 200 CP)">
+        <option value="DELITO CONTRA EL PATRIMONIO - CHANTAJE (ART. 201 CP)">
+        <option value="DELITO CONTRA EL PATRIMONIO - USURPACIÓN (ART. 202 CP)">
+        <option value="DELITO CONTRA EL PATRIMONIO - DAÑOS (ART. 205 CP)">
+
+        <!-- DELITOS DE CONFIANZA Y ORDEN ECONÓMICO -->
+        <option value="DELITO CONTRA EL ORDEN ECONÓMICO - QUIEBRA FRAUDULENTA (ART. 209 CP)">
+        <option value="DELITO CONTRA EL ORDEN ECONÓMICO - ABUSO DEL PODER DE MERCADO (ART. 232 CP)">
+        <option value="DELITO CONTRA EL ORDEN ECONÓMICO - ESPECULACIÓN (ART. 234 CP)">
+        <option value="DELITO CONTRA EL ORDEN ECONÓMICO - ADULTERACIÓN (ART. 235 CP)">
+        <option value="DELITO CONTRA EL ORDEN FINANCIERO - CONCENTRACIÓN CREDITICIA (ART. 244 CP)">
+        <option value="DELITO CONTRA EL ORDEN FINANCIERO - INSTITUCIONES FINANCIERAS ILEGALES (ART. 246 CP)">
+
+        <!-- DELITOS CONTRA EL ORDEN MONETARIO Y FE PÚBLICA -->
+        <option value="DELITO CONTRA EL ORDEN MONETARIO - FABRICACIÓN Y CIRCULACIÓN DE MONEDA FALSA (ART. 252 CP)">
+        <option value="DELITO CONTRA EL ORDEN MONETARIO - ALTERACIÓN DE MONEDA (ART. 253 CP)">
+        <option value="DELITO CONTRA LA FE PÚBLICA - FALSIFICACIÓN DE DOCUMENTOS (ART. 427 CP)">
+        <option value="DELITO CONTRA LA FE PÚBLICA - FALSEDAD IDEOLÓGICA (ART. 428 CP)">
+        <option value="DELITO CONTRA LA FE PÚBLICA - FALSEDAD GENÉRICA (ART. 438 CP)">
+        <option value="DELITO CONTRA LA FE PÚBLICA - EXPEDICIÓN DE CERTIFICADO MÉDICO FALSO (ART. 431 CP)">
+
+        <!-- DELITOS CONTRA LA SEGURIDAD PÚBLICA -->
+        <option value="DELITO CONTRA LA SEGURIDAD PÚBLICA - PELIGRO COMÚN (ART. 273 CP)">
+        <option value="DELITO CONTRA LA SEGURIDAD PÚBLICA - CONDUCCIÓN EN ESTADO DE EBRIEDAD O DROGADICCIÓN (ART. 274 CP)">
+        <option value="DELITO CONTRA LA SEGURIDAD PÚBLICA - TENENCIA ILEGAL DE ARMAS Y MUNICIONES (ART. 279 CP)">
+        <option value="DELITO CONTRA LA SEGURIDAD PÚBLICA - FABRICACIÓN O TENENCIA DE MATERIAL EXPLOSIVO (ART. 279-A CP)">
+        <option value="DELITO CONTRA LA SEGURIDAD PÚBLICA - USO DE ARMAS EN ESTADO DE EBRIEDAD O DROGADICCIÓN (ART. 279-F CP)">
+        <option value="DELITO CONTRA LA SALUD PÚBLICA - TRÁFICO ILÍCITO DE DROGAS (ART. 296 CP)">
+        <option value="DELITO CONTRA LA SALUD PÚBLICA - FORMACIÓN DE ASOCIACIÓN PARA EL TRÁFICO ILÍCITO DE DROGAS (ART. 296-A CP)">
+        <option value="DELITO CONTRA LA SALUD PÚBLICA - COMERCIALIZACIÓN Y CULTIVO DE AMAPOLA Y MARIHUANA (ART. 296-A CP)">
+        <option value="DELITO CONTRA LA SALUD PÚBLICA - MICROCOMERCIALIZACIÓN O MICROPRODUCCIÓN DE DROGAS (ART. 298 CP)">
+        <option value="DELITO CONTRA LA SALUD PÚBLICA - CONTAMINACIÓN O ADULTERACIÓN DE ALIMENTOS O MEDICINAS (ART. 286 CP)">
+
+        <!-- DELITOS AMBIENTALES -->
+        <option value="DELITO AMBIENTAL - CONTAMINACIÓN DEL MEDIO AMBIENTE (ART. 304 CP)">
+        <option value="DELITO AMBIENTAL - INCUMPLIMIENTO DE NORMAS DE MANEJO DE RESIDUOS SÓLIDOS (ART. 306 CP)">
+        <option value="DELITO AMBIENTAL - MINERÍA ILEGAL (ART. 307-A CP)">
+        <option value="DELITO AMBIENTAL - TRÁFICO ILÍCITO DE ESPECIES DE FLORA Y FAUNA SILVESTRE (ART. 308 CP)">
+        <option value="DELITO AMBIENTAL - DEPREDACIÓN DE FLORA Y FAUNA SILVESTRE (ART. 308-C CP)">
+
+        <!-- DELITOS CONTRA LA TRANQUILIDAD PÚBLICA -->
+        <option value="DELITO CONTRA LA TRANQUILIDAD PÚBLICA - DISTURBIOS (ART. 315 CP)">
+        <option value="DELITO CONTRA LA TRANQUILIDAD PÚBLICA - APOLOGÍA DEL DELITO (ART. 316 CP)">
+        <option value="DELITO CONTRA LA TRANQUILIDAD PÚBLICA - ORGANIZACIÓN CRIMINAL (ART. 317 CP)">
+        <option value="DELITO CONTRA LA TRANQUILIDAD PÚBLICA - BANDA CRIMINAL (ART. 317-B CP)">
+        <option value="DELITO CONTRA LA TRANQUILIDAD PÚBLICA - MARCAJE O REGLAJE (ART. 317-A CP)">
+
+        <!-- DELITOS CONTRA LA ADMINISTRACIÓN PÚBLICA -->
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN PÚBLICA - USURPACIÓN DE FUNCIONES (ART. 361 CP)">
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN PÚBLICA - OSTENTACIÓN DE TÍTULOS O HONORES QUE NO CORRESPONDEN (ART. 362 CP)">
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN PÚBLICA - VIOLENCIA CONTRA LA AUTORIDAD PARA OBLIGARLA A UN ACTO (ART. 365 CP)">
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN PÚBLICA - RESISTENCIA O DESOBEDIENCIA A LA AUTORIDAD (ART. 368 CP)">
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN PÚBLICA - INGRESO INDEBIDO DE EQUIPOS O MATERIALES A CENTROS PENITENCIARIOS (ART. 368-A CP)">
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN PÚBLICA - PECULADO DOLOSO Y CULPOSO (ART. 387 CP)">
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN PÚBLICA - PECULADO DE USO (ART. 388 CP)">
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN PÚBLICA - MALVERSACIÓN DE FONDOS (ART. 389 CP)">
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN PÚBLICA - COHECHO PASIVO PROPIO (ART. 393 CP)">
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN PÚBLICA - COHECHO PASIVO IMPROPIO (ART. 394 CP)">
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN PÚBLICA - COHECHO ACTIVO GENÉRICO (ART. 397 CP)">
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN PÚBLICA - COHECHO ACTIVO TRANSNACIONAL (ART. 397-A CP)">
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN PÚBLICA - COHECHO ACTIVO ESPECÍFICO (ART. 398 CP)">
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN PÚBLICA - NEGOCIACIÓN INCOMPATIBLE O APROVECHAMIENTO INDEBIDO DE CARGO (ART. 399 CP)">
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN PÚBLICA - TRÁFICO DE INFLUENCIAS (ART. 400 CP)">
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN PÚBLICA - ENRIQUECIMIENTO ILÍCITO (ART. 401 CP)">
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN DE JUSTICIA - ENCUBRIMIENTO PERSONAL (ART. 404 CP)">
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN DE JUSTICIA - ENCUBRIMIENTO REAL (ART. 405 CP)">
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN DE JUSTICIA - FALSO TESTIMONIO O FALSA DECLARACIÓN EN PROCEDIMIENTO (ART. 409 CP)">
+        <option value="DELITO CONTRA LA ADMINISTRACIÓN DE JUSTICIA - PREVARICATO (ART. 418 CP)">
+
+        <!-- DELITOS CONTRA LA HUMANIDAD Y EL ESTADO -->
+        <option value="DELITO CONTRA LA HUMANIDAD - GENOCIDIO (ART. 319 CP)">
+        <option value="DELITO CONTRA LA HUMANIDAD - DESAPARICIÓN FORZADA (ART. 320 CP)">
+        <option value="DELITO CONTRA LA HUMANIDAD - TORTURA (ART. 321 CP)">
+        <option value="DELITO CONTRA EL ESTADO Y LA DEFENSA NACIONAL - REBELIÓN (ART. 346 CP)">
+        <option value="DELITO CONTRA EL ESTADO Y LA DEFENSA NACIONAL - SEDICIÓN (ART. 347 CP)">
+        <option value="DELITO CONTRA EL ESTADO Y LA DEFENSA NACIONAL - MOTÍN (ART. 348 CP)">
+
+        <!-- LEYES ESPECIALES / OTROS PROCEDIMIENTOS -->
+        <option value="DELITOS INFORMÁTICOS - ACCESO ILÍCITO (LEY 30096)">
+        <option value="DELITOS INFORMÁTICOS - FRAUDE INFORMÁTICO (LEY 30096)">
+        <option value="DELITOS INFORMÁTICOS - ATENTADO A LA INTEGRIDAD DE DATOS INFORMÁTICOS (LEY 30096)">
+        <option value="DELITOS TRIBUTARIOS - DEFRAUDACIÓN TRIBUTARIA (D. LEG. 813)">
+        <option value="DELITOS ADUANEROS - CONTRABANDO (LEY 28008)">
+        <option value="PROCEDIMIENTO POLICIAL - CONTROL DE IDENTIDAD POLICIAL / REQUISITORIA">
+      </datalist>
     </div>
+
+    <!-- PASO 2: CHECKLIST DE ACTAS A GENERAR -->
+    <div class="protocol-box" style="background: #eef4fc; border-left: 5px solid var(--primary); padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+      <label style="color: var(--primary); font-size: 14px; font-weight: bold; display: block; margin-bottom: 8px;">
+        2. Seleccione las Actas requeridas:
+      </label>
+
+      <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <button type="button" onclick="marcarTodas(true)" style="font-size: 11px; padding: 4px 8px; cursor: pointer;">☑️ Marcar Todas</button>
+        <button type="button" onclick="marcarTodas(false)" style="font-size: 11px; padding: 4px 8px; cursor: pointer;">◻️ Desmarcar Todas</button>
+      </div>
+
+      <div id="checklistContenedor" style="display: grid; grid-template-columns: 1fr; gap: 8px;"></div>
+    </div>
+
+    <!-- BOTÓN DE PASO FINAL -->
+    <button type="button" class="btn btn-primary" onclick="continuarAlFormulario()" style="padding: 15px; font-size: 16px;">
+      ➡️ Continuar a Llenar Datos
+    </button>
   </div>
 </div>
 
 <script src="js/auth.js"></script>
 <script>
-  function seleccionarProtocolo(tipo) {
-    localStorage.setItem('protocolo_seleccionado', tipo);
+  const CATALOGO_ACTAS = [
+    { id: "reg_personal", titulo: "01. Acta de Registro Personal", archivo: "plantilla/acta_registro_personal.docx" },
+    { id: "lectura_derechos", titulo: "02. Acta de Lectura de Derechos", archivo: "plantilla/acta_lectura_derechos.docx" },
+    { id: "detencion", titulo: "03. Acta de Detención Policial", archivo: "plantilla/acta_detencion.docx" },
+    { id: "buen_trato", titulo: "04. Constancia de Buen Trato", archivo: "plantilla/acta_buen_trato.docx" },
+    { id: "sit_vehicular", titulo: "05. Acta de Situación Vehicular", archivo: "plantilla/acta_situacion_vehicular.docx" },
+    { id: "reg_vehicular", titulo: "06. Acta de Registro Vehicular", archivo: "plantilla/acta_registro_vehicular.docx" },
+    { id: "intervencion", titulo: "07. Acta de Intervención Policial", archivo: "plantilla/acta_intervencion.docx" },
+    { id: "lacrado", titulo: "08. Acta de Lacrado / Cadena de Custodia", archivo: "plantilla/acta_lacrado.docx" },
+    { id: "comunicacion", titulo: "09. Acta de Comunicación Telefónica", archivo: "plantilla/acta_comunicacion.docx" }
+  ];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const contenedorUI = document.getElementById('checklistContenedor');
+    contenedorUI.innerHTML = "";
+
+    CATALOGO_ACTAS.forEach((acta, idx) => {
+      // Marcamos por defecto las primeras 4 actas para ahorrar tiempo
+      const preMarcada = idx < 4 ? 'checked' : '';
+      contenedorUI.innerHTML += `
+        <label style="display: flex; align-items: center; gap: 10px; font-weight: normal; cursor: pointer; background: #fff; padding: 8px 12px; border-radius: 5px; border: 1px solid #cbd5e1;">
+          <input type="checkbox" id="chk_${acta.id}" value="${acta.id}" ${preMarcada} style="width: 18px; height: 18px;">
+          <span style="font-size: 13px;">📄 <strong>${acta.titulo}</strong></span>
+        </label>
+      `;
+    });
+  });
+
+  function marcarTodas(estado) {
+    const checkboxes = document.querySelectorAll('#checklistContenedor input[type="checkbox"]');
+    checkboxes.forEach(chk => chk.checked = estado);
+  }
+
+  function continuarAlFormulario() {
+    const delitoSel = document.getElementById('delito_input').value.trim();
+    if (!delitoSel) {
+      alert("⚠️ Por favor escribe o selecciona el Presunto Delito antes de continuar.");
+      return;
+    }
+
+    const actasElegidas = [];
+    CATALOGO_ACTAS.forEach(acta => {
+      const chk = document.getElementById(`chk_${acta.id}`);
+      if (chk && chk.checked) actasElegidas.push(acta.id);
+    });
+
+    if (actasElegidas.length === 0) {
+      alert("⚠️ Debes seleccionar al menos una (01) acta para generar.");
+      return;
+    }
+
+    // Guardar selección en la memoria local para usarla en formulario.html
+    localStorage.setItem('pnp_delito_seleccionado', delitoSel);
+    localStorage.setItem('pnp_actas_seleccionadas', JSON.stringify(actasElegidas));
+
     window.location.href = 'formulario.html';
   }
 </script>
