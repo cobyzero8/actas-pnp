@@ -128,7 +128,6 @@
       <hr style="margin: 15px 0;">
 
       <!-- INTERVENIDO -->
-      <!-- INTERVENIDO -->
       <div class="grid">
         <div class="full">
           <label>Nombres y Apellidos del Intervenido</label>
@@ -236,6 +235,28 @@
 
       <hr style="margin: 15px 0;">
 
+      <!-- MOTIVO JUSTIFICATORIO DE SEGURIDAD -->
+      <div class="grid">
+        <div class="full">
+          <label style="color: var(--primary); font-weight: bold;">
+            🛡️ Motivo Justificatorio (Traslado a la Dependencia / Medidas de Seguridad):
+          </label>
+          <select id="motivo_justificatorio" style="width: 100%; padding: 10px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 5px; font-weight: 500;">
+            <option value="debido a la falta de garantías para la integridad física del intervenido y del personal policial, ante la posible aglomeración y actitud hostil de personas en el lugar de la intervención.">
+              1. Falta de garantías e integridad física / Aglomeración y actitud hostil
+            </option>
+            <option value="debido a la escasa iluminación en la zona, el alto flujo vehicular y la falta de visibilidad, factores que impedían realizar una diligencia minuciosa y segura.">
+              2. Escasa iluminación / Alto flujo vehicular / Falta de visibilidad
+            </option>
+            <option value="debido a las inclemencias del tiempo (lluvias) y a la falta de un espacio adecuado que garantice el respeto a la dignidad y privacidad del intervenido.">
+              3. Inclemencias del tiempo (lluvias) / Privacidad y dignidad
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <hr style="margin: 15px 0;">
+
       <!-- PERSONAL PNP -->
       <div class="grid">
         <div>
@@ -258,7 +279,7 @@
 </div>
 
 <script src="js/auth.js"></script>
-<script src="js/word.js?v=2"></script>
+<script src="js/word.js?v=3"></script>
   
 <script>
   // DICCIONARIO PARA GUARDAR DETALLES DE CADA ESPECIE
