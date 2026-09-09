@@ -1,1 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menú de Intervenciones - PNP</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
 
+<div class="container">
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+      <h2 class="header-title" style="margin: 0;">SELECCIONE PROTOCOLO</h2>
+      <button onclick="cerrarSesion()" class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 12px;">Salir</button>
+    </div>
+    <p class="sub-title">Seleccione el delito o tipo de operativa a realizar:</p>
+
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      
+      <!-- Opción 1 -->
+      <button class="btn btn-primary" style="text-align: left; padding: 15px;" onclick="seleccionarProtocolo('ebriedad')">
+        🚗 <strong>1. Conducción en Estado de Ebriedad / Drogadicción</strong>
+        <div style="font-size: 12px; font-weight: normal; margin-top: 4px; opacity: 0.9;">
+          Incluye 8 actas: Reg. Personal, Lectura Derechos, Detención, Buen Trato, Sit. Vehicular, Intervención, RENIEC, Llaves.
+        </div>
+      </button>
+
+      <!-- Opción 2 -->
+      <button class="btn btn-primary" style="text-align: left; padding: 15px; background: #00509d;" onclick="seleccionarProtocolo('identidad')">
+        🪪 <strong>2. Control de Identidad Policial</strong>
+        <div style="font-size: 12px; font-weight: normal; margin-top: 4px; opacity: 0.9;">
+          Incluye 2 actas: Intervención Policial y Hoja E-SINPOL.
+        </div>
+      </button>
+
+      <!-- Opción 3 -->
+      <button class="btn btn-primary" style="text-align: left; padding: 15px; background: #2b2d42;" onclick="seleccionarProtocolo('flagrancia')">
+        ⚖️ <strong>3. Delito Común / Flagrancia Delictiva</strong>
+        <div style="font-size: 12px; font-weight: normal; margin-top: 4px; opacity: 0.9;">
+          Incluye 6 actas: Reg. Personal, Incautación, Lectura Derechos, Detención, Buen Trato, Intervención.
+        </div>
+      </button>
+
+      <!-- Opción 4 -->
+      <button class="btn btn-secondary" style="text-align: left; padding: 15px;" onclick="seleccionarProtocolo('individual')">
+        📄 <strong>4. Generar Solo Acta de Registro Personal (Directo)</strong>
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+  function seleccionarProtocolo(tipo) {
+    localStorage.setItem('protocolo_seleccionado', tipo);
+    window.location.href = 'formulario.html';
+  }
+</script>
+</body>
+</html>
