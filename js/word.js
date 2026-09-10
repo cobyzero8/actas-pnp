@@ -1,5 +1,5 @@
 /**
- * CATALOGO MASTER DE ACTAS PNP (14 ACTAS OFICIALES + SOPORTE MANUAL Y MULTI-VEHÍCULO)
+ * CATALOGO MASTER DE ACTAS PNP (15 ACTAS OFICIALES + SOPORTE MANUAL Y MULTI-VEHÍCULO)
  * Sistema de Gestión e Individualización de Expedientes Policiales
  */
 
@@ -117,6 +117,14 @@ const CATALOGO_ACTAS = [
     archivo: "plantillas/acta_declaracion.docx", 
     llevaHora: true, 
     esIndividual: true 
+  },
+  { 
+    id: "hallazgo_recojo", 
+    aliases: ["hallazgo_recojo", "acta_hallazgo", "ACTA_DE_HALLAZGO_Y_RECOJO"], 
+    titulo: "15. Acta de Hallazgo y Recojo", 
+    archivo: "plantillas/acta_hallazgo_recojo.docx", 
+    llevaHora: true, 
+    esIndividual: false 
   }
 ];
 
@@ -433,6 +441,9 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     otros: document.getElementById('otros') ? document.getElementById('otros').value : "NEGATIVO",
     narrar_positivo: document.getElementById('narrar_positivo') ? document.getElementById('narrar_positivo').value : "NINGUNO",
     
+    detalle_hallazgo: (document.getElementById('detalle_hallazgo') && document.getElementById('detalle_hallazgo').value.trim() !== "") ? document.getElementById('detalle_hallazgo').value.trim() : "un (01) bien u objeto no especificado",
+    circunstancia_hallazgo: (document.getElementById('circunstancia_hallazgo') && document.getElementById('circunstancia_hallazgo').value.trim() !== "") ? document.getElementById('circunstancia_hallazgo').value.trim() : "se procedió a la verificación del lugar de los hechos",
+
     personal_interviniente: document.getElementById('personal_interviniente').value,
     grado: document.getElementById('grado').value,
     cip: document.getElementById('cip').value
@@ -660,11 +671,11 @@ async function ejecutarGeneracionFinalExpediente() {
     // GENERACIÓN DE DOCUMENTOS (COLECTIVOS vs INDIVIDUALES)
     for (let acta of actasAProcesarSecuencia) {
       const hor = horariosPorActa[acta.id] || { horaInicio: "", horaTermino: "" };
-      const esActaColectiva = (acta.esIndividual === false || acta.id === 'intervencion');
+      const esActaColectiva = (acta.esIndividual === false || acta.id === 'intervencion' || acta.id === 'hallazgo_recojo');
       const esActaVehicular = (acta.esVehicular === true || acta.id === 'sit_vehicular' || acta.id === 'reg_vehicular');
 
       if (esActaColectiva) {
-        // CASO A: ACTA ÚNICA Y COLECTIVA (ACTA DE INTERVENCIÓN)
+        // CASO A: ACTA ÚNICA Y COLECTIVA
         const datosDocIntervencion = {
           ...datosFinalesBase,
           intervenido_nombre: textoIntervenidosColectivo,
