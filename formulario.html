@@ -868,7 +868,7 @@
     document.getElementById('agregar_intervencion_5').value = `--- De los hechos se comunicó de manera inmediata al RMP Abog. ${fiscal}, trasladando los actuados a la Comisaría PNP por medidas de seguridad.`;
   }
 
-  // 06. MODELO CONDUCCIÓN EN ESTADO DE EBRIEDAD / DROGADICCIÓN (CON DESGLOSE RETRAN - OPCIÓN 1)
+  // 06. MODELO CONDUCCIÓN EN ESTADO DE EBRIEDAD / DROGADICCIÓN (TEXTOS COMPLETOS RETRAN)
   function cargarModeloEbriedadPruebas() {
     document.getElementById('cant_secciones').value = 5;
     construirSeccionesNarrativa();
@@ -886,6 +886,9 @@
     const pnp2 = getVal('placa_policial_2', 'unidad de apoyo');
     const fiscal = getVal('fiscal', 'el RMP');
 
+    // Usamos función local si no está cargado externamente en este bloque
+    const horaPrueba = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 25) : hora;
+
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y MANIOBRAS TEMERARIAS:";
     document.getElementById('agregar_intervencion_1').value = `--- El suscrito, en circunstancias que realizaba patrullaje motorizado a bordo de la UUMM de placa ${pnp1}, siendo las ${hora} hrs aprox., divisó al vehículo menor de placa de rodaje N° ${placa}, cuyo conductor realizaba maniobras temerarias por ${lugar}, por lo que se procedió a darle el alcance e intervención inmediata.`;
 
@@ -893,18 +896,25 @@
     document.getElementById('agregar_intervencion_2').value = `--- Intervenido el vehículo de placa N° ${placa} (Marca: ${marca}, Modelo: ${modelo}, Color: ${color}), se identificó al conductor como ${intervenido} (${edad}), DNI N° ${dni}, domiciliado en ${getVal('domicilio')}. Al solicitarle la documentación, se descubrió que presentaba signos evidentes de estar bajo la influencia de bebidas alcohólicas (halitosis alcohólica), motivo por el cual fue trasladado a las instalaciones de la UTSEVI PNP con apoyo de la UUMM ${pnp2}.`;
 
     document.getElementById('titulo_sec_3').value = "III. EJECUCIÓN DE PRUEBAS DE EQUILIBRIO Y COORDINACIÓN (RETRAN):";
-    document.getElementById('agregar_intervencion_3').value = `--- De conformidad al Art. 307.2 y Art. 307.4 del Reglamento Nacional de Tránsito (RETRAN), siendo las ${sumarMinutosAHora(hora, 25)} hrs, se le exigió al conductor ${intervenido} someterse a las pruebas de equilibrio y coordinación (Test de Hogan y Prueba de Romberg), obteniéndose el siguiente resultado:\n\n` +
-      `  1. Andar con los ojos vendados/cerrados sobre línea recta:     [ ] SI  [X] NO PASÓ\n` +
-      `  2. Juntar los dedos índices a la altura de la barbilla:         [ ] SI  [X] NO PASÓ\n` +
-      `  3. Juntar el dedo índice con la nariz (ojos cerrados):        [ ] SI  [X] NO PASÓ\n` +
-      `  4. Mantenerse de pie con pies juntos y ojos cerrados (ROMBERG): [ ] SI  [X] NO PASÓ\n\n` +
-      `--- RESULTADO: El intervenido NO PASÓ LAS PRUEBAS por presentar inestabilidad, falta de coordinación motora y signos evidentes de intoxicación por alcohol/sustancias.`;
+    document.getElementById('agregar_intervencion_3').value = 
+      `--- Al intervenido luego de hacerle de conocimiento el motivo de la intervención policial, de conformidad a las normativas vigentes y al Art. 307.2 del Reglamento Nacional de Tránsito, se procedió a la ejecución de pruebas de equilibrio y coordinación (Test de Hogan y Romberg), con el siguiente detalle:\n\n` +
+      `a) En este estado a horas ${horaPrueba} se le exhorta al conductor mencionado que descienda del volante del vehículo automotor de placa de rodaje ${placa}, marca ${marca}, modelo ${modelo}, color ${color}.\n\n` +
+      `b) Con relación al Acta de Intervención Policial, y en aplicación al Art. 307.4 del RETRAN, se procede a realizar las siguiente (s) prueba (s) de equilibrio y/o coordinación:\n\n` +
+      `1. Andar con los ojos vendados o cerrados y los brazos en alto, poniendo un pie justo delante de otro, sobre una línea recta.\n` +
+      `   PASÓ LA PRUEBA: [ ] SI   [X] NO\n\n` +
+      `2. Juntar los dedos índices de cada mano, a la altura de la barbilla, estando los ojos cerrados y partiendo de los brazos extendidos hacia abajo.\n` +
+      `   PASÓ LA PRUEBA: [ ] SI   [X] NO\n\n` +
+      `3. Juntar el dedo índice de una mano con la nariz, estando con los ojos cerrados y partiendo de los brazos extendidos hacia abajo.\n` +
+      `   PASÓ LA PRUEBA: [ ] SI   [X] NO\n\n` +
+      `4. Situar el individuo de pie con los pies juntos, las manos extendidas hacia adelante y con los ojos cerrados. La vacilación en las personas en estado normal es leve, aumentando con la presencia del alcohol (PRUEBA DE ROMBERG).\n` +
+      `   PASÓ LA PRUEBA: [ ] SI   [X] NO\n\n` +
+      `--- RESULTADO: El intervenido NO PASÓ LAS PRUEBAS por presentar inestabilidad, falta de coordinación motora y signos evidentes de intoxicación alcohólica.`;
 
     document.getElementById('titulo_sec_4').value = "IV. DERECHOS DEL IMPUTADO Y CONSULTA E-SINPOL:";
-    document.getElementById('agregar_intervencion_4').value = `--- Se le hicieron conocer sus derechos previstos en el Art. 71 del CPP, dejándose constancia de haber recibido buen trato físico y psicológico. La consulta en el sistema virtual E-SINPOL PNP dio como resultado NEGATIVO para requisitorias vigentes.`;
+    document.getElementById('agregar_intervencion_4').value = `--- Asimismo, le dio a conocer sus derechos previstos en el Artículo 71 del CPP, se procedió a su traslado a la oficina de la UTSEVI PNP Huanta para las diligencias correspondientes, dejando constancia que el intervenido ha recibido buen trato físico y psicológico, siendo tratado con dignidad y respeto; asimismo se precisa que las Actas (diligencias) que se adjunta a la presente se realizó en esta dependencia por medidas de seguridad del personal policial interviniente y del propio intervenido. La consulta en E-SINPOL PNP dio como resultado NEGATIVO para requisitorias.`;
 
     document.getElementById('titulo_sec_5').value = "V. DISPOSICIÓN Y COMUNICACIÓN AL RMP:";
-    document.getElementById('agregar_intervencion_5').value = `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}. El intervenido es puesto a disposición de la SIAT-COM PNP en calidad de DETENIDO con las actas instruidas correspondientes.`;
+    document.getElementById('agregar_intervencion_5').value = `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}. La persona intervenida es puesta a disposición de la SIAT-COM PNP HUANTA en calidad de DETENIDO, con las actas instruidas.`;
   }
 </script>
 </body>
