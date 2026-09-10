@@ -489,6 +489,40 @@
           </div>
         </div>
 
+        <!-- BLOQUE 7: DILIGENCIA DE HALLAZGO Y RECOJO -->
+        <div class="section-block block-especies" style="background-color: #f0f9ff; border-color: #bae6fd;">
+          <div class="section-title" style="color: #0369a1;">🔍 7. Datos Específicos para Acta de Hallazgo y Recojo</div>
+          <div class="grid">
+            <div class="full">
+              <label style="font-weight: bold; color: #0369a1;">📦 Descripción del Bien u Objeto Hallado ({detalle_hallazgo}):</label>
+              <textarea id="detalle_hallazgo" rows="2" placeholder="Ej: un (01) equipo telefónico marca Samsung Galaxy A12, color negro..." style="width: 100%; box-sizing: border-box; padding: 8px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 5px;"></textarea>
+            </div>
+
+            <div class="full">
+              <label style="font-weight: bold; color: #0369a1; display: block; margin-bottom: 5px;">
+                ⚙️ Circunstancia del Hallazgo ({circunstancia_hallazgo}):
+              </label>
+              
+              <div style="margin-bottom: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
+                <button type="button" class="btn" onclick="aplicarPresetHallazgo('A')" style="font-size: 11px; padding: 5px 9px; background: #0284c7; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                  🏃 Opción A: Fuga de Sospechosos
+                </button>
+                <button type="button" class="btn" onclick="aplicarPresetHallazgo('B')" style="font-size: 11px; padding: 5px 9px; background: #0284c7; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                  🗣️ Opción B: Aviso Ciudadano
+                </button>
+                <button type="button" class="btn" onclick="aplicarPresetHallazgo('C')" style="font-size: 11px; padding: 5px 9px; background: #0284c7; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                  🚔 Opción C: Patrullaje / Hallazgo Simple
+                </button>
+                <button type="button" class="btn" onclick="aplicarPresetHallazgo('D')" style="font-size: 11px; padding: 5px 9px; background: #64748b; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                  ✏️ Opción D: Personalizado
+                </button>
+              </div>
+
+              <textarea id="circunstancia_hallazgo" rows="3" placeholder="Selecciona una opción arriba o redacta la circunstancia aquí..." style="width: 100%; box-sizing: border-box; padding: 8px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 5px;"></textarea>
+            </div>
+          </div>
+        </div>
+
         <button type="button" class="btn btn-success" onclick="irAPaso2Redactor()" style="margin-top: 10px; font-size: 15px; padding: 12px;">
           ➡️ Continuar a Redacción de Ocurrencias (Paso 2)
         </button>
@@ -581,7 +615,7 @@
 </div>
 
 <script src="js/auth.js"></script>
-<script src="js/word.js?v=14"></script>
+<script src="js/word.js?v=15"></script>
   
 <script>
   const detallesEspecies = { drogas: null, moneda: null, joyas: null, municion: null, otros: null };
@@ -600,7 +634,8 @@
     "reg_vehicular": "acta de registro vehicular",
     "intervencion": "acta de intervención policial",
     "lacrado": "acta de lacrado / cadena de custodia",
-    "comunicacion": "acta de comunicación telefónica"
+    "comunicacion": "acta de comunicación telefónica",
+    "hallazgo_recojo": "acta de hallazgo y recojo"
   };
 
   const TITULOS_SECCIONES_PNP = [
@@ -636,6 +671,27 @@
     if (elDelito) elDelito.innerText = delitoSel;
     if (elCant) elCant.innerText = `${cantActas} acta(s) seleccionada(s) para este expediente.`;
   });
+
+  function aplicarPresetHallazgo(tipo) {
+    const txt = document.getElementById('circunstancia_hallazgo');
+    if (!txt) return;
+
+    switch(tipo) {
+      case 'A':
+        txt.value = "se visualizó a sujetos en actitud sospechosa quienes al notar la presencia policial se dieron a la fuga a la carrera, dejando abandonado en la vía pública";
+        break;
+      case 'B':
+        txt.value = "a solicitud e información de transeúntes del lugar, se acudió al punto exacto constatando la presencia en el suelo de";
+        break;
+      case 'C':
+        txt.value = "durante el registro y patrullaje a pie por la zona, se observó en un lugar deshabitado/vía pública un objeto sin presencia de poseedor o responsable";
+        break;
+      case 'D':
+        txt.value = "";
+        txt.focus();
+        break;
+    }
+  }
 
   function agregarIntervenidoCard(datos = null) {
     contadorIntervenidos++;
@@ -947,6 +1003,9 @@
     document.getElementById('fec_soat').value = hoy;
     document.getElementById('fec_itv').value = hoy;
 
+    document.getElementById('detalle_hallazgo').value = "un (01) equipo telefónico móvil marca Samsung Galaxy A12, color negro, pantalla trizada";
+    aplicarPresetHallazgo('A');
+
     alert("⚡ ¡Datos de prueba cargados exitosamente!");
   }
 
@@ -1167,6 +1226,16 @@
     const positivo = getVal('narrar_positivo');
     if (positivo && positivo !== 'NINGUNO') {
       categorias[5].items.push({ titulo: "Hallazgos Positivos Incautados", val: positivo });
+    }
+
+    const detHallaz = getVal('detalle_hallazgo');
+    if (detHallaz && detHallaz !== 'S/D') {
+      categorias[5].items.push({ titulo: "Bien / Objeto Hallado", val: detHallaz });
+    }
+
+    const circHallaz = getVal('circunstancia_hallazgo');
+    if (circHallaz && circHallaz !== 'S/D') {
+      categorias[5].items.push({ titulo: "Circunstancia del Hallazgo", val: circHallaz });
     }
 
     categorias.forEach(cat => {
