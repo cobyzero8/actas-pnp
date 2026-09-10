@@ -403,31 +403,25 @@
         </div>
 
         <!-- BLOQUE 4: PERSONAL PNP Y UNIDADES -->
-        <div class="section-block block-pnp">
-          <div class="section-title">👮‍♂️ 4. Personal e Unidades Policiales Intervinientes</div>
-          <div class="grid">
-            <div>
-              <label>Efectivo Interviniente</label>
-              <input type="text" id="personal_interviniente" placeholder="Nombres y Apellidos" required style="font-weight: bold;">
-            </div>
-            <div>
-              <label>Grado / CIP</label>
-              <div style="display:flex; gap:5px;">
-                <input type="text" id="grado" placeholder="Ej: S2" required style="font-weight: bold;">
-                <input type="text" id="cip" placeholder="SA-32112217" required style="font-weight: bold;">
-              </div>
-            </div>
+<div class="section-block block-pnp">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+    <div class="section-title" style="margin: 0;">👮‍♂️ 4. Personal e Unidades Policiales Intervinientes</div>
+    <button type="button" class="btn btn-primary" onclick="agregarEfectivoPNPCard()" style="width: auto; padding: 4px 12px; font-size: 12px; background: #166534; border-color: #166534;">
+      ➕ Agregar Otro Efectivo PNP
+    </button>
+  </div>
 
-            <div class="full" style="background: #ffffff; padding: 10px; border-radius: 6px; border: 1px solid #bbf7d0;">
-              <label style="font-weight: bold; display: block; margin-bottom: 5px; color: #166534;">Unidades/Vehículos Policiales Participantes:</label>
-              <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 12px;">¿Cuántos vehículos PNP participaron?</span>
-                <input type="number" id="cant_vehiculos_pnp" value="1" min="1" max="5" onchange="generarCamposVehiculosPNP()" style="width: 60px; text-align: center; font-weight: bold;">
-              </div>
-              <div id="contenedor_vehiculos_pnp" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;"></div>
-            </div>
-          </div>
-        </div>
+  <div id="contenedor_efectivos_pnp"></div>
+
+  <div style="background: #ffffff; padding: 10px; border-radius: 6px; border: 1px solid #bbf7d0; margin-top: 10px;">
+    <label style="font-weight: bold; display: block; margin-bottom: 5px; color: #166534;">Unidades/Vehículos Policiales Participantes:</label>
+    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
+      <span style="font-size: 12px;">¿Cuántos vehículos PNP participaron?</span>
+      <input type="number" id="cant_vehiculos_pnp" value="1" min="1" max="5" onchange="generarCamposVehiculosPNP()" style="width: 60px; text-align: center; font-weight: bold;">
+    </div>
+    <div id="contenedor_vehiculos_pnp" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;"></div>
+  </div>
+</div>
 
         <!-- BLOQUE 5: VEHÍCULOS INVOLUCRADOS Y RETRAN -->
         <div class="section-block block-vehiculo">
