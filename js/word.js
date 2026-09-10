@@ -229,6 +229,19 @@ function obtenerTipoEmbalajeFinal() {
   return sel || 'una bolsa plástica transparente de seguridad';
 }
 
+function obtenerConstanciaTestigoFinal() {
+  const opcElem = document.getElementById('opcion_constancia_testigo');
+  const opc = opcElem ? opcElem.value : 'OFICINA';
+  const motivo = document.getElementById('motivo_justificatorio') ? document.getElementById('motivo_justificatorio').value : '';
+
+  if (opc === 'OFICINA') {
+    return `Cabe señalar que la presente diligencia se realizó en las instalaciones de la dependencia policial, ${motivo}`;
+  } else if (opc === 'LUGAR_SIN_TESTIGO') {
+    return `Cabe señalar que la presente diligencia se realizó en el lugar de la intervención; precisando que los transeúntes y personas presentes en las inmediaciones se negaron a participar o firmar en calidad de testigos por temor a represalias o comprometerse, dejándose constancia fehaciente de dicha circunstancia conforme a ley.`;
+  }
+  return `Se deja constancia de que la presente diligencia se desarrolló conforme a los procedimientos y disposiciones legales vigentes.`;
+}
+
 function procesarDocumentosRNT() {
   let hallazgos = [];
 
@@ -454,6 +467,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     
     tipo_embalaje: obtenerTipoEmbalajeFinal(),
     forma_lacrado: (document.getElementById('forma_lacrado') && document.getElementById('forma_lacrado').value.trim() !== "") ? document.getElementById('forma_lacrado').value.trim() : "cinta adhesiva de seguridad y sellado térmico",
+    constancia_testigo: obtenerConstanciaTestigoFinal(),
 
     detalle_hallazgo: (document.getElementById('detalle_hallazgo') && document.getElementById('detalle_hallazgo').value.trim() !== "") ? document.getElementById('detalle_hallazgo').value.trim() : "un (01) bien u objeto no especificado",
     circunstancia_hallazgo: (document.getElementById('circunstancia_hallazgo') && document.getElementById('circunstancia_hallazgo').value.trim() !== "") ? document.getElementById('circunstancia_hallazgo').value.trim() : "se procedió a la verificación del lugar de los hechos",
