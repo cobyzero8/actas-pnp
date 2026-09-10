@@ -368,24 +368,48 @@
     "CONTROL DE IDENTIDAD POLICIAL / REQUISITORIA": "PROCEDIMIENTO POLICIAL - CONTROL DE IDENTIDAD POLICIAL / REQUISITORIA"
   };
 
+  // CATÁLOGO COMPLETO DE 14 ACTAS OFICIALES PNP
   const CATALOGO_ACTAS = [
-    { id: "reg_personal", titulo: "01. Acta de Registro Personal", archivo: "plantilla/acta_registro_personal.docx" },
-    { id: "lectura_derechos", titulo: "02. Acta de Lectura de Derechos", archivo: "plantilla/acta_lectura_derechos.docx" },
-    { id: "detencion", titulo: "03. Acta de Detención Policial", archivo: "plantilla/acta_detencion.docx" },
-    { id: "buen_trato", titulo: "04. Constancia de Buen Trato", archivo: "plantilla/acta_buen_trato.docx" },
-    { id: "sit_vehicular", titulo: "05. Acta de Situación Vehicular", archivo: "plantilla/acta_situacion_vehicular.docx" },
-    { id: "reg_vehicular", titulo: "06. Acta de Registro Vehicular", archivo: "plantilla/acta_registro_vehicular.docx" },
-    { id: "intervencion", titulo: "07. Acta de Intervención Policial", archivo: "plantilla/acta_intervencion.docx" },
+    { id: "intervencion", titulo: "01. Acta de Intervención Policial", archivo: "plantilla/acta_intervencion.docx" },
+    { id: "reg_personal", titulo: "02. Acta de Registro Personal e Incautación", archivo: "plantilla/acta_registro_personal.docx" },
+    { id: "lectura_derechos", titulo: "03. Acta de Lectura de Derechos", archivo: "plantilla/acta_lectura_derechos.docx" },
+    { id: "detencion", titulo: "04. Acta de Detención Policial", archivo: "plantilla/acta_detencion.docx" },
+    { id: "buen_trato", titulo: "05. Constancia de Buen Trato e Integridad Física", archivo: "plantilla/acta_buen_trato.docx" },
+    { id: "sit_vehicular", titulo: "06. Acta de Situación Vehicular", archivo: "plantilla/acta_situacion_vehicular.docx" },
+    { id: "reg_vehicular", titulo: "07. Acta de Registro Vehicular", archivo: "plantilla/acta_registro_vehicular.docx" },
     { id: "lacrado", titulo: "08. Acta de Lacrado / Cadena de Custodia", archivo: "plantilla/acta_lacrado.docx" },
-    { id: "comunicacion", titulo: "09. Acta de Comunicación Telefónica", archivo: "plantilla/acta_comunicacion.docx" }
+    { id: "comunicacion", titulo: "09. Acta de Comunicación Telefónica al RMP", archivo: "plantilla/acta_comunicacion.docx" },
+    { id: "notif_detencion", titulo: "10. Acta de Notificación de Detención a Familiar", archivo: "plantilla/acta_notificacion_familiar.docx" },
+    { id: "dosaje_etilico", titulo: "11. Notificación para Dosaje Etílico", archivo: "plantilla/acta_dosaje_etilico.docx" },
+    { id: "control_identidad", titulo: "12. Acta de Control de Identidad Policial", archivo: "plantilla/acta_control_identidad.docx" },
+    { id: "entrega_especies", titulo: "13. Acta de Entrega y Devolución de Especies", archivo: "plantilla/acta_entrega_especies.docx" },
+    { id: "declaracion_intervenido", titulo: "14. Acta de Entrevista / Declaración del Intervenido", archivo: "plantilla/acta_declaracion.docx" }
   ];
 
   document.addEventListener('DOMContentLoaded', () => {
+    // Cargar actas manuales personalizadas si existen en localStorage
+    const actasManualesGuardadas = localStorage.getItem('pnp_actas_manuales_custom');
+    if (actasManualesGuardadas) {
+      try {
+        const listaCustom = JSON.parse(actasManualesGuardadas);
+        listaCustom.forEach(a => {
+          if (!CATALOGO_ACTAS.some(c => c.id === a.id)) {
+            CATALOGO_ACTAS.push({
+              id: a.id,
+              titulo: a.titulo,
+              archivo: a.archivo || `plantilla/${a.id}.docx`
+            });
+          }
+        });
+      } catch(e) {}
+    }
+
     const contenedorUI = document.getElementById('checklistContenedor');
     contenedorUI.innerHTML = "";
 
     CATALOGO_ACTAS.forEach((acta, idx) => {
-      const preMarcada = idx < 4 ? 'checked' : '';
+      // Por defecto premarcamos las primeras 5 actas básicas
+      const preMarcada = idx < 5 ? 'checked' : '';
       contenedorUI.innerHTML += `
         <label style="display: flex; align-items: center; gap: 10px; font-weight: normal; cursor: pointer; background: #fff; padding: 8px 12px; border-radius: 5px; border: 1px solid #cbd5e1;">
           <input type="checkbox" id="chk_${acta.id}" value="${acta.id}" ${preMarcada} style="width: 18px; height: 18px;">
@@ -418,7 +442,6 @@
       return;
     }
 
-    // Convierte el nombre corto del buscador a su título penal formal completo
     const delitoTextoCompleto = MAPA_DELITOS_COMPLETOS[delitoTexto] || delitoTexto;
 
     localStorage.setItem('pnp_delito_seleccionado', delitoTextoCompleto);
