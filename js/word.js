@@ -603,7 +603,7 @@ async function ejecutarGeneracionFinalExpediente() {
     const horaPruebaG = sumarMinutosAHora(horaIntVal, 15);
     const bloqueFirmasG = generarBloqueCierreYFirmas(horaTerminoTotal, listaIntervenidos);
 
-    // OBJETO DE DATOS BASE COMPLETO CON SOPORTE PARA TODAS LAS PLANTILLAS
+    // OBJETO DE DATOS BASE COMPLETO
     const datosFinalesBase = {
       ...datosFormularioBase,
       ...vehiculosPNPObj,
@@ -690,7 +690,7 @@ async function ejecutarGeneracionFinalExpediente() {
         }
 
       } else if (esActaVehicular) {
-        // CASO B: ACTAS VEHICULARES INDIVIDUALES (REPLICADAS POR CADA VEHÍCULO / PLACA)
+        // CASO B: ACTAS VEHICULARES INDIVIDUALES
         for (let idxV = 0; idxV < listaVehiculos.length; idxV++) {
           const veh = listaVehiculos[idxV];
 
