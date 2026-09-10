@@ -1,4 +1,3 @@
-// CATÁLOGO COMPLETO DE ACTAS CON ALIAS FLEXIBLES
 const CATALOGO_ACTAS = [
   { id: "reg_personal", aliases: ["reg_personal", "acta_registro_personal", "registro_personal"], titulo: "01. Acta de Registro Personal", archivo: "plantilla/acta_registro_personal.docx", llevaHora: true },
   { id: "lectura_derechos", aliases: ["lectura_derechos", "acta_lectura_derechos"], titulo: "02. Acta de Lectura de Derechos", archivo: "plantilla/acta_lectura_derechos.docx", llevaHora: true },
@@ -268,7 +267,6 @@ async function ejecutarGeneracionFinalExpediente() {
     const hora6Val = detencionHorario.horaTermino || sumarMinutosAHora(hora5Val, 5);
     const horaDetencionVal = sumarMinutosAHora(hora6Val, 2);
 
-    // DATO DE ESTADO CIVIL, FISCAL Y HORA DE INTERVENCIÓN
     const estadoCivilElem = document.getElementById('estado_civil');
     const estadoCivilVal = estadoCivilElem ? estadoCivilElem.value : "soltero";
 
@@ -278,14 +276,12 @@ async function ejecutarGeneracionFinalExpediente() {
     const fiscalElem = document.getElementById('fiscal');
     const fiscalVal = fiscalElem ? (fiscalElem.value.trim() || "RMP NO ESPECIFICADO") : "RMP NO ESPECIFICADO";
 
-    // ACTIVIDAD REALIZADA
     const tipoActElem = document.getElementById('tipo_actividad');
     const tipoActVal = tipoActElem ? tipoActElem.value : 'PATRULLAJE DE RUTINA';
     const nomOpElem = document.getElementById('nombre_operativo');
     const nomOpVal = nomOpElem ? nomOpElem.value.trim() : '';
     const actividadTexto = tipoActVal === 'OPERATIVO POLICIAL' ? `el O/P ${nomOpVal}` : `Patrullaje de Rutina`;
 
-    // VEHÍCULOS PNP
     const cantVehElem = document.getElementById('cant_vehiculos_pnp');
     const cantVeh = cantVehElem ? (parseInt(cantVehElem.value, 10) || 1) : 1;
     const vehiculosPNPObj = {};
@@ -294,7 +290,6 @@ async function ejecutarGeneracionFinalExpediente() {
       vehiculosPNPObj[`placa_policial${i}`] = inputElem ? (inputElem.value.trim() || "S/P") : "S/P";
     }
 
-    // SECCIONES DE NARRATIVA DE INTERVENCIÓN
     const cantSecElem = document.getElementById('cant_secciones');
     const cantSec = cantSecElem ? (parseInt(cantSecElem.value, 10) || 1) : 1;
     const seccionesObj = {};
