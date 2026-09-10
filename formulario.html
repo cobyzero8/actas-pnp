@@ -270,7 +270,7 @@
 
         <hr style="margin: 15px 0;">
 
-        <!-- DATOS ESPECÍFICOS DE INTERVENCIÓN -->
+        <!-- DATOS ESPECÍFICOS DE INTERVENCIÓN Y UNIDAD DE DISPOSICIÓN -->
         <div class="grid">
           <div>
             <label>Hora Real Intervención ({hora_intervencion})</label>
@@ -280,6 +280,12 @@
           <div class="full">
             <label>Fiscal de Turno / RMP ({fiscal})</label>
             <input type="text" id="fiscal" placeholder="Ej: Abog. Juan Pérez, Fiscal Adjunto de la FPPC Huanta">
+          </div>
+
+          <!-- NUEVO CAMPO: UNIDAD PUESTA A DISPOSICIÓN -->
+          <div class="full">
+            <label style="color: var(--primary); font-weight: bold;">🏢 Unidad PNP Puesta a Disposición ({unidad_disposicion}):</label>
+            <input type="text" id="unidad_disposicion" value="SIAT-COM PNP HUANTA" placeholder="Ej: SIAT-COM PNP HUANTA, DEPINCRI HUANTA, etc." required style="border: 2px solid var(--primary); font-weight: bold;">
           </div>
 
           <div class="full">
@@ -557,7 +563,6 @@
       horaIntInput.value = new Date().toTimeString().slice(0, 5);
     }
 
-    // CARGAR RESUMEN DEL DELITO Y CANTIDAD DE ACTAS
     const delitoSel = localStorage.getItem('pnp_delito_seleccionado') || 'NO ESPECIFICADO';
     const actasRaw = localStorage.getItem('pnp_actas_seleccionadas') || '[]';
     let cantActas = 0;
@@ -574,7 +579,6 @@
     return el && el.value.trim() !== "" ? el.value.trim() : fallback;
   }
 
-  // OBTIENE LAS ACTAS SELECCIONADAS USANDO LA CLAVE EXACTA DE MENU.HTML ('pnp_actas_seleccionadas')
   function obtenerListaAdjuntosFormateada() {
     const rawData = localStorage.getItem('pnp_actas_seleccionadas') || 
                     localStorage.getItem('actas_seleccionadas') || '[]';
@@ -594,7 +598,6 @@
       .map(item => {
         let texto = (typeof item === 'object' && item !== null) ? (item.titulo || item.nombre || item.id || '') : String(item);
         
-        // Traduce el ID técnico si corresponde
         if (MAPA_TITULOS_ACTAS[texto]) {
           texto = MAPA_TITULOS_ACTAS[texto];
         }
@@ -743,6 +746,7 @@
       { titulo: "Lugar Intervención", val: getVal('lugar') },
       { titulo: "Hora Intervención", val: getVal('hora_intervencion') + " hrs" },
       { titulo: "Fiscal RMP", val: getVal('fiscal', "RMP NO ESPECIFICADO") },
+      { titulo: "Unidad Disposición", val: getVal('unidad_disposicion') },
       { titulo: "Actividad Realizada", val: getVal('tipo_actividad') === 'OPERATIVO POLICIAL' ? `el O/P ${getVal('nombre_operativo')}` : 'Patrullaje de Rutina' },
       { titulo: "Placa Vehículo", val: getVal('placa_vehiculo', "NO REGISTRA") },
       { titulo: "Marca Vehículo", val: getVal('marca_vehiculo', "NO REGISTRA") },
@@ -805,6 +809,7 @@
     txt.focus();
   }
 
+  // 01. MODELO EXTORSIÓN
   function cargarModeloExtorsion() {
     document.getElementById('cant_secciones').value = 6;
     construirSeccionesNarrativa();
@@ -816,6 +821,7 @@
     const lugar = getVal('lugar');
     const hora = getVal('hora_intervencion', '14:30');
     const fiscal = getVal('fiscal', 'el RMP');
+    const unidadDisp = getVal('unidad_disposicion', 'SIAT-COM PNP HUANTA');
     const hallazgos = getVal('narrar_positivo', 'especies variadas descritas en la diligencia');
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 70) : getVal('hora2', '15:40');
 
@@ -836,10 +842,11 @@
 
     document.getElementById('titulo_sec_6').value = "VI. COMUNICACIÓN AL RMP Y ADJUNTOS:";
     document.getElementById('agregar_intervencion_6').value = 
-      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, Fiscal Adjunto de la Fiscalía Provincial Penal Corporativa de Huanta.` +
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, la persona intervenida es puesta a disposición de la ${unidadDisp} en calidad de DETENIDO, con las actas instruidas.` +
       generarBloqueCierreYFirmas(horaFin);
   }
 
+  // 02. MODELO ACCIDENTE DE TRÁNSITO
   function cargarModeloAccidenteTransito() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
@@ -852,6 +859,7 @@
     const hora = getVal('hora_intervencion', '00:00');
     const pnp1 = getVal('placa_policial_1', 'unidad policial');
     const fiscal = getVal('fiscal', 'el RMP');
+    const unidadDisp = getVal('unidad_disposicion', 'SIAT-COM PNP HUANTA');
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 40) : getVal('hora2', '00:40');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
@@ -862,10 +870,11 @@
 
     document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y MEDIDAS DE SEGURIDAD:";
     document.getElementById('agregar_intervencion_3').value = 
-      `--- Se comunicó de la diligencia al RMP Abog. ${fiscal}. Asimismo, se precisa que las actas se redactan en la dependencia policial por medidas de seguridad del personal interviniente y participantes (Art. 240 del CPP).` +
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, la persona intervenida es puesta a disposición de la ${unidadDisp} en calidad de DETENIDO, con las actas instruidas.` +
       generarBloqueCierreYFirmas(horaFin);
   }
 
+  // 03. MODELO CONTROL DE IDENTIDAD
   function cargarModeloControlIdentidad() {
     document.getElementById('cant_secciones').value = 2;
     construirSeccionesNarrativa();
@@ -874,6 +883,8 @@
     const edad = getVal('edad');
     const lugar = getVal('lugar');
     const hora = getVal('hora_intervencion', '10:00');
+    const fiscal = getVal('fiscal', 'el RMP');
+    const unidadDisp = getVal('unidad_disposicion', 'SIAT-COM PNP HUANTA');
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 30) : getVal('hora2', '10:30');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
@@ -881,10 +892,11 @@
 
     document.getElementById('titulo_sec_2').value = "II. RETENCIÓN Y VERIFICACIÓN E-SINPOL:";
     document.getElementById('agregar_intervencion_2').value = 
-      `--- Al no contar con documento que acredite su identidad, fue conducido a la Comisaría de la jurisdicción para su plena identificación (otorgándole las facilidades para comunicarse con sus familiares), consultándose sus datos en el sistema virtual policial E-SINPOL PNP, dando como resultado NEGATIVO para requisitorias vigentes.` +
+      `--- Al no contar con documento que acredite su identidad, fue conducido a la ${unidadDisp} para su plena identificación (otorgándole las facilidades para comunicarse con sus familiares), consultándose sus datos en el sistema virtual policial E-SINPOL PNP, dando como resultado NEGATIVO para requisitorias vigentes. De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, la persona intervenida es puesta a disposición de la ${unidadDisp} en calidad de RETENIDO, con las actas instruidas.` +
       generarBloqueCierreYFirmas(horaFin);
   }
 
+  // 04. MODELO HURTO EN FLAGRANCIA
   function cargarModeloHurtoFlagrancia() {
     document.getElementById('cant_secciones').value = 4;
     construirSeccionesNarrativa();
@@ -895,6 +907,7 @@
     const lugar = getVal('lugar');
     const hora = getVal('hora_intervencion', '11:00');
     const fiscal = getVal('fiscal', 'el RMP');
+    const unidadDisp = getVal('unidad_disposicion', 'SIAT-COM PNP HUANTA');
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 45) : getVal('hora2', '11:45');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y FLAGRANCIA:";
@@ -906,12 +919,13 @@
     document.getElementById('titulo_sec_3').value = "III. DETENCION Y LECTURA DE DERECHOS:";
     document.getElementById('agregar_intervencion_3').value = `--- Se procedió a la DETENCIÓN de ${intervenido}, notificándole sus derechos previstos en el Art. 71 del CPP, trasladándolo a la dependencia policial. La consulta en E-SINPOL PNP dio resultado NEGATIVO para requisitorias.`;
 
-    document.getElementById('titulo_sec_4').value = "IV. COMUNICACIÓN AL RMP:";
+    document.getElementById('titulo_sec_4').value = "IV. COMUNICACIÓN AL RMP Y DISPOSICIÓN:";
     document.getElementById('agregar_intervencion_4').value = 
-      `--- Se comunicó del hecho en forma inmediata al RMP Abog. ${fiscal}, poniendo al detenido a disposición de la Comisaría PNP.` +
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, la persona intervenida es puesta a disposición de la ${unidadDisp} en calidad de DETENIDO, con las actas instruidas.` +
       generarBloqueCierreYFirmas(horaFin);
   }
 
+  // 05. MODELO VIOLENCIA / RESISTENCIA A LA AUTORIDAD
   function cargarModeloResistenciaAutoridad() {
     document.getElementById('cant_secciones').value = 5;
     construirSeccionesNarrativa();
@@ -924,6 +938,7 @@
     const hora = getVal('hora_intervencion', '19:00');
     const pnp1 = getVal('placa_policial_1', 'EP-1420');
     const fiscal = getVal('fiscal', 'el RMP');
+    const unidadDisp = getVal('unidad_disposicion', 'SIAT-COM PNP HUANTA');
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 50) : getVal('hora2', '19:50');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y PERSECUCIÓN:";
@@ -938,12 +953,13 @@
     document.getElementById('titulo_sec_4').value = "IV. INCAUTACIÓN DE VEHÍCULO Y DETENCIÓN:";
     document.getElementById('agregar_intervencion_4').value = `--- Se realizó la INCAUTACIÓN del vehículo de placa N° ${placa} y la DETENCIÓN de ${intervenido} (${edad}) por la presunta comisión del delito contra la Administración Pública - Resistencia o Desobediencia a la Autoridad.`;
 
-    document.getElementById('titulo_sec_5').value = "V. COMUNICACIÓN AL RMP:";
+    document.getElementById('titulo_sec_5').value = "V. COMUNICACIÓN AL RMP Y DISPOSICIÓN:";
     document.getElementById('agregar_intervencion_5').value = 
-      `--- De los hechos se comunicó de manera inmediata al RMP Abog. ${fiscal}, trasladando los actuados a la Comisaría PNP por medidas de seguridad.` +
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, la persona intervenida es puesta a disposición de la ${unidadDisp} en calidad de DETENIDO, con las actas instruidas.` +
       generarBloqueCierreYFirmas(horaFin);
   }
 
+  // 06. MODELO CONDUCCIÓN EN ESTADO DE EBRIEDAD / DROGADICCIÓN
   function cargarModeloEbriedadPruebas() {
     document.getElementById('cant_secciones').value = 5;
     construirSeccionesNarrativa();
@@ -960,6 +976,7 @@
     const pnp1 = getVal('placa_policial_1', 'unidad policial');
     const pnp2 = getVal('placa_policial_2', 'unidad de apoyo');
     const fiscal = getVal('fiscal', 'el RMP');
+    const unidadDisp = getVal('unidad_disposicion', 'SIAT-COM PNP HUANTA');
 
     const horaPrueba = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 20) : hora;
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 45) : getVal('hora2', '08:01');
@@ -990,7 +1007,7 @@
 
     document.getElementById('titulo_sec_5').value = "V. DISPOSICIÓN Y COMUNICACIÓN AL RMP:";
     document.getElementById('agregar_intervencion_5').value = 
-      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}. La persona intervenida es puesta a disposición de la SIAT-COM PNP HUANTA en calidad de DETENIDO, con las actas instruidas.` +
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, la persona intervenida es puesta a disposición de la ${unidadDisp} en calidad de DETENIDO, con las actas instruidas.` +
       generarBloqueCierreYFirmas(horaFin);
   }
 </script>
