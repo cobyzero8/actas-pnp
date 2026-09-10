@@ -270,7 +270,7 @@
       <a href="menu.html" style="text-decoration: none; color: var(--primary); font-weight: bold; font-size: 13px;">← Cambiar Delito / Actas</a>
       
       <button type="button" onclick="cargarDatosEjemplo()" class="btn btn-primary" style="width: auto; padding: 6px 14px; font-size: 12px; background: #0d9488; border-color: #0d9488;">
-        ⚡ Cargar Prueba (2 Intervenidos + 2 Vehículos)
+        ⚡ Cargar Prueba (2 Efectivos PNP + 2 Intervenidos + 2 Vehículos)
       </button>
 
       <button type="button" onclick="cerrarSesion()" class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size: 11px;">Salir</button>
@@ -403,25 +403,25 @@
         </div>
 
         <!-- BLOQUE 4: PERSONAL PNP Y UNIDADES -->
-<div class="section-block block-pnp">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-    <div class="section-title" style="margin: 0;">👮‍♂️ 4. Personal e Unidades Policiales Intervinientes</div>
-    <button type="button" class="btn btn-primary" onclick="agregarEfectivoPNPCard()" style="width: auto; padding: 4px 12px; font-size: 12px; background: #166534; border-color: #166534;">
-      ➕ Agregar Otro Efectivo PNP
-    </button>
-  </div>
+        <div class="section-block block-pnp">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div class="section-title" style="margin: 0;">👮‍♂️ 4. Personal e Unidades Policiales Intervinientes</div>
+            <button type="button" class="btn btn-primary" onclick="agregarEfectivoPNPCard()" style="width: auto; padding: 4px 12px; font-size: 12px; background: #166534; border-color: #166534;">
+              ➕ Agregar Otro Efectivo PNP
+            </button>
+          </div>
 
-  <div id="contenedor_efectivos_pnp"></div>
+          <div id="contenedor_efectivos_pnp"></div>
 
-  <div style="background: #ffffff; padding: 10px; border-radius: 6px; border: 1px solid #bbf7d0; margin-top: 10px;">
-    <label style="font-weight: bold; display: block; margin-bottom: 5px; color: #166534;">Unidades/Vehículos Policiales Participantes:</label>
-    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
-      <span style="font-size: 12px;">¿Cuántos vehículos PNP participaron?</span>
-      <input type="number" id="cant_vehiculos_pnp" value="1" min="1" max="5" onchange="generarCamposVehiculosPNP()" style="width: 60px; text-align: center; font-weight: bold;">
-    </div>
-    <div id="contenedor_vehiculos_pnp" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;"></div>
-  </div>
-</div>
+          <div style="background: #ffffff; padding: 10px; border-radius: 6px; border: 1px solid #bbf7d0; margin-top: 10px;">
+            <label style="font-weight: bold; display: block; margin-bottom: 5px; color: #166534;">Unidades/Vehículos Policiales Participantes:</label>
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 12px;">¿Cuántos vehículos PNP participaron?</span>
+              <input type="number" id="cant_vehiculos_pnp" value="1" min="1" max="5" onchange="generarCamposVehiculosPNP()" style="width: 60px; text-align: center; font-weight: bold;">
+            </div>
+            <div id="contenedor_vehiculos_pnp" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;"></div>
+          </div>
+        </div>
 
         <!-- BLOQUE 5: VEHÍCULOS INVOLUCRADOS Y RETRAN -->
         <div class="section-block block-vehiculo">
@@ -645,13 +645,14 @@
 </div>
 
 <script src="js/auth.js"></script>
-<script src="js/word.js?v=16"></script>
+<script src="js/word.js?v=17"></script>
   
 <script>
   const detallesEspecies = { drogas: null, moneda: null, joyas: null, municion: null, otros: null };
   let campoEspecieActual = null;
   let nombreEspecieActual = "";
   let textareaActivoId = null;
+  let contadorEfectivosPNP = 0;
   let contadorIntervenidos = 0;
   let contadorVehiculos = 0;
 
@@ -680,6 +681,7 @@
   ];
 
   document.addEventListener('DOMContentLoaded', () => {
+    agregarEfectivoPNPCard();
     agregarIntervenidoCard();
     agregarVehiculoCard();
     
@@ -701,6 +703,70 @@
     if (elDelito) elDelito.innerText = delitoSel;
     if (elCant) elCant.innerText = `${cantActas} acta(s) seleccionada(s) para este expediente.`;
   });
+
+  /* ================= MANEJO DINÁMICO DE EFECTIVOS PNP ================= */
+  function agregarEfectivoPNPCard(datos = null) {
+    contadorEfectivosPNP++;
+    const id = contadorEfectivosPNP;
+    const cont = document.getElementById('contenedor_efectivos_pnp');
+    const esPrimero = (document.querySelectorAll('.card-efectivo-pnp').length === 0);
+
+    const cardHtml = `
+      <div class="card-efectivo-pnp" id="card_efectivo_pnp_${id}" style="background: #ffffff; border: 1.5px solid #86efac; padding: 10px; border-radius: 6px; margin-bottom: 10px; position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #bbf7d0; padding-bottom: 4px;">
+          <span style="font-weight: bold; color: #166534; font-size: 12px;">👮‍♂️ Efectivo Policial N° <span class="num-efectivo-pnp"></span></span>
+          ${!esPrimero ? `<button type="button" onclick="eliminarEfectivoPNPCard(${id})" style="padding: 2px 6px; font-size: 10px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">🗑️ Eliminar</button>` : '<span style="font-size: 10px; color: #166534; font-weight: bold;">[PRINCIPAL / INTERVINIENTE]</span>'}
+        </div>
+        <div class="grid">
+          <div>
+            <label style="font-size: 11px;">Grado</label>
+            <input type="text" id="pnp_grado_${id}" class="inp-pnp-grado" placeholder="Ej: S3" value="${datos?.grado || 'S3'}" required style="font-weight: bold;">
+          </div>
+          <div>
+            <label style="font-size: 11px;">Nombres y Apellidos</label>
+            <input type="text" id="pnp_nombre_${id}" class="inp-pnp-nombre" placeholder="Ej: Armando VIVANCO CURO" value="${datos?.nombre || ''}" required style="font-weight: bold;">
+          </div>
+          <div>
+            <label style="font-size: 11px;">CIP N°</label>
+            <input type="text" id="pnp_cip_${id}" class="inp-pnp-cip" placeholder="Ej: 31425556" value="${datos?.cip || ''}" required style="font-weight: bold;">
+          </div>
+        </div>
+      </div>
+    `;
+    cont.insertAdjacentHTML('beforeend', cardHtml);
+    renumerarEfectivosPNP();
+  }
+
+  function eliminarEfectivoPNPCard(id) {
+    const card = document.getElementById(`card_efectivo_pnp_${id}`);
+    if (card) {
+      card.remove();
+      renumerarEfectivosPNP();
+    }
+  }
+
+  function renumerarEfectivosPNP() {
+    const cards = document.querySelectorAll('.card-efectivo-pnp');
+    cards.forEach((card, idx) => {
+      const numSpan = card.querySelector('.num-efectivo-pnp');
+      if (numSpan) numSpan.innerText = idx + 1;
+    });
+  }
+
+  function obtenerListaEfectivosPNP() {
+    const lista = [];
+    const cards = document.querySelectorAll('.card-efectivo-pnp');
+    cards.forEach(card => {
+      const id = card.id.replace('card_efectivo_pnp_', '');
+      lista.push({
+        idNum: id,
+        grado: getVal(`pnp_grado_${id}`, 'PNP'),
+        nombre: getVal(`pnp_nombre_${id}`, 'NO ESPECIFICADO'),
+        cip: getVal(`pnp_cip_${id}`, 'S/C')
+      });
+    });
+    return lista;
+  }
 
   function evaluarEmbalajeManual() {
     const sel = document.getElementById('tipo_embalaje') ? document.getElementById('tipo_embalaje').value : '';
@@ -968,6 +1034,23 @@
   function cargarDatosEjemplo() {
     const hoy = new Date().toISOString().split('T')[0];
     
+    // 1. CARGA EFECTIVOS PNP DE PRUEBA
+    document.getElementById('contenedor_efectivos_pnp').innerHTML = "";
+    contadorEfectivosPNP = 0;
+
+    agregarEfectivoPNPCard({
+      grado: "S3",
+      nombre: "VIVANCO CURO, Armando",
+      cip: "31425556"
+    });
+
+    agregarEfectivoPNPCard({
+      grado: "S2",
+      nombre: "GARCÍA TAYPE, Pedro",
+      cip: "32145689"
+    });
+
+    // 2. CARGA INTERVENIDOS DE PRUEBA
     document.getElementById('contenedor_intervenidos').innerHTML = "";
     contadorIntervenidos = 0;
 
@@ -1001,6 +1084,7 @@
       asistido_registro: "no deseando ser asistido por ninguna persona"
     });
 
+    // 3. CARGA VEHÍCULOS DE PRUEBA
     document.getElementById('contenedor_vehiculos').innerHTML = "";
     contadorVehiculos = 0;
 
@@ -1037,10 +1121,6 @@
       document.getElementById('opcion_constancia_testigo').value = "OFICINA";
     }
 
-    document.getElementById('personal_interviniente').value = "GARCÍA TAYPE, Pedro";
-    document.getElementById('grado').value = "S2";
-    document.getElementById('cip').value = "32145689";
-
     document.getElementById('cant_vehiculos_pnp').value = 1;
     generarCamposVehiculosPNP();
     if (document.getElementById('placa_policial_1')) {
@@ -1061,7 +1141,7 @@
     document.getElementById('detalle_hallazgo').value = "un (01) equipo telefónico móvil marca Samsung Galaxy A12, color negro, pantalla trizada";
     aplicarPresetHallazgo('A');
 
-    alert("⚡ ¡Datos de prueba cargados exitosamente!");
+    alert("⚡ ¡Datos de prueba cargados exitosamente (2 PNP + 2 Intervenidos + 2 Vehículos)!");
   }
 
   function getVal(id, fallback = "S/D") {
@@ -1154,6 +1234,9 @@
       return;
     }
 
+    window.pnp_lista_efectivos = obtenerListaEfectivosPNP();
+    localStorage.setItem('pnp_lista_efectivos', JSON.stringify(window.pnp_lista_efectivos));
+
     window.pnp_lista_intervenidos = obtenerListaIntervenidos();
     localStorage.setItem('pnp_lista_intervenidos', JSON.stringify(window.pnp_lista_intervenidos));
 
@@ -1198,6 +1281,7 @@
     const cont = document.getElementById('panel_fichas_datos');
     cont.innerHTML = "";
 
+    const listaPNP = obtenerListaEfectivosPNP();
     const listaInt = obtenerListaIntervenidos();
     const listaVeh = obtenerListaVehiculos();
 
@@ -1273,10 +1357,13 @@
       { titulo: "Fiscal RMP Competente", val: getVal('fiscal', "RMP NO ESPECIFICADO") }
     );
 
-    categorias[4].items.push(
-      { titulo: "Efectivo Interviniente", val: `${getVal('grado')} PNP ${getVal('personal_interviniente')}` },
-      { titulo: "CIP Efectivo", val: getVal('cip') }
-    );
+    listaPNP.forEach((pnp, idx) => {
+      const prefijo = listaPNP.length > 1 ? `PNP ${idx + 1} - ` : '';
+      categorias[4].items.push(
+        { titulo: `${prefijo}Efectivo Interviniente`, val: `${pnp.grado} PNP ${pnp.nombre}` },
+        { titulo: `${prefijo}CIP`, val: pnp.cip }
+      );
+    });
 
     const cantVehPnp = parseInt(document.getElementById('cant_vehiculos_pnp').value, 10) || 1;
     for (let i = 1; i <= cantVehPnp; i++) {
