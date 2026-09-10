@@ -1,5 +1,5 @@
 /**
- * CATALOGO MASTER DE ACTAS PNP (15 ACTAS OFICIALES + SOPORTE MANUAL Y MULTI-VEHÍCULO)
+ * CATALOGO MASTER DE ACTAS PNP (15 ACTAS OFICIALES + SOPORTE MANUAL Y MULTI-VEHÍCULO / MULTI-PNP)
  * Sistema de Gestión e Individualización de Expedientes Policiales
  */
 
@@ -268,6 +268,57 @@ function procesarDocumentosRNT() {
   return hallazgos.length > 0 ? hallazgos.join(', ') : "NO PRESENTA DOCUMENTACIÓN / EN PROCESO DE VERIFICACIÓN";
 }
 
+/* ================= OBTENCIÓN DE LISTAS DINÁMICAS (PNP, INTERVENIDOS, VEHÍCULOS) ================= */
+
+function obtenerListaEfectivosPNPForm() {
+  if (typeof obtenerListaEfectivosPNP === 'function') {
+    const lista = obtenerListaEfectivosPNP();
+    if (lista && lista.length > 0) return lista;
+  }
+
+  if (window.pnp_lista_efectivos && window.pnp_lista_efectivos.length > 0) {
+    return window.pnp_lista_efectivos;
+  }
+
+  const local = localStorage.getItem('pnp_lista_efectivos');
+  if (local) {
+    try {
+      const parsed = JSON.parse(local);
+      if (parsed && parsed.length > 0) return parsed;
+    } catch (e) {}
+  }
+
+  const getValSafe = (id) => document.getElementById(id) ? document.getElementById(id).value.trim() : "";
+  const grado = getValSafe('grado') || getValSafe('pnp_grado_1') || "S3";
+  const nombre = getValSafe('personal_interviniente') || getValSafe('pnp_nombre_1') || "ARMANDO VIVANCO CURO";
+  const cip = getValSafe('cip') || getValSafe('pnp_cip_1') || "31425556";
+
+  return [{ grado, nombre, cip }];
+}
+
+function obtenerTextoEfectivosNarrativa(lista) {
+  if (!lista || lista.length === 0) return "el personal policial interviniente";
+  if (lista.length === 1) {
+    return `el personal policial interviniente **${lista[0].grado} PNP ${lista[0].nombre}** (CIP N° ${lista[0].cip})`;
+  }
+  const partes = lista.map(e => `**${e.grado} PNP ${e.nombre}** (CIP N° ${e.cip})`);
+  const ultimo = partes.pop();
+  return `el personal policial interviniente ${partes.join(', ')} y ${ultimo}`;
+}
+
+function generarBloqueFirmasPNP(lista) {
+  if (!lista || lista.length === 0) return "";
+  let bloque = "";
+  lista.forEach((pnp) => {
+    bloque += 
+      `__________________________________\n` +
+      `EL PERSONAL POLICIAL INTERVINIENTE\n` +
+      `${pnp.grado} PNP ${pnp.nombre}\n` +
+      `CIP N° ${pnp.cip}\n\n`;
+  });
+  return bloque;
+}
+
 function obtenerListaIntervenidosForm() {
   if (typeof obtenerListaIntervenidos === 'function') {
     const lista = obtenerListaIntervenidos();
@@ -357,17 +408,17 @@ function generarBloqueCierreYFirmas(horaFin, lista) {
   if (!lista || lista.length <= 1) {
     const int1 = (lista && lista[0]) ? lista[0] : { nombre: '{intervenido_nombre}', dni: '{intervenido_dni}' };
     textoCierre += 
-      `                                               __________________________________\n` +
-      `                                                         EL INTERVENIDO\n\n` +
-      `                                               Nombre: ${int1.nombre}\n` +
-      `                                               DNI N°: ${int1.dni}`;
+      `                                                __________________________________\n` +
+      `                                                          EL INTERVENIDO\n\n` +
+      `                                                Nombre: ${int1.nombre}\n` +
+      `                                                DNI N°: ${int1.dni}`;
   } else {
     lista.forEach((item, idx) => {
       textoCierre += 
-        `                                               __________________________________\n` +
-        `                                                     EL INTERVENIDO N° ${idx + 1}\n\n` +
-        `                                               Nombre: ${item.nombre}\n` +
-        `                                               DNI N°: ${item.dni}\n\n`;
+        `                                                __________________________________\n` +
+        `                                                      EL INTERVENIDO N° ${idx + 1}\n\n` +
+        `                                                Nombre: ${item.nombre}\n` +
+        `                                                DNI N°: ${item.dni}\n\n`;
     });
   }
 
@@ -437,6 +488,9 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
   }
 
   const fechaRaw = document.getElementById('fecha').value;
+  const listaEfectivosPNP = obtenerListaEfectivosPNPForm();
+  const pnpPrincipal = listaEfectivosPNP[0] || { grado: "S3", nombre: "ARMANDO VIVANCO CURO", cip: "31425556" };
+
   const listaVehiculos = obtenerListaVehiculosForm();
   const vehPrincipal = listaVehiculos[0] || { placa: "NO REGISTRA", marca: "NO REGISTRA", modelo: "NO REGISTRA", color: "NO REGISTRA" };
 
@@ -472,9 +526,9 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     detalle_hallazgo: (document.getElementById('detalle_hallazgo') && document.getElementById('detalle_hallazgo').value.trim() !== "") ? document.getElementById('detalle_hallazgo').value.trim() : "un (01) bien u objeto no especificado",
     circunstancia_hallazgo: (document.getElementById('circunstancia_hallazgo') && document.getElementById('circunstancia_hallazgo').value.trim() !== "") ? document.getElementById('circunstancia_hallazgo').value.trim() : "se procedió a la verificación del lugar de los hechos",
 
-    personal_interviniente: document.getElementById('personal_interviniente').value,
-    grado: document.getElementById('grado').value,
-    cip: document.getElementById('cip').value
+    personal_interviniente: pnpPrincipal.nombre,
+    grado: pnpPrincipal.grado,
+    cip: pnpPrincipal.cip
   };
 
   indiceActaActual = 0;
@@ -571,7 +625,7 @@ async function ejecutarGeneracionFinalExpediente() {
   if (statusMsg) {
     statusMsg.className = "alert-msg alert-success";
     statusMsg.style.display = "block";
-    statusMsg.innerText = `Procesando actas e individualizando intervenidos y vehículos... Por favor espere.`;
+    statusMsg.innerText = `Procesando actas e individualizando intervenidos, vehículos y personal PNP... Por favor espere.`;
   }
 
   try {
@@ -624,6 +678,7 @@ async function ejecutarGeneracionFinalExpediente() {
     }
 
     // LISTAS PRINCIPALES DE ENTRADA
+    const listaEfectivosPNP = obtenerListaEfectivosPNPForm();
     const listaIntervenidos = obtenerListaIntervenidosForm();
     const listaVehiculos = obtenerListaVehiculosForm();
 
@@ -649,6 +704,10 @@ async function ejecutarGeneracionFinalExpediente() {
       ...vehiculosPNPObj,
       ...seccionesObj,
       
+      // VARIABLES MULTI-EFECTIVO PNP
+      efectivos_intervinientes_texto: obtenerTextoEfectivosNarrativa(listaEfectivosPNP),
+      firmas_pnp: generarBloqueFirmasPNP(listaEfectivosPNP),
+
       // VARIABLES MAESTRAS DE LAS PLANTILLAS
       filiacion_intervenidos: filiacionCompleta,
       resumen_intervenidos: textoIntervenidosColectivo,
