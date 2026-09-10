@@ -266,7 +266,8 @@ function obtenerListaIntervenidosForm() {
     mama: getValSafe('mama'),
     ocupacion: getValSafe('ocupacion'),
     domicilio: getValSafe('domicilio'),
-    asistido_confianza: getValSafe('asistido_confianza')
+    asistido_confianza: getValSafe('asistido_confianza'),
+    asistido_confianza_registro: getValSafe('asistido_confianza_registro')
   }];
 }
 
@@ -677,6 +678,7 @@ async function ejecutarGeneracionFinalExpediente() {
           ocupacion: listaIntervenidos[0].ocupacion,
           domicilio: listaIntervenidos[0].domicilio,
           asistido_confianza: listaIntervenidos[0].asistido_confianza,
+          asistido_confianza_registro: listaIntervenidos[0].asistido_confianza_registro,
           hora1: hor.horaInicio || datosFinalesBase.hora1,
           hora2: hor.horaTermino || datosFinalesBase.hora2
         };
@@ -734,6 +736,7 @@ async function ejecutarGeneracionFinalExpediente() {
             ocupacion: persona.ocupacion,
             domicilio: persona.domicilio,
             asistido_confianza: persona.asistido_confianza,
+            asistido_confianza_registro: persona.asistido_confianza_registro,
             hora1: hor.horaInicio || datosFinalesBase.hora1,
             hora2: hor.horaTermino || datosFinalesBase.hora2
           };
