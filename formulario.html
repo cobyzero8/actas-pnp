@@ -234,7 +234,7 @@
   </div>
 </div>
 
-<!-- MODAL DE HORARIOS POR ACTA (SECUENCIAL PARA WORD.JS) -->
+<!-- MODAL DE HORARIOS POR ACTA -->
 <div id="modalHoras" class="modal-overlay">
   <div class="modal-content">
     <h3 id="modalHorasTitulo" style="margin-top: 0; color: #003366; font-size: 16px;">
@@ -289,7 +289,7 @@
       <!-- ================= PASO 1: CAPTURA DE DATOS GENERALES ================= -->
       <div id="paso1_formulario">
         
-        <!-- BLOQUE 1: LUGAR Y TIEMPO (AZUL) -->
+        <!-- BLOQUE 1: LUGAR Y TIEMPO -->
         <div class="section-block block-location">
           <div class="section-title">📍 1. Lugar y Tiempo de Intervención</div>
           <div class="grid">
@@ -328,7 +328,7 @@
           </div>
         </div>
 
-        <!-- BLOQUE 2: DATOS DE LOS INTERVENIDOS (DINÁMICO MULTI-PERSONA) -->
+        <!-- BLOQUE 2: DATOS DE LOS INTERVENIDOS -->
         <div class="section-block block-intervenido">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <div class="section-title" style="margin: 0;">👥 2. Datos de los Intervenidos / Detenidos</div>
@@ -340,18 +340,18 @@
           <div id="contenedor_intervenidos"></div>
         </div>
 
-        <!-- BLOQUE 3: DILIGENCIA Y AUTORIDADES (MORADO) -->
+        <!-- BLOQUE 3: DILIGENCIA Y AUTORIDADES -->
         <div class="section-block block-diligencia">
           <div class="section-title">⚖️ 3. Dependencia PNP, Fiscalía y Disposición</div>
           <div class="grid">
             <div>
               <label style="color: #166534; font-weight: bold;">🏢 Unidad Interviniente / Redactora ({unidad_policial}):</label>
-              <input type="text" id="unidad_policial" value="UTSEVI PNP HUANTA" placeholder="Ej: UTSEVI PNP HUANTA, UNEME 105, etc." required style="border: 2px solid #22c55e; font-weight: bold;">
+              <input type="text" id="unidad_policial" value="UTSEVI PNP HUANTA" placeholder="Ej: UTSEVI PNP HUANTA" required style="border: 2px solid #22c55e; font-weight: bold;">
             </div>
 
             <div>
               <label style="color: #6b21a8; font-weight: bold;">🏢 Unidad Puesta a Disposición ({unidad_disposicion}):</label>
-              <input type="text" id="unidad_disposicion" value="SIAT-COM PNP HUANTA" placeholder="Ej: SIAT-COM PNP HUANTA, DEPINCRI HUANTA, etc." required style="border: 2px solid #a855f7; font-weight: bold;">
+              <input type="text" id="unidad_disposicion" value="SIAT-COM PNP HUANTA" placeholder="Ej: SIAT-COM PNP HUANTA" required style="border: 2px solid #a855f7; font-weight: bold;">
             </div>
 
             <div class="full">
@@ -374,7 +374,7 @@
 
             <div class="full">
               <label style="color: #6b21a8; font-weight: bold;">
-                🛡️ Motivo Justificatorio (Traslado a la Dependencia / Medidas de Seguridad):
+                🛡️ Motivo Justificatorio (Traslado a la Dependencia):
               </label>
               <select id="motivo_justificatorio" style="width: 100%; padding: 10px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 5px; font-weight: 500;">
                 <option value="debido a la falta de garantías para la integridad física del intervenido y del personal policial, ante la posible aglomeración y actitud hostil de personas en el lugar de la intervención.">
@@ -391,7 +391,7 @@
           </div>
         </div>
 
-        <!-- BLOQUE 4: PERSONAL PNP Y UNIDADES (VERDE) -->
+        <!-- BLOQUE 4: PERSONAL PNP Y UNIDADES -->
         <div class="section-block block-pnp">
           <div class="section-title">👮‍♂️ 4. Personal e Unidades Policiales Intervinientes</div>
           <div class="grid">
@@ -418,10 +418,10 @@
           </div>
         </div>
 
-        <!-- BLOQUE 5: VEHÍCULOS INVOLUCRADOS Y RETRAN (DINÁMICO MULTI-VEHÍCULO) -->
+        <!-- BLOQUE 5: VEHÍCULOS INVOLUCRADOS Y RETRAN -->
         <div class="section-block block-vehiculo">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <div class="section-title" style="margin: 0;">🚘 5. Vehículos Involucrados en la Intervención / Accidente</div>
+            <div class="section-title" style="margin: 0;">🚘 5. Vehículos Involucrados en la Intervención</div>
             <button type="button" class="btn btn-primary" onclick="agregarVehiculoCard()" style="width: auto; padding: 4px 12px; font-size: 12px; background: #d97706; border-color: #d97706;">
               ➕ Agregar Otro Vehículo
             </button>
@@ -429,7 +429,7 @@
 
           <div id="contenedor_vehiculos"></div>
 
-          <!-- DOCUMENTOS RNT GENERALES -->
+          <!-- DOCUMENTOS RNT -->
           <div style="background: #ffffff; padding: 12px; border: 1px solid #fef08a; border-radius: 6px; margin-top: 10px;">
             <label style="font-weight: bold; color: #9a3412; display: block; margin-bottom: 8px;">📄 Verificación Documentaria RNT ({documentos_retran}):</label>
             
@@ -448,13 +448,13 @@
 
               <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                 <label><input type="checkbox" id="chk_lunas"> <strong>Permiso Lunas Polarizadas:</strong></label>
-                <select id="st_lunas" style="padding: 4px;"><option value="CUENTA Y VIGENTE">CUENTA Y VIGENTE</option><option value="NO CUENTA">NO CUENTA O VENCIDO</option></select>
+                <select id="st_lunas" style="padding: 4px;"><option value="CUENTA Y VIGENTE">CUENTA Y VIGENTE</option><option value="NO CUENTA O VENCIDO">NO CUENTA O VENCIDO</option></select>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- BLOQUE 6: REGISTRO DE ESPECIES E INCAUTACIÓN (GRIS/PLOMO) -->
+        <!-- BLOQUE 6: REGISTRO DE ESPECIES E INCAUTACIÓN -->
         <div class="section-block block-especies">
           <div class="section-title">📦 6. Registro de Especies Incautadas / Halladas</div>
           <div class="grid">
@@ -581,7 +581,7 @@
 </div>
 
 <script src="js/auth.js"></script>
-<script src="js/word.js?v=12"></script>
+<script src="js/word.js?v=13"></script>
   
 <script>
   const detallesEspecies = { drogas: null, moneda: null, joyas: null, municion: null, otros: null };
@@ -696,8 +696,8 @@
             <input type="text" id="domicilio_${id}" class="inp-int-domicilio" placeholder="Dirección actual" required value="${datos?.domicilio || ''}">
           </div>
           <div class="full">
-            <label>Persona de Confianza (Asistencia)</label>
-            <input type="text" id="asistido_confianza_${id}" class="inp-int-asistido" value="${datos?.asistido || 'no deseando ser asistido por ninguna persona'}" required>
+            <label style="color: #991b1b; font-weight: bold;">📞 Persona de Confianza / Familiar a comunicar ({asistido_confianza}):</label>
+            <input type="text" id="asistido_confianza_${id}" class="inp-int-asistido" placeholder="Ej: su hermano Juan PÉREZ ROJAS (Cel: 987654321)" value="${datos?.asistido || 'su hermano Juan PÉREZ ROJAS (Cel: 987654321)'}" required style="border: 1.5px solid #ef4444;">
           </div>
         </div>
       </div>
@@ -878,7 +878,7 @@
       mama: "María Rojas Mendoza",
       ocupacion: "Chofer",
       domicilio: "Jr. Miguel Grau N° 245, Huanta",
-      asistido: "no deseando ser asistido por ninguna persona"
+      asistido: "su hermano Juan PÉREZ ROJAS (Cel: 987654321)"
     });
 
     agregarIntervenidoCard({
@@ -892,7 +892,7 @@
       mama: "Rosa Flores Castro",
       ocupacion: "Comerciante",
       domicilio: "Av. San Martín N° 102, Huanta",
-      asistido: "no deseando ser asistido por ninguna persona"
+      asistido: "su esposa María LÓPEZ MEZA (Cel: 912345678)"
     });
 
     document.getElementById('contenedor_vehiculos').innerHTML = "";
@@ -940,7 +940,7 @@
     document.getElementById('fec_soat').value = hoy;
     document.getElementById('fec_itv').value = hoy;
 
-    alert("⚡ ¡Datos de prueba cargados exitosamente (2 Intervenidos y 2 Vehículos)!");
+    alert("⚡ ¡Datos de prueba cargados exitosamente!");
   }
 
   function getVal(id, fallback = "S/D") {
@@ -1111,7 +1111,7 @@
       );
 
       if (item.asistido_confianza) {
-        categorias[0].items.push({ titulo: `${prefijo}Persona de Confianza`, val: item.asistido_confianza });
+        categorias[0].items.push({ titulo: `${prefijo}Persona de Confianza / Familiar`, val: item.asistido_confianza });
       }
     });
 
@@ -1220,7 +1220,6 @@
     txt.focus();
   }
 
-  // MODELOS ADAPTATIVOS
   function cargarModeloExtorsion() {
     document.getElementById('cant_secciones').value = 6;
     construirSeccionesNarrativa();
