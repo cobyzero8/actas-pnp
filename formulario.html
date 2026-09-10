@@ -868,7 +868,7 @@
     document.getElementById('agregar_intervencion_5').value = `--- De los hechos se comunicó de manera inmediata al RMP Abog. ${fiscal}, trasladando los actuados a la Comisaría PNP por medidas de seguridad.`;
   }
 
-  // 06. MODELO CONDUCCIÓN EN ESTADO DE EBRIEDAD / DROGADICCIÓN (TEXTOS COMPLETOS RETRAN)
+  // 06. MODELO CONDUCCIÓN EN ESTADO DE EBRIEDAD / DROGADICCIÓN (TEXTOS COMPLETOS RETRAN - AJUSTADO A +20 MIN)
   function cargarModeloEbriedadPruebas() {
     document.getElementById('cant_secciones').value = 5;
     construirSeccionesNarrativa();
@@ -886,8 +886,8 @@
     const pnp2 = getVal('placa_policial_2', 'unidad de apoyo');
     const fiscal = getVal('fiscal', 'el RMP');
 
-    // Usamos función local si no está cargado externamente en este bloque
-    const horaPrueba = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 25) : hora;
+    // Calcula exactamente +20 minutos desde la hora de intervención
+    const horaPrueba = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 20) : hora;
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y MANIOBRAS TEMERARIAS:";
     document.getElementById('agregar_intervencion_1').value = `--- El suscrito, en circunstancias que realizaba patrullaje motorizado a bordo de la UUMM de placa ${pnp1}, siendo las ${hora} hrs aprox., divisó al vehículo menor de placa de rodaje N° ${placa}, cuyo conductor realizaba maniobras temerarias por ${lugar}, por lo que se procedió a darle el alcance e intervención inmediata.`;
@@ -911,7 +911,7 @@
       `--- RESULTADO: El intervenido NO PASÓ LAS PRUEBAS por presentar inestabilidad, falta de coordinación motora y signos evidentes de intoxicación alcohólica.`;
 
     document.getElementById('titulo_sec_4').value = "IV. DERECHOS DEL IMPUTADO Y CONSULTA E-SINPOL:";
-    document.getElementById('agregar_intervencion_4').value = `--- Asimismo, le dio a conocer sus derechos previstos en el Artículo 71 del CPP, se procedió a su traslado a la oficina de la UTSEVI PNP Huanta para las diligencias correspondientes, dejando constancia que el intervenido ha recibido buen trato físico y psicológico, siendo tratado con dignidad y respeto; asimismo se precisa que las Actas (diligencias) que se adjunta a la presente se realizó en esta dependencia por medidas de seguridad del personal policial interviniente y del propio intervenido. La consulta en E-SINPOL PNP dio como resultado NEGATIVO para requisitorias.`;
+    document.getElementById('agregar_intervencion_4').value = `--- Asimismo, le dio a conocer sus derechos previstos en el Artículo 71 del CPP, se procedió a su traslado a la oficina de la UTSEVI PNP Huanta para las diligencias correspondientes, dejando constancia que el intervenido ha recibido buen trato físico y psicológico, siendo treatedo con dignidad y respeto; asimismo se precisa que las Actas (diligencias) que se adjunta a la presente se realizó en esta dependencia por medidas de seguridad del personal policial interviniente y del propio intervenido. La consulta en E-SINPOL PNP dio como resultado NEGATIVO para requisitorias.`;
 
     document.getElementById('titulo_sec_5').value = "V. DISPOSICIÓN Y COMUNICACIÓN AL RMP:";
     document.getElementById('agregar_intervencion_5').value = `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}. La persona intervenida es puesta a disposición de la SIAT-COM PNP HUANTA en calidad de DETENIDO, con las actas instruidas.`;
