@@ -294,11 +294,8 @@ async function ejecutarGeneracionFinalExpediente() {
     const cantSec = cantSecElem ? (parseInt(cantSecElem.value, 10) || 1) : 1;
     const seccionesObj = {};
     for (let i = 1; i <= cantSec; i++) {
-      const selTitElem = document.getElementById(`titulo_sec_${i}`);
-      const selTit = selTitElem ? selTitElem.value : `SECCIÓN ${i}:`;
-      const customTitElem = document.getElementById(`custom_titulo_sec_${i}`);
-      const customTit = customTitElem ? customTitElem.value : '';
-      const tituloFinal = selTit === "CUSTOM" ? customTit : selTit;
+      const titInputElem = document.getElementById(`titulo_sec_${i}`);
+      const tituloFinal = titInputElem ? (titInputElem.value.trim() || `SECCIÓN ${i}:`) : `SECCIÓN ${i}:`;
       
       const txtAreaElem = document.getElementById(`agregar_intervencion_${i}`);
       const contenido = txtAreaElem ? txtAreaElem.value : '';
