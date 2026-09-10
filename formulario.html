@@ -101,7 +101,7 @@
       outline: none;
     }
 
-    /* ESTILOS PARA BLOQUES DE COLORES POR CATEGORÍA EN PASO 1 */
+    /* ESTILOS PARA BLOQUES DE COLORES POR CATEGORÍA */
     .section-block {
       padding: 14px;
       border-radius: 8px;
@@ -137,13 +137,8 @@
     .block-especies .section-title { color: #334155; }
 
     /* CONTENEDOR DESPLEGABLE */
-    summary {
-      user-select: none;
-      outline: none;
-    }
-    summary::-webkit-details-marker {
-      display: none;
-    }
+    summary { user-select: none; outline: none; }
+    summary::-webkit-details-marker { display: none; }
   </style>
 </head>
 <body>
@@ -230,7 +225,7 @@
       <a href="menu.html" style="text-decoration: none; color: var(--primary); font-weight: bold; font-size: 13px;">← Cambiar Delito / Actas</a>
       
       <button type="button" onclick="cargarDatosEjemplo()" class="btn btn-primary" style="width: auto; padding: 6px 14px; font-size: 12px; background: #0d9488; border-color: #0d9488;">
-        ⚡ Cargar Datos de Prueba
+        ⚡ Cargar Datos de Prueba (2 Intervenidos)
       </button>
 
       <button onclick="cerrarSesion()" class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size: 11px;">Salir</button>
@@ -289,60 +284,17 @@
           </div>
         </div>
 
-        <!-- BLOQUE 2: DATOS DEL INTERVENIDO (ROJO) -->
+        <!-- BLOQUE 2: DATOS DE LOS INTERVENIDOS (DINÁMICO MULTI-PERSONA) -->
         <div class="section-block block-intervenido">
-          <div class="section-title">👤 2. Datos de la Persona Intervenida</div>
-          <div class="grid">
-            <div class="full">
-              <label>Nombres y Apellidos del Intervenido</label>
-              <input type="text" id="intervenido_nombre" placeholder="Nombre completo" required style="font-weight: bold;">
-            </div>
-            <div>
-              <label>N° DNI</label>
-              <input type="text" id="intervenido_dni" placeholder="N° DNI" required style="font-weight: bold;">
-            </div>
-            <div>
-              <label>Edad</label>
-              <input type="number" id="edad" placeholder="Edad" required>
-            </div>
-            <div>
-              <label>Estado Civil</label>
-              <select id="estado_civil" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
-                <option value="soltero">Soltero</option>
-                <option value="casado">Casado</option>
-                <option value="viudo">Viudo</option>
-                <option value="conviviente">Conviviente</option>
-              </select>
-            </div>
-            <div>
-              <label>Dónde Nació</label>
-              <input type="text" id="natural" placeholder="Natural de" required>
-            </div>
-            <div>
-              <label>N° Celular</label>
-              <input type="text" id="celular1" placeholder="Ej: 987654321 o S/N">
-            </div>
-            <div>
-              <label>Hijo de Don</label>
-              <input type="text" id="papa" placeholder="Nombres del padre">
-            </div>
-            <div>
-              <label>Y Doña</label>
-              <input type="text" id="mama" placeholder="Nombres de la madre">
-            </div>
-            <div>
-              <label>Ocupación</label>
-              <input type="text" id="ocupacion" value="Su casa" required>
-            </div>
-            <div class="full">
-              <label>Domicilio</label>
-              <input type="text" id="domicilio" placeholder="Dirección actual" required>
-            </div>
-            <div class="full">
-              <label>Persona de Confianza (Asistencia)</label>
-              <input type="text" id="asistido_confianza" value="no deseando ser asistido por ninguna persona" required>
-            </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div class="section-title" style="margin: 0;">👥 2. Datos de los Intervenidos / Detenidos</div>
+            <button type="button" class="btn btn-primary" onclick="agregarIntervenidoCard()" style="width: auto; padding: 4px 12px; font-size: 12px; background: #dc2626; border-color: #dc2626;">
+              ➕ Agregar Otro Intervenido
+            </button>
           </div>
+
+          <!-- CONTENEDOR DINÁMICO DE CARDS DE INTERVENIDOS -->
+          <div id="contenedor_intervenidos"></div>
         </div>
 
         <!-- BLOQUE 3: DILIGENCIA Y AUTORIDADES (MORADO) -->
@@ -606,6 +558,7 @@
   let campoEspecieActual = null;
   let nombreEspecieActual = "";
   let textareaActivoId = null;
+  let contadorIntervenidos = 0;
 
   const MAPA_TITULOS_ACTAS = {
     "reg_personal": "acta de registro personal",
@@ -631,6 +584,9 @@
   ];
 
   document.addEventListener('DOMContentLoaded', () => {
+    // Inicializar con al menos 1 Intervenido por defecto
+    agregarIntervenidoCard();
+    
     generarCamposVehiculosPNP();
     construirSeccionesNarrativa();
     
@@ -650,9 +606,161 @@
     if (elCant) elCant.innerText = `${cantActas} acta(s) seleccionada(s) para este expediente.`;
   });
 
+  // GESTIÓN DINÁMICA DE TARJETAS DE INTERVENIDOS
+  function agregarIntervenidoCard(datos = null) {
+    contadorIntervenidos++;
+    const id = contadorIntervenidos;
+    const cont = document.getElementById('contenedor_intervenidos');
+    const esPrimero = (document.querySelectorAll('.card-intervenido').length === 0);
+
+    const cardHtml = `
+      <div class="card-intervenido" id="card_intervenido_${id}" style="background: #ffffff; border: 1.5px solid #fca5a5; padding: 12px; border-radius: 6px; margin-bottom: 12px; position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #fee2e2; padding-bottom: 4px;">
+          <span style="font-weight: bold; color: #991b1b; font-size: 13px;">👤 Persona Intervenida N° <span class="num-intervenido"></span></span>
+          ${!esPrimero ? `<button type="button" onclick="eliminarIntervenidoCard(${id})" style="padding: 3px 8px; font-size: 11px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">🗑️ Eliminar</button>` : '<span style="font-size: 10px; color: #991b1b; font-weight: bold;">[PRINCIPAL]</span>'}
+        </div>
+        <div class="grid">
+          <div class="full">
+            <label>Nombres y Apellidos del Intervenido</label>
+            <input type="text" id="intervenido_nombre_${id}" class="inp-int-nombre" placeholder="Nombre completo" required style="font-weight: bold;" value="${datos?.nombre || ''}">
+          </div>
+          <div>
+            <label>N° DNI</label>
+            <input type="text" id="intervenido_dni_${id}" class="inp-int-dni" placeholder="N° DNI" required style="font-weight: bold;" value="${datos?.dni || ''}">
+          </div>
+          <div>
+            <label>Edad</label>
+            <input type="number" id="edad_${id}" class="inp-int-edad" placeholder="Edad" required value="${datos?.edad || ''}">
+          </div>
+          <div>
+            <label>Estado Civil</label>
+            <select id="estado_civil_${id}" class="inp-int-civil" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
+              <option value="soltero" ${datos?.estado_civil === 'soltero' ? 'selected' : ''}>Soltero</option>
+              <option value="casado" ${datos?.estado_civil === 'casado' ? 'selected' : ''}>Casado</option>
+              <option value="viudo" ${datos?.estado_civil === 'viudo' ? 'selected' : ''}>Viudo</option>
+              <option value="conviviente" ${datos?.estado_civil === 'conviviente' ? 'selected' : ''}>Conviviente</option>
+            </select>
+          </div>
+          <div>
+            <label>Dónde Nació</label>
+            <input type="text" id="natural_${id}" class="inp-int-natural" placeholder="Natural de" required value="${datos?.natural || ''}">
+          </div>
+          <div>
+            <label>N° Celular</label>
+            <input type="text" id="celular1_${id}" class="inp-int-celular" placeholder="Ej: 987654321 o S/N" value="${datos?.celular || ''}">
+          </div>
+          <div>
+            <label>Hijo de Don</label>
+            <input type="text" id="papa_${id}" class="inp-int-papa" placeholder="Nombres del padre" value="${datos?.papa || ''}">
+          </div>
+          <div>
+            <label>Y Doña</label>
+            <input type="text" id="mama_${id}" class="inp-int-mama" placeholder="Nombres de la madre" value="${datos?.mama || ''}">
+          </div>
+          <div>
+            <label>Ocupación</label>
+            <input type="text" id="ocupacion_${id}" class="inp-int-ocupacion" value="${datos?.ocupacion || 'Su casa'}" required>
+          </div>
+          <div class="full">
+            <label>Domicilio</label>
+            <input type="text" id="domicilio_${id}" class="inp-int-domicilio" placeholder="Dirección actual" required value="${datos?.domicilio || ''}">
+          </div>
+          <div class="full">
+            <label>Persona de Confianza (Asistencia)</label>
+            <input type="text" id="asistido_confianza_${id}" class="inp-int-asistido" value="${datos?.asistido || 'no deseando ser asistido por ninguna persona'}" required>
+          </div>
+        </div>
+      </div>
+    `;
+    cont.insertAdjacentHTML('beforeend', cardHtml);
+    renumerarIntervenidos();
+  }
+
+  function eliminarIntervenidoCard(id) {
+    const card = document.getElementById(`card_intervenido_${id}`);
+    if (card) {
+      card.remove();
+      renumerarIntervenidos();
+    }
+  }
+
+  function renumerarIntervenidos() {
+    const cards = document.querySelectorAll('.card-intervenido');
+    cards.forEach((card, idx) => {
+      const numSpan = card.querySelector('.num-intervenido');
+      if (numSpan) numSpan.innerText = idx + 1;
+    });
+  }
+
+  function obtenerListaIntervenidos() {
+    const lista = [];
+    const cards = document.querySelectorAll('.card-intervenido');
+    cards.forEach(card => {
+      const id = card.id.replace('card_intervenido_', '');
+      lista.push({
+        idNum: id,
+        nombre: getVal(`intervenido_nombre_${id}`),
+        dni: getVal(`intervenido_dni_${id}`),
+        edad: getVal(`edad_${id}`),
+        estado_civil: getVal(`estado_civil_${id}`),
+        natural: getVal(`natural_${id}`),
+        celular: getVal(`celular1_${id}`),
+        papa: getVal(`papa_${id}`),
+        mama: getVal(`mama_${id}`),
+        ocupacion: getVal(`ocupacion_${id}`),
+        domicilio: getVal(`domicilio_${id}`),
+        asistido_confianza: getVal(`asistido_confianza_${id}`)
+      });
+    });
+    return lista;
+  }
+
+  function obtenerTextoIntervenidosNarrativa() {
+    const lista = obtenerListaIntervenidos();
+    if (lista.length === 0) return "el intervenido";
+    if (lista.length === 1) {
+      return `${lista[0].nombre} (${lista[0].edad}), identificado con DNI N° ${lista[0].dni}`;
+    }
+    const textos = lista.map(item => `${item.nombre} (${item.edad}), identificado con DNI N° ${item.dni}`);
+    const ultimo = textos.pop();
+    return `${textos.join(', ')} y ${ultimo}`;
+  }
+
   function cargarDatosEjemplo() {
     const hoy = new Date().toISOString().split('T')[0];
-    
+    document.getElementById('contenedor_intervenidos').innerHTML = "";
+    contadorIntervenidos = 0;
+
+    // Intervenido 1
+    agregarIntervenidoCard({
+      nombre: "QUISPE ROJAS, Carlos Alberto",
+      dni: "45892134",
+      edad: "28",
+      estado_civil: "soltero",
+      natural: "Huanta - Ayacucho",
+      celular: "966123456",
+      papa: "Juan Quispe Morales",
+      mama: "María Rojas Mendoza",
+      ocupacion: "Chofer",
+      domicilio: "Jr. Miguel Grau N° 245, Huanta",
+      asistido: "no deseando ser asistido por ninguna persona"
+    });
+
+    // Intervenido 2
+    agregarIntervenidoCard({
+      nombre: "LÓPEZ FLORES, Juan Carlos",
+      dni: "71234567",
+      edad: "31",
+      estado_civil: "conviviente",
+      natural: "Huanta - Ayacucho",
+      celular: "988776655",
+      papa: "Pedro López Solís",
+      mama: "Rosa Flores Castro",
+      ocupacion: "Comerciante",
+      domicilio: "Av. San Martín N° 102, Huanta",
+      asistido: "no deseando ser asistido por ninguna persona"
+    });
+
     document.getElementById('distrito').value = "Huanta";
     document.getElementById('provincia').value = "Huanta";
     document.getElementById('region').value = "Ayacucho";
@@ -661,18 +769,6 @@
     document.getElementById('hora1').value = "07:00";
     document.getElementById('hora2').value = "08:30";
     document.getElementById('lugar').value = "Av. San Martín Cdra. 3, Huanta";
-
-    document.getElementById('intervenido_nombre').value = "QUISPE ROJAS, Carlos Alberto";
-    document.getElementById('intervenido_dni').value = "45892134";
-    document.getElementById('edad').value = "28";
-    document.getElementById('estado_civil').value = "soltero";
-    document.getElementById('natural').value = "Huanta - Ayacucho";
-    document.getElementById('celular1').value = "966123456";
-    document.getElementById('papa').value = "Juan Quispe Morales";
-    document.getElementById('mama').value = "María Rojas Mendoza";
-    document.getElementById('ocupacion').value = "Chofer";
-    document.getElementById('domicilio').value = "Jr. Miguel Grau N° 245, Huanta";
-    document.getElementById('asistido_confianza').value = "no deseando ser asistido por ninguna persona";
 
     document.getElementById('fiscal').value = "Abog. Marco Antonio PÉREZ PALOMINO, Fiscal Adjunto de la FPPC Huanta";
     document.getElementById('unidad_disposicion').value = "SIAT-COM PNP HUANTA";
@@ -697,7 +793,7 @@
     document.getElementById('fec_soat').value = hoy;
     document.getElementById('fec_itv').value = hoy;
 
-    alert("⚡ ¡Datos de prueba cargados exitosamente!");
+    alert("⚡ ¡Datos de prueba cargados exitosamente (2 Intervenidos)!");
   }
 
   function getVal(id, fallback = "S/D") {
@@ -710,11 +806,7 @@
                     localStorage.getItem('actas_seleccionadas') || '[]';
 
     let actasGuardadas = [];
-    try {
-      actasGuardadas = JSON.parse(rawData);
-    } catch (e) {
-      actasGuardadas = [];
-    }
+    try { actasGuardadas = JSON.parse(rawData); } catch (e) { actasGuardadas = []; }
 
     if (!Array.isArray(actasGuardadas) || actasGuardadas.length === 0) {
       return "- Ninguna acta adicional seleccionada.";
@@ -723,11 +815,7 @@
     return actasGuardadas
       .map(item => {
         let texto = (typeof item === 'object' && item !== null) ? (item.titulo || item.nombre || item.id || '') : String(item);
-        
-        if (MAPA_TITULOS_ACTAS[texto]) {
-          texto = MAPA_TITULOS_ACTAS[texto];
-        }
-
+        if (MAPA_TITULOS_ACTAS[texto]) texto = MAPA_TITULOS_ACTAS[texto];
         let nombreLimpio = texto.replace(/^\d+\.\s*/, '').trim().toLowerCase();
 
         if (nombreLimpio.startsWith('acta') || nombreLimpio.startsWith('constancia') || nombreLimpio.startsWith('ficha')) {
@@ -740,19 +828,36 @@
   }
 
   function generarBloqueCierreYFirmas(horaFin) {
-    const intervenido = getVal('intervenido_nombre', '{intervenido_nombre}');
-    const dni = getVal('intervenido_dni', '{intervenido_dni}');
+    const lista = obtenerListaIntervenidos();
     const efectivo = getVal('personal_interviniente', '{personal_interviniente}');
     const cip = getVal('cip', '{cip}');
     const grado = getVal('grado', '{grado}');
 
-    return `\n\n--- Siendo las ${horaFin} Horas del mismo día se dio por concluido la presente diligencia, firmando todos los participantes presentes en señal de conformidad. -------------------\n\n` +
+    let bloqueFirmas = `\n\n--- Siendo las ${horaFin} Horas del mismo día se dio por concluido la presente diligencia, firmando todos los participantes presentes en señal de conformidad. -------------------\n\n` +
       `Se adjunta:\n` +
-      `${obtenerListaAdjuntosFormateada()}\n\n\n` +
-      `__________________________________             __________________________________\n` +
-      `          EL INSTRUCTOR                                  EL INTERVENIDO\n\n` +
-      `           CIP: ${cip}                                  ${intervenido}\n` +
-      `   ${grado} PNP ${efectivo}                         DNI N° ${dni}`;
+      `${obtenerListaAdjuntosFormateada()}\n\n\n`;
+
+    if (lista.length <= 1) {
+      const int1 = lista[0] || { nombre: '{intervenido_nombre}', dni: '{intervenido_dni}' };
+      bloqueFirmas += `__________________________________             __________________________________\n` +
+        `          EL INSTRUCTOR                                  EL INTERVENIDO\n\n` +
+        `           CIP: ${cip}                                  ${int1.nombre}\n` +
+        `   ${grado} PNP ${efectivo}                         DNI N° ${int1.dni}`;
+    } else {
+      bloqueFirmas += `__________________________________             __________________________________\n` +
+        `          EL INSTRUCTOR                                  EL INTERVENIDO N° 1\n\n` +
+        `           CIP: ${cip}                                  ${lista[0].nombre}\n` +
+        `   ${grado} PNP ${efectivo}                         DNI N° ${lista[0].dni}\n\n`;
+
+      for (let i = 1; i < lista.length; i++) {
+        bloqueFirmas += `\n                                               __________________________________\n` +
+          `                                                 EL INTERVENIDO N° ${i + 1}\n\n` +
+          `                                                 ${lista[i].nombre}\n` +
+          `                                                 DNI N° ${lista[i].dni}\n`;
+      }
+    }
+
+    return bloqueFirmas;
   }
 
   function abrirEspecieModal(fieldId, fieldLabel) {
@@ -840,6 +945,10 @@
       return;
     }
 
+    // Guardar intervenidos en memoria global para word.js
+    window.pnp_lista_intervenidos = obtenerListaIntervenidos();
+    localStorage.setItem('pnp_lista_intervenidos', JSON.stringify(window.pnp_lista_intervenidos));
+
     document.getElementById('paso1_formulario').style.display = 'none';
     document.getElementById('paso2_redactor').style.display = 'block';
     
@@ -853,15 +962,11 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // MINIMIZA AUTOMÁTICAMENTE EL PANEL DE PLANTILLAS AL ELEGIR UNA
   function minimizarPlantillas() {
     const detailsPlantillas = document.getElementById('details_plantillas');
-    if (detailsPlantillas) {
-      detailsPlantillas.open = false;
-    }
+    if (detailsPlantillas) detailsPlantillas.open = false;
   }
 
-  // ALTERNA ENTRE OCULTAR O MOSTRAR EL PANEL LATERAL COMPLETO (MODO EXPANDIDO)
   function toggleSidebarLayout() {
     const grid = document.getElementById('contenedorPaso2Grid');
     const lateral = document.getElementById('columnaLateralPaso2');
@@ -882,18 +987,18 @@
     const cont = document.getElementById('panel_fichas_datos');
     cont.innerHTML = "";
 
+    const listaInt = obtenerListaIntervenidos();
+    
     const datos = [
-      { titulo: "Intervenido", val: getVal('intervenido_nombre') },
-      { titulo: "DNI", val: getVal('intervenido_dni') },
-      { titulo: "Edad", val: getVal('edad') + " años" },
-      { titulo: "Estado Civil", val: getVal('estado_civil') },
-      { titulo: "Natural de", val: getVal('natural') },
-      { titulo: "Celular", val: getVal('celular1') },
-      { titulo: "Padre", val: getVal('papa') },
-      { titulo: "Madre", val: getVal('mama') },
-      { titulo: "Ocupación", val: getVal('ocupacion') },
-      { titulo: "Domicilio", val: getVal('domicilio') },
-      { titulo: "Asistencia Confianza", val: getVal('asistido_confianza') },
+      { titulo: "Todos los Intervenidos", val: obtenerTextoIntervenidosNarrativa() }
+    ];
+
+    listaInt.forEach((item, idx) => {
+      datos.push({ titulo: `Intervenido ${idx + 1}`, val: `${item.nombre} (${item.edad} años)` });
+      datos.push({ titulo: `DNI Intervenido ${idx + 1}`, val: item.dni });
+    });
+
+    datos.push(
       { titulo: "Lugar Intervención", val: getVal('lugar') },
       { titulo: "Hora Intervención", val: getVal('hora_intervencion') + " hrs" },
       { titulo: "Fiscal RMP", val: getVal('fiscal', "RMP NO ESPECIFICADO") },
@@ -906,7 +1011,7 @@
       { titulo: "Hallazgos Positivos", val: getVal('narrar_positivo') },
       { titulo: "Efectivo PNP", val: `${getVal('grado')} ${getVal('personal_interviniente')}` },
       { titulo: "CIP Efectivo", val: getVal('cip') }
-    ];
+    );
 
     const cantVeh = parseInt(document.getElementById('cant_vehiculos_pnp').value, 10) || 1;
     for (let i = 1; i <= cantVeh; i++) {
@@ -967,9 +1072,7 @@
     document.getElementById('cant_secciones').value = 6;
     construirSeccionesNarrativa();
 
-    const intervenido = getVal('intervenido_nombre', 'el intervenido');
-    const dni = getVal('intervenido_dni');
-    const edad = getVal('edad');
+    const intervenidosText = obtenerTextoIntervenidosNarrativa();
     const placa = getVal('placa_vehiculo', 'S/P');
     const lugar = getVal('lugar');
     const hora = getVal('hora_intervencion', '14:30');
@@ -979,23 +1082,23 @@
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 70) : getVal('hora2', '15:40');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
-    document.getElementById('agregar_intervencion_1').value = `--- El personal policial, en circunstancias que realizaba ${getVal('tipo_actividad') === 'OPERATIVO POLICIAL' ? 'el O/P ' + getVal('nombre_operativo') : 'patrullaje de rutina'} siendo las ${hora} hrs aprox., en ${lugar}; se intervino el vehículo de placa de rodaje N° ${placa}, conducido por ${intervenido} (${edad}), identificado con DNI N° ${dni}, quien circulaba en actitud sospechosa. Asimismo, se tomó conocimiento por parte de la superioridad que el vehículo en mención estaría involucrado en la denuncia por el presunto delito contra el patrimonio en la modalidad de Extorsión.`;
+    document.getElementById('agregar_intervencion_1').value = `--- El personal policial, en circunstancias que realizaba ${getVal('tipo_actividad') === 'OPERATIVO POLICIAL' ? 'el O/P ' + getVal('nombre_operativo') : 'patrullaje de rutina'} siendo las ${hora} hrs aprox., en ${lugar}; se intervino el vehículo de placa de rodaje N° ${placa}, donde se encontraban los ciudadanos ${intervenidosText}, quienes circulaban en actitud sospechosa. Asimismo, se tomó conocimiento por parte de la superioridad que el vehículo en mención estaría involucrado en la denuncia por el presunto delito contra el patrimonio en la modalidad de Extorsión.`;
 
     document.getElementById('titulo_sec_2').value = "II. REGISTRO VEHICULAR:";
-    document.getElementById('agregar_intervencion_2').value = `--- Que, siendo las ${(typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 10) : hora} hrs, se procede a realizar el respectivo registro vehicular en presencia del intervenido ${intervenido}, hallándose los siguientes elementos:\n${hallazgos}`;
+    document.getElementById('agregar_intervencion_2').value = `--- Que, siendo las ${(typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 10) : hora} hrs, se procede a realizar el respectivo registro vehicular en presencia de los intervenidos, hallándose los siguientes elementos:\n${hallazgos}`;
 
     document.getElementById('titulo_sec_3').value = "III. INCAUTACION:";
-    document.getElementById('agregar_intervencion_3').value = `--- Que, siendo las ${(typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 20) : hora} hrs, se procede a realizar la INCAUTACIÓN de las especies, documentos y bienes hallados durante el registro vehicular a la persona de ${intervenido}.`;
+    document.getElementById('agregar_intervencion_3').value = `--- Que, siendo las ${(typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 20) : hora} hrs, se procede a realizar la INCAUTACIÓN de las especies, documentos y bienes hallados durante el registro vehicular a las personas de los intervenidos.`;
 
     document.getElementById('titulo_sec_4').value = "IV. LACRADO Y CADENA DE CUSTODIA:";
     document.getElementById('agregar_intervencion_4').value = `--- Que, siendo las ${(typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 25) : hora} hrs, se procede a realizar el LACRADO de las especies incautadas, las cuales son introducidas en sobres/cajas de seguridad con las firmas y post firmas de los participantes y asegurados con cinta de embalaje transparente.`;
 
     document.getElementById('titulo_sec_5').value = "V. DETENCION:";
-    document.getElementById('agregar_intervencion_5').value = `--- Que, siendo las ${(typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 60) : hora} hrs, se procede a la DETENCIÓN de ${intervenido} (${edad}), por encontrarse en flagrancia delictiva por el presunto delito contra el patrimonio en la modalidad de Extorsión (Art. 259 del CPP).`;
+    document.getElementById('agregar_intervencion_5').value = `--- Que, siendo las ${(typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 60) : hora} hrs, se procede a la DETENCIÓN de las personas de ${intervenidosText}, por encontrarse en flagrancia delictiva por el presunto delito contra el patrimonio en la modalidad de Extorsión (Art. 259 del CPP).`;
 
     document.getElementById('titulo_sec_6').value = "VI. COMUNICACIÓN AL RMP Y ADJUNTOS:";
     document.getElementById('agregar_intervencion_6').value = 
-      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, la persona intervenida es puesta a disposición de la ${unidadDisp} en calidad de DETENIDO, con las actas instruidas.` +
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, las personas intervenidas son puestas a disposición de la ${unidadDisp} en calidad de DETENIDOS, con las actas instruidas.` +
       generarBloqueCierreYFirmas(horaFin);
 
     minimizarPlantillas();
@@ -1006,9 +1109,7 @@
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
 
-    const intervenido = getVal('intervenido_nombre', 'el conductor');
-    const dni = getVal('intervenido_dni');
-    const edad = getVal('edad');
+    const intervenidosText = obtenerTextoIntervenidosNarrativa();
     const placa = getVal('placa_vehiculo', 'S/P');
     const lugar = getVal('lugar');
     const hora = getVal('hora_intervencion', '00:00');
@@ -1021,11 +1122,11 @@
     document.getElementById('agregar_intervencion_1').value = `--- Constituídos en ${lugar}, a bordo de la UUMM ${pnp1}, por información de transeúntes de la vía quienes comunicaron de un accidente de tránsito con consecuencia de daños materiales, se procedió a verificar la intervención de los vehículos participantes conforme a los artículos del CPP.`;
 
     document.getElementById('titulo_sec_2').value = "II. FUNDAMENTOS DE LOS HECHOS FÁCTICOS:";
-    document.getElementById('agregar_intervencion_2').value = `--- Se encontró en el lugar la unidad de placa de rodaje N° ${placa}, conducida por ${intervenido} (${edad}), identificado con DNI N° ${dni}, domicilado en ${getVal('domicilio')}, quien refiere que en circunstancias que se desplazaba por la vía, colisionó sufriendo daños materiales en la estructura del vehículo (ruptura de faros, parachoques y abolladuras varias). Se procedió a la formulación de las actas correspondientes.`;
+    document.getElementById('agregar_intervencion_2').value = `--- Se encontró en el lugar la unidad de placa de rodaje N° ${placa}, con la presencia de ${intervenidosText}, refiriendo que en circunstancias que se desplazaban por la vía, colisionaron sufriendo daños materiales en la estructura del vehículo (ruptura de faros, parachoques y abolladuras varias). Se procedió a la formulación de las actas correspondientes.`;
 
     document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y MEDIDAS DE SEGURIDAD:";
     document.getElementById('agregar_intervencion_3').value = 
-      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, la persona intervenida es puesta a disposición de la ${unidadDisp} en calidad de DETENIDO, con las actas instruidas.` +
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, los intervenidos son puestos a disposición de la ${unidadDisp} en calidad de DETENIDOS, con las actas instruidas.` +
       generarBloqueCierreYFirmas(horaFin);
 
     minimizarPlantillas();
@@ -1036,8 +1137,7 @@
     document.getElementById('cant_secciones').value = 2;
     construirSeccionesNarrativa();
 
-    const intervenido = getVal('intervenido_nombre', 'el ciudadano');
-    const edad = getVal('edad');
+    const intervenidosText = obtenerTextoIntervenidosNarrativa();
     const lugar = getVal('lugar');
     const hora = getVal('hora_intervencion', '10:00');
     const fiscal = getVal('fiscal', 'el RMP');
@@ -1045,11 +1145,11 @@
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 30) : getVal('hora2', '10:30');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
-    document.getElementById('agregar_intervencion_1').value = `--- En circunstancias que el personal policial realizaba patrullaje motorizado para la prevención de delitos y faltas en ${lugar}, al amparo del Art. 205 del CPP, se procedió a solicitar la identificación plena de la persona de ${intervenido} (${edad}), quien indicó no portar documento físico de identidad en el momento.`;
+    document.getElementById('agregar_intervencion_1').value = `--- En circunstancias que el personal policial realizaba patrullaje motorizado para la prevención de delitos y faltas en ${lugar}, al amparo del Art. 205 del CPP, se procedió a solicitar la identificación plena de los ciudadanos ${intervenidosText}, quienes indicaron no portar documento físico de identidad en el momento.`;
 
     document.getElementById('titulo_sec_2').value = "II. RETENCIÓN Y VERIFICACIÓN E-SINPOL:";
     document.getElementById('agregar_intervencion_2').value = 
-      `--- Al no contar con documento que acredite su identidad, fue conducido a la ${unidadDisp} para su plena identificación (otorgándole las facilidades para comunicarse con sus familiares), consultándose sus datos en el sistema virtual policial E-SINPOL PNP, dando como resultado NEGATIVO para requisitorias vigentes. De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, la persona intervenida es puesta a disposición de la ${unidadDisp} en calidad de RETENIDO, con las actas instruidas.` +
+      `--- Al no contar con documentos que acrediten su identidad, fueron conducidos a la ${unidadDisp} para su plena identificación (otorgándoles las facilidades para comunicarse con sus familiares), consultándose sus datos en el sistema virtual policial E-SINPOL PNP, dando como resultado NEGATIVO para requisitorias vigentes. De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, las personas intervenidas son puestas a disposición de la ${unidadDisp} en calidad de RETENIDOS, con las actas instruidas.` +
       generarBloqueCierreYFirmas(horaFin);
 
     minimizarPlantillas();
@@ -1060,9 +1160,7 @@
     document.getElementById('cant_secciones').value = 4;
     construirSeccionesNarrativa();
 
-    const intervenido = getVal('intervenido_nombre', 'el presunto autor');
-    const dni = getVal('intervenido_dni');
-    const edad = getVal('edad');
+    const intervenidosText = obtenerTextoIntervenidosNarrativa();
     const lugar = getVal('lugar');
     const hora = getVal('hora_intervencion', '11:00');
     const fiscal = getVal('fiscal', 'el RMP');
@@ -1070,17 +1168,17 @@
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 45) : getVal('hora2', '11:45');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y FLAGRANCIA:";
-    document.getElementById('agregar_intervencion_1').value = `--- Realizando patrullaje motorizado por ${lugar}, a solicitud de la persona agraviada, se realizó la búsqueda del presunto autor de hurto. La denunciante reconoció e identificó plenamente a ${intervenido} (${edad}), DNI N° ${dni}, por lo que se procedió a su inmediata intervención al amparo del Art. 259 del CPP.`;
+    document.getElementById('agregar_intervencion_1').value = `--- Realizando patrullaje motorizado por ${lugar}, a solicitud de la persona agraviada, se realizó la búsqueda de los presuntos autores del hurto. La denunciante reconoció e identificó plenamente a ${intervenidosText}, por lo que se procedió a su inmediata intervención al amparo del Art. 259 del CPP.`;
 
     document.getElementById('titulo_sec_2').value = "II. REGISTRO PERSONAL Y RECUPERACIÓN:";
-    document.getElementById('agregar_intervencion_2').value = `--- Sometido al registro personal, se le halló en su poder los bienes sustraídos descritos por la víctima. El intervenido no ejerció violencia ni amenaza durante la sustracción.`;
+    document.getElementById('agregar_intervencion_2').value = `--- Sometidos al registro personal, se les halló en su poder los bienes sustraídos descritos por la víctima. Los intervenidos no ejercieron violencia ni amenaza durante la sustracción.`;
 
     document.getElementById('titulo_sec_3').value = "III. DETENCION Y LECTURA DE DERECHOS:";
-    document.getElementById('agregar_intervencion_3').value = `--- Se procedió a la DETENCIÓN de ${intervenido}, notificándole sus derechos previstos en el Art. 71 del CPP, trasladándolo a la dependencia policial. La consulta en E-SINPOL PNP dio resultado NEGATIVO para requisitorias.`;
+    document.getElementById('agregar_intervencion_3').value = `--- Se procedió a la DETENCIÓN de los intervenidos, notificándoles sus derechos previstos en el Art. 71 del CPP, trasladándolos a la dependencia policial. La consulta en E-SINPOL PNP dio resultado NEGATIVO para requisitorias.`;
 
     document.getElementById('titulo_sec_4').value = "IV. COMUNICACIÓN AL RMP Y DISPOSICIÓN:";
     document.getElementById('agregar_intervencion_4').value = 
-      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, la persona intervenida es puesta a disposición de la ${unidadDisp} en calidad de DETENIDO, con las actas instruidas.` +
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, las personas intervenidas son puestas a disposición de la ${unidadDisp} en calidad de DETENIDOS, con las actas instruidas.` +
       generarBloqueCierreYFirmas(horaFin);
 
     minimizarPlantillas();
@@ -1091,9 +1189,7 @@
     document.getElementById('cant_secciones').value = 5;
     construirSeccionesNarrativa();
 
-    const intervenido = getVal('intervenido_nombre', 'el intervenido');
-    const dni = getVal('intervenido_dni');
-    const edad = getVal('edad');
+    const intervenidosText = obtenerTextoIntervenidosNarrativa();
     const placa = getVal('placa_vehiculo', 'S/P');
     const lugar = getVal('lugar');
     const hora = getVal('hora_intervencion', '19:00');
@@ -1103,20 +1199,20 @@
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 50) : getVal('hora2', '19:50');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y PERSECUCIÓN:";
-    document.getElementById('agregar_intervencion_1').value = `--- El personal policial, en circunstancias que realizaba patrullaje en ${lugar} siendo las ${hora} hrs aprox., se percató del vehículo de placa N° ${placa}, el cual circulaba con las luces apagadas infringiendo el RNT. Al indicarle que se detenga, el conductor desobedeció la orden y aceleró temerariamente contra el efectivo PNP para atropellarlo, dándose a la fuga. A bordo de la unidad ${pnp1} se inició la persecución.`;
+    document.getElementById('agregar_intervencion_1').value = `--- El personal policial, en circunstancias que realizaba patrullaje en ${lugar} siendo las ${hora} hrs aprox., se percató del vehículo de placa N° ${placa}, el cual circulaba con las luces apagadas infringiendo el RNT. Al indicarle que se detenga, los ocupantes desobedecieron la orden y aceleraron temerariamente contra el efectivo PNP para atropellarlo, dándose a la fuga. A bordo de la unidad ${pnp1} se inició la persecución.`;
 
     document.getElementById('titulo_sec_2').value = "II. CAPTURA Y DAÑOS A UNIDAD PNP:";
-    document.getElementById('agregar_intervencion_2').value = `--- Durante la persecución, la unidad policial ${pnp1} logró interponerse para cerrar el paso, chocando el vehículo en fuga contra la motocicleta policial ocasionándole daños materiales. Se logró reducir e intervenir a ${intervenido} (${edad}), DNI N° ${dni}, quien no contaba con licencia de conducir.`;
+    document.getElementById('agregar_intervencion_2').value = `--- Durante la persecución, la unidad policial ${pnp1} logró interponerse para cerrar el paso, chocando el vehículo en fuga contra la motocicleta policial ocasionándole daños materiales. Se logró reducir e intervenir a ${intervenidosText}.`;
 
     document.getElementById('titulo_sec_3').value = "III. RECOJO Y LACRADO DE EVIDENCIA:";
     document.getElementById('agregar_intervencion_3').value = `--- Que, siendo las ${(typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 15) : hora} hrs, se procedió al recojo de las partes dañadas de la unidad policial (soporte de placa) y posterior LACRADO en caja/sobre de seguridad con las firmas correspondientes.`;
 
     document.getElementById('titulo_sec_4').value = "IV. INCAUTACIÓN DE VEHÍCULO Y DETENCIÓN:";
-    document.getElementById('agregar_intervencion_4').value = `--- Se realizó la INCAUTACIÓN del vehículo de placa N° ${placa} y la DETENCIÓN de ${intervenido} (${edad}) por la presunta comisión del delito contra la Administración Pública - Resistencia o Desobediencia a la Autoridad.`;
+    document.getElementById('agregar_intervencion_4').value = `--- Se realizó la INCAUTACIÓN del vehículo de placa N° ${placa} y la DETENCIÓN de ${intervenidosText} por la presunta comisión del delito contra la Administración Pública - Resistencia o Desobediencia a la Autoridad.`;
 
     document.getElementById('titulo_sec_5').value = "V. COMUNICACIÓN AL RMP Y DISPOSICIÓN:";
     document.getElementById('agregar_intervencion_5').value = 
-      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, la persona intervenida es puesta a disposición de la ${unidadDisp} en calidad de DETENIDO, con las actas instruidas.` +
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, las personas intervenidas son puestas a disposición de la ${unidadDisp} en calidad de DETENIDOS, con las actas instruidas.` +
       generarBloqueCierreYFirmas(horaFin);
 
     minimizarPlantillas();
@@ -1127,9 +1223,10 @@
     document.getElementById('cant_secciones').value = 5;
     construirSeccionesNarrativa();
 
-    const intervenido = getVal('intervenido_nombre', 'el intervenido');
-    const dni = getVal('intervenido_dni');
-    const edad = getVal('edad');
+    const intervenidosText = obtenerTextoIntervenidosNarrativa();
+    const listaInt = obtenerListaIntervenidos();
+    const intPrincipal = listaInt[0] || { nombre: 'el conductor', dni: 'S/D', edad: 'S/E' };
+
     const placa = getVal('placa_vehiculo', 'S/P');
     const marca = getVal('marca_vehiculo', 'S/M');
     const modelo = getVal('modelo_vehiculo', 'S/M');
@@ -1148,11 +1245,11 @@
     document.getElementById('agregar_intervencion_1').value = `--- El suscrito, en circunstancias que realizaba patrullaje motorizado a bordo de la UUMM de placa ${pnp1}, siendo las ${hora} hrs aprox., divisó al vehículo menor de placa de rodaje N° ${placa}, cuyo conductor realizaba maniobras temerarias por ${lugar}, por lo que se procedió a darle el alcance e intervención inmediata.`;
 
     document.getElementById('titulo_sec_2').value = "II. IDENTIFICACIÓN Y SIGNOS DE HALITOSIS ALCOHÓLICA:";
-    document.getElementById('agregar_intervencion_2').value = `--- Intervenido el vehículo de placa N° ${placa} (Marca: ${marca}, Modelo: ${modelo}, Color: ${color}), se identificó al conductor como ${intervenido} (${edad}), DNI N° ${dni}, domiciliado en ${getVal('domicilio')}. Al solicitarle la documentación, se descubrió que presentaba signos evidentes de estar bajo la influencia de bebidas alcohólicas (halitosis alcohólica), motivo por el cual fue trasladado a las instalaciones de la UTSEVI PNP con apoyo de la UUMM ${pnp2}.`;
+    document.getElementById('agregar_intervencion_2').value = `--- Intervenido el vehículo de placa N° ${placa} (Marca: ${marca}, Modelo: ${modelo}, Color: ${color}), se identificó a los ocupantes resultando ser ${intervenidosText}. Al solicitarle la documentación al conductor ${intPrincipal.nombre}, se descubrió que presentaba signos evidentes de estar bajo la influencia de bebidas alcohólicas (halitosis alcohólica), motivo por el cual fueron trasladados a las instalaciones de la UTSEVI PNP con apoyo de la UUMM ${pnp2}.`;
 
     document.getElementById('titulo_sec_3').value = "III. EJECUCIÓN DE PRUEBAS DE EQUILIBRIO Y COORDINACIÓN (RETRAN):";
     document.getElementById('agregar_intervencion_3').value = 
-      `--- Al intervenido luego de hacerle de conocimiento el motivo de la intervención policial, de conformidad a las normativas vigentes y al Art. 307.2 del Reglamento Nacional de Tránsito, se procedió a la ejecución de pruebas de equilibrio y coordinación (Test de Hogan y Romberg), con el siguiente detalle:\n\n` +
+      `--- Al intervenido ${intPrincipal.nombre} luego de hacerle de conocimiento el motivo de la intervención policial, de conformidad a las normativas vigentes y al Art. 307.2 del Reglamento Nacional de Tránsito, se procedió a la ejecución de pruebas de equilibrio y coordinación (Test de Hogan y Romberg), con el siguiente detalle:\n\n` +
       `a) En este estado a horas ${horaPrueba} se le exhorta al conductor mencionado que descienda del volante del vehículo automotor de placa de rodaje ${placa}, marca ${marca}, modelo ${modelo}, color ${color}.\n\n` +
       `b) Con relación al Acta de Intervención Policial, y en aplicación al Art. 307.4 del RETRAN, se procede a realizar las siguiente (s) prueba (s) de equilibrio y/o coordinación:\n\n` +
       `1. Andar con los ojos vendados o cerrados y los brazos en alto, poniendo un pie justo delante de otro, sobre una línea recta.\n` +
@@ -1166,11 +1263,11 @@
       `--- RESULTADO: El intervenido NO PASÓ LAS PRUEBAS por presentar inestabilidad, falta de coordinación motora y signos evidentes de intoxicación alcohólica.`;
 
     document.getElementById('titulo_sec_4').value = "IV. DERECHOS DEL IMPUTADO Y CONSULTA E-SINPOL:";
-    document.getElementById('agregar_intervencion_4').value = `--- Asimismo, le dio a conocer sus derechos previstos en el Artículo 71 del CPP, se procedió a su traslado a la oficina de la UTSEVI PNP Huanta para las diligencias correspondientes, dejando constancia que el intervenido ha recibido buen trato físico y psicológico, siendo tratado con dignidad y respeto; asimismo se precisa que las Actas (diligencias) que se adjunta a la presente se realizó en esta dependencia por medidas de seguridad del personal policial interviniente y del propio intervenido. La consulta en E-SINPOL PNP dio como resultado NEGATIVO para requisitorias.`;
+    document.getElementById('agregar_intervencion_4').value = `--- Asimismo, se le dio a conocer sus derechos previstos en el Artículo 71 del CPP, se procedió a su traslado a la oficina de la UTSEVI PNP Huanta para las diligencias correspondientes, dejando constancia que los intervenidos han recibido buen trato físico y psicológico, siendo tratados con dignidad y respeto; asimismo se precisa que las Actas (diligencias) que se adjunta a la presente se realizaron en esta dependencia por medidas de seguridad del personal policial interviniente y de los propios intervenidos. La consulta en E-SINPOL PNP dio como resultado NEGATIVO para requisitorias.`;
 
     document.getElementById('titulo_sec_5').value = "V. DISPOSICIÓN Y COMUNICACIÓN AL RMP:";
     document.getElementById('agregar_intervencion_5').value = 
-      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, la persona intervenida es puesta a disposición de la ${unidadDisp} en calidad de DETENIDO, con las actas instruidas.` +
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, las personas intervenidas son puestas a disposición de la ${unidadDisp} en calidad de DETENIDOS, con las actas instruidas.` +
       generarBloqueCierreYFirmas(horaFin);
 
     minimizarPlantillas();
