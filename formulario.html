@@ -51,6 +51,7 @@
       width: 100%;
       transition: all 0.15s ease;
       box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      margin-bottom: 4px;
     }
     .chip-btn:hover {
       background: #f0f9ff;
@@ -63,6 +64,58 @@
       font-size: 10px;
       text-transform: uppercase;
     }
+
+    /* CONTENEDORES AGRUPADOS POR CATEGORÍA EN EL PANEL LATERAL */
+    .panel-categoria {
+      margin-bottom: 12px;
+      border-radius: 8px;
+      border: 1px solid;
+      padding: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .panel-cat-titulo {
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      padding-bottom: 4px;
+    }
+
+    /* COLORES TEMÁTICOS POR CATEGORÍA */
+    .cat-intervenido { background-color: #fef2f2; border-color: #fca5a5; }
+    .cat-intervenido .panel-cat-titulo { color: #991b1b; }
+    .cat-intervenido .chip-btn { border-left-color: #ef4444; }
+    .cat-intervenido .chip-btn strong { color: #991b1b; }
+
+    .cat-vehiculo { background-color: #fffbeb; border-color: #fde047; }
+    .cat-vehiculo .panel-cat-titulo { color: #9a3412; }
+    .cat-vehiculo .chip-btn { border-left-color: #f59e0b; }
+    .cat-vehiculo .chip-btn strong { color: #9a3412; }
+
+    .cat-lugar { background-color: #eff6ff; border-color: #bfdbfe; }
+    .cat-lugar .panel-cat-titulo { color: #1e40af; }
+    .cat-lugar .chip-btn { border-left-color: #3b82f6; }
+    .cat-lugar .chip-btn strong { color: #1e40af; }
+
+    .cat-fiscal { background-color: #faf5ff; border-color: #d8b4fe; }
+    .cat-fiscal .panel-cat-titulo { color: #6b21a8; }
+    .cat-fiscal .chip-btn { border-left-color: #a855f7; }
+    .cat-fiscal .chip-btn strong { color: #6b21a8; }
+
+    .cat-pnp { background-color: #f0fdf4; border-color: #86efac; }
+    .cat-pnp .panel-cat-titulo { color: #166534; }
+    .cat-pnp .chip-btn { border-left-color: #22c55e; }
+    .cat-pnp .chip-btn strong { color: #166534; }
+
+    .cat-especies { background-color: #f8fafc; border-color: #cbd5e1; }
+    .cat-especies .panel-cat-titulo { color: #334155; }
+    .cat-especies .chip-btn { border-left-color: #64748b; }
+    .cat-especies .chip-btn strong { color: #334155; }
 
     .preset-btn {
       color: #fff;
@@ -1066,47 +1119,159 @@
     const listaInt = obtenerListaIntervenidos();
     const listaVeh = obtenerListaVehiculos();
 
-    const datos = [
-      { titulo: "Todos los Intervenidos", val: obtenerTextoIntervenidosNarrativa() },
-      { titulo: "Todos los Vehículos", val: obtenerTextoVehiculosNarrativa() }
+    // ESTRUCTURA DE CATEGORÍAS AGRUPADAS Y COLOR-CODED
+    const categorias = [
+      {
+        id: "cat_intervenidos",
+        titulo: "👥 Datos del Intervenido (Filiación e Identificación)",
+        clase: "cat-intervenido",
+        items: []
+      },
+      {
+        id: "cat_vehiculos",
+        titulo: "🚘 Datos de Vehículos Involucrados",
+        clase: "cat-vehiculo",
+        items: []
+      },
+      {
+        id: "cat_lugar",
+        titulo: "📍 Lugar, Tiempo y Motivo de Intervención",
+        clase: "cat-lugar",
+        items: []
+      },
+      {
+        id: "cat_fiscal",
+        titulo: "⚖️ Datos del Fiscal (RMP) y Unidad Policial",
+        clase: "cat-fiscal",
+        items: []
+      },
+      {
+        id: "cat_pnp",
+        titulo: "👮‍♂️ Personal Policial e Unidades PNP",
+        clase: "cat-pnp",
+        items: []
+      },
+      {
+        id: "cat_especies",
+        titulo: "📦 Especies y Hallazgos Positivos",
+        clase: "cat-especies",
+        items: []
+      }
     ];
 
+    // A) CATEGORÍA 1: INTERVENIDOS Y FILIACIÓN COMPLETA
+    if (listaInt.length > 1) {
+      categorias[0].items.push({
+        titulo: "Resumen Todos los Intervenidos",
+        val: obtenerTextoIntervenidosNarrativa()
+      });
+    }
+
     listaInt.forEach((item, idx) => {
-      datos.push({ titulo: `Intervenido ${idx + 1}`, val: `${item.nombre} (${item.edad} años)` });
-      datos.push({ titulo: `DNI Intervenido ${idx + 1}`, val: item.dni });
+      const num = idx + 1;
+      const prefijo = listaInt.length > 1 ? `Int. ${num} - ` : '';
+
+      const filiacionCompleta = `${item.nombre}, con ${item.edad} años de edad, natural de ${item.natural}, de ocupación ${item.ocupacion}, identificado con DNI N° ${item.dni}, quien refiere domiciliar en ${item.domicilio}, celular N° ${item.celular || 'S/N'}, estado civil ${item.estado_civil}, hijo de don ${item.papa || 'S/D'} y doña ${item.mama || 'S/D'}`;
+
+      categorias[0].items.push(
+        { titulo: `📋 Filiación Completa (${prefijo}${item.nombre})`, val: filiacionCompleta },
+        { titulo: `${prefijo}Nombre Completo`, val: item.nombre },
+        { titulo: `${prefijo}DNI`, val: item.dni },
+        { titulo: `${prefijo}Edad`, val: `${item.edad} años` },
+        { titulo: `${prefijo}Domicilio`, val: item.domicilio },
+        { titulo: `${prefijo}Ocupación`, val: item.ocupacion },
+        { titulo: `${prefijo}Natural de`, val: item.natural },
+        { titulo: `${prefijo}Celular`, val: item.celular || 'S/N' },
+        { titulo: `${prefijo}Estado Civil`, val: item.estado_civil },
+        { titulo: `${prefijo}Padres`, val: `hijo de don ${item.papa || 'S/D'} y doña ${item.mama || 'S/D'}` }
+      );
+
+      if (item.asistido_confianza) {
+        categorias[0].items.push({
+          titulo: `${prefijo}Persona de Confianza`,
+          val: item.asistido_confianza
+        });
+      }
     });
+
+    // B) CATEGORÍA 2: VEHÍCULOS INVOLUCRADOS
+    if (listaVeh.length > 1) {
+      categorias[1].items.push({
+        titulo: "Resumen Todos los Vehículos",
+        val: obtenerTextoVehiculosNarrativa()
+      });
+    }
 
     listaVeh.forEach((veh, idx) => {
-      datos.push({ titulo: `Placa Vehículo ${idx + 1}`, val: veh.placa });
-      datos.push({ titulo: `Marca/Modelo Vehículo ${idx + 1}`, val: `${veh.marca} ${veh.modelo}` });
+      const num = idx + 1;
+      const prefijo = listaVeh.length > 1 ? `Veh. ${num} - ` : '';
+
+      categorias[1].items.push(
+        { titulo: `${prefijo}Placa`, val: veh.placa },
+        { titulo: `${prefijo}Marca / Modelo`, val: `${veh.marca} ${veh.modelo}` },
+        { titulo: `${prefijo}Color / Estado`, val: veh.color }
+      );
     });
 
-    datos.push(
-      { titulo: "Lugar Intervención", val: getVal('lugar') },
-      { titulo: "Hora Intervención", val: getVal('hora_intervencion') + " hrs" },
-      { titulo: "Fiscal RMP", val: getVal('fiscal', "RMP NO ESPECIFICADO") },
-      { titulo: "Unidad Disposición", val: getVal('unidad_disposicion') },
+    // C) CATEGORÍA 3: LUGAR, TIEMPO Y MOTIVO
+    categorias[2].items.push(
+      { titulo: "Lugar Exacto de Intervención", val: getVal('lugar') },
+      { titulo: "Hora de Intervención", val: getVal('hora_intervencion') + " hrs" },
+      { titulo: "Fecha General", val: getVal('fecha') },
+      { titulo: "Jurisdicción", val: `${getVal('distrito')} - ${getVal('provincia')}` },
       { titulo: "Actividad Realizada", val: getVal('tipo_actividad') === 'OPERATIVO POLICIAL' ? `el O/P ${getVal('nombre_operativo')}` : 'Patrullaje de Rutina' },
-      { titulo: "Hallazgos Positivos", val: getVal('narrar_positivo') },
-      { titulo: "Efectivo PNP", val: `${getVal('grado')} ${getVal('personal_interviniente')}` },
+      { titulo: "Motivo Justificatorio Traslado", val: getVal('motivo_justificatorio') }
+    );
+
+    // D) CATEGORÍA 4: FISCAL (RMP) Y UNIDAD POLICIAL
+    categorias[3].items.push(
+      { titulo: "Fiscal RMP Competente", val: getVal('fiscal', "RMP NO ESPECIFICADO") },
+      { titulo: "Unidad Puesta a Disposición", val: getVal('unidad_disposicion') }
+    );
+
+    // E) CATEGORÍA 5: PERSONAL Y UNIDADES PNP
+    categorias[4].items.push(
+      { titulo: "Efectivo Interviniente", val: `${getVal('grado')} PNP ${getVal('personal_interviniente')}` },
       { titulo: "CIP Efectivo", val: getVal('cip') }
     );
 
     const cantVehPnp = parseInt(document.getElementById('cant_vehiculos_pnp').value, 10) || 1;
     for (let i = 1; i <= cantVehPnp; i++) {
       const p = document.getElementById(`placa_policial_${i}`) ? document.getElementById(`placa_policial_${i}`).value : '';
-      if (p) datos.push({ titulo: `Unidad PNP ${i}`, val: p });
+      if (p) {
+        categorias[4].items.push({ titulo: `Unidad Policial PNP ${i}`, val: p });
+      }
     }
 
-    datos.forEach(item => {
-      if (item.val && item.val !== 'S/N' && item.val !== 'S/D' && item.val !== 'NINGUNO') {
-        cont.innerHTML += `
-          <button type="button" class="chip-btn" onclick="insertarTextoEnActivo('${item.val.replace(/'/g, "\\'")}')">
-            <strong>${item.titulo}:</strong>
-            <span>${item.val}</span>
-          </button>
-        `;
-      }
+    // F) CATEGORÍA 6: ESPECIES / HALLAZGOS
+    const positivo = getVal('narrar_positivo');
+    if (positivo && positivo !== 'NINGUNO') {
+      categorias[5].items.push({ titulo: "Hallazgos Positivos Incautados", val: positivo });
+    }
+
+    // RENDERIZAR BLOQUES EN EL PANEL LATERAL
+    categorias.forEach(cat => {
+      if (cat.items.length === 0) return;
+
+      let htmlBloque = `
+        <div class="panel-categoria ${cat.clase}">
+          <div class="panel-cat-titulo">${cat.titulo}</div>
+      `;
+
+      cat.items.forEach(item => {
+        if (item.val && item.val !== 'S/N' && item.val !== 'S/D' && item.val !== 'NINGUNO') {
+          const valEscapado = item.val.replace(/'/g, "\\'").replace(/\n/g, "\\n");
+          htmlBloque += `
+            <button type="button" class="chip-btn" onclick="insertarTextoEnActivo('${valEscapado}')">
+              <strong>${item.titulo}:</strong>
+              <span>${item.val}</span>
+            </button>
+          `;
+        }
+      });
+
+      htmlBloque += `</div>`;
+      cont.innerHTML += htmlBloque;
     });
   }
 
