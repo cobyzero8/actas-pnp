@@ -416,6 +416,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     lugar: document.getElementById('lugar').value,
 
     motivo_justificatorio: document.getElementById('motivo_justificatorio') ? document.getElementById('motivo_justificatorio').value : "",
+    unidad_policial: document.getElementById('unidad_policial') ? document.getElementById('unidad_policial').value : "UTSEVI PNP HUANTA",
     unidad_disposicion: document.getElementById('unidad_disposicion') ? document.getElementById('unidad_disposicion').value : "SIAT-COM PNP HUANTA",
 
     placa_vehiculo: vehPrincipal.placa,
@@ -608,7 +609,7 @@ async function ejecutarGeneracionFinalExpediente() {
       ...vehiculosPNPObj,
       ...seccionesObj,
       
-      // VARIABLES MAESTRAS DE LA PLANTILLA MAESTRA ACTA_INTERVENCION.DOCX
+      // VARIABLES MAESTRAS DE LAS PLANTILLAS
       filiacion_intervenidos: filiacionCompleta,
       resumen_intervenidos: textoIntervenidosColectivo,
       resumen_vehiculos: textoVehiculosColectivo,
@@ -644,7 +645,7 @@ async function ejecutarGeneracionFinalExpediente() {
           intervenido_nombre: listaIntervenidos[0].nombre,
           intervenido_dni: listaIntervenidos[0].dni,
           efectivo_cargo: `${datosFinalesBase.grado} ${datosFinalesBase.personal_interviniente}`,
-          datos_json: datosFinalesBase // <-- Guarda la intervención editable para clonar en el futuro
+          datos_json: datosFinalesBase
         }]);
       }
     } catch (errSupabase) {
