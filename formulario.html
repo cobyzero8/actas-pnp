@@ -167,7 +167,7 @@
       <button onclick="cerrarSesion()" class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size: 11px;">Salir</button>
     </div>
 
-    <!-- RESUMEN DE SELECCIÓN -->
+    <!-- RESUMEN DE SELECCIÓN DESDE LOCALSTORAGE -->
     <div style="background: #003366; color: white; padding: 12px; border-radius: 6px; margin-bottom: 15px;">
       <div style="font-size: 11px; text-transform: uppercase; opacity: 0.8;">Presunto Delito Configurado:</div>
       <div id="resumenDelito" style="font-weight: bold; font-size: 13px; margin-top: 2px;">-</div>
@@ -448,7 +448,7 @@
           </button>
         </div>
 
-        <!-- LAYOUT DE 2 COLUMNAS (ÁREA DE REDACCIÓN Y PANEL DE FICHAS COMPLETO) -->
+        <!-- LAYOUT DE 2 COLUMNAS -->
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: start;">
           
           <!-- COLUMNA IZQUIERDA: BLOQUES DINÁMICOS DE NARRATIVA -->
@@ -461,7 +461,6 @@
               </button>
             </div>
 
-            <!-- CONTENEDOR DONDE SE INSERTAN LOS TEXTAREAS -->
             <div id="contenedor_parrafos_intervencion"></div>
           </div>
 
@@ -503,9 +502,7 @@
               Haz clic sobre cualquier ficha para colocar su valor en la posición actual del cursor:
             </p>
 
-            <div style="display: flex; flex-direction: column; gap: 6px;" id="panel_fichas_datos">
-              <!-- Generadas dinámicamente con TODOS los campos del Paso 1 -->
-            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;" id="panel_fichas_datos"></div>
           </div>
 
         </div>
@@ -528,6 +525,18 @@
   let nombreEspecieActual = "";
   let textareaActivoId = null;
 
+  const MAPA_TITULOS_ACTAS = {
+    "reg_personal": "acta de registro personal",
+    "lectura_derechos": "acta de lectura de derechos",
+    "detencion": "acta de detención policial",
+    "buen_trato": "constancia de buen trato",
+    "sit_vehicular": "acta de situación vehicular",
+    "reg_vehicular": "acta de registro vehicular",
+    "intervencion": "acta de intervención policial",
+    "lacrado": "acta de lacrado / cadena de custodia",
+    "comunicacion": "acta de comunicación telefónica"
+  };
+
   const TITULOS_SECCIONES_PNP = [
     "I. INTERVENCION POLICIAL:",
     "II. RECOJO Y LACRADO DE EVIDENCIA:",
@@ -547,37 +556,60 @@
     if (horaIntInput && !horaIntInput.value) {
       horaIntInput.value = new Date().toTimeString().slice(0, 5);
     }
+
+    // CARGAR RESUMEN DEL DELITO Y CANTIDAD DE ACTAS
+    const delitoSel = localStorage.getItem('pnp_delito_seleccionado') || 'NO ESPECIFICADO';
+    const actasRaw = localStorage.getItem('pnp_actas_seleccionadas') || '[]';
+    let cantActas = 0;
+    try { cantActas = JSON.parse(actasRaw).length; } catch(e){}
+
+    const elDelito = document.getElementById('resumenDelito');
+    const elCant = document.getElementById('resumenActasCant');
+    if (elDelito) elDelito.innerText = delitoSel;
+    if (elCant) elCant.innerText = `${cantActas} acta(s) seleccionada(s) para este expediente.`;
   });
 
-  // HELPER PARA OBTENER VALORES DEL PASO 1 CON FALLBACK
   function getVal(id, fallback = "S/D") {
     const el = document.getElementById(id);
     return el && el.value.trim() !== "" ? el.value.trim() : fallback;
   }
 
-  // HELPER PARA OBTENER Y FORMATAR ÚNICAMENTE LAS ACTAS SELECCIONADAS EN EL MENU
+  // OBTIENE LAS ACTAS SELECCIONADAS USANDO LA CLAVE EXACTA DE MENU.HTML ('pnp_actas_seleccionadas')
   function obtenerListaAdjuntosFormateada() {
-    const actasGuardadas = JSON.parse(localStorage.getItem('actas_seleccionadas') || '[]');
+    const rawData = localStorage.getItem('pnp_actas_seleccionadas') || 
+                    localStorage.getItem('actas_seleccionadas') || '[]';
 
-    if (actasGuardadas.length === 0) {
+    let actasGuardadas = [];
+    try {
+      actasGuardadas = JSON.parse(rawData);
+    } catch (e) {
+      actasGuardadas = [];
+    }
+
+    if (!Array.isArray(actasGuardadas) || actasGuardadas.length === 0) {
       return "- Ninguna acta adicional seleccionada.";
     }
 
     return actasGuardadas
-      .map(acta => {
-        let nombreLimpio = acta.replace(/^\d+\.\s*/, '').trim();
-        let minuscula = nombreLimpio.toLowerCase();
+      .map(item => {
+        let texto = (typeof item === 'object' && item !== null) ? (item.titulo || item.nombre || item.id || '') : String(item);
+        
+        // Traduce el ID técnico si corresponde
+        if (MAPA_TITULOS_ACTAS[texto]) {
+          texto = MAPA_TITULOS_ACTAS[texto];
+        }
 
-        if (minuscula.startsWith('acta') || minuscula.startsWith('constancia') || minuscula.startsWith('ficha')) {
-          return `- Una (01) ${minuscula}.`;
+        let nombreLimpio = texto.replace(/^\d+\.\s*/, '').trim().toLowerCase();
+
+        if (nombreLimpio.startsWith('acta') || nombreLimpio.startsWith('constancia') || nombreLimpio.startsWith('ficha')) {
+          return `- Una (01) ${nombreLimpio}.`;
         } else {
-          return `- Una (01) acta de ${minuscula}.`;
+          return `- Una (01) acta de ${nombreLimpio}.`;
         }
       })
       .join('\n');
   }
 
-  // HELPER PARA GENERAR EL CIERRE, ADJUNTOS DINÁMICOS Y BLOQUE DE FIRMAS AUTOMÁTICO
   function generarBloqueCierreYFirmas(horaFin) {
     const intervenido = getVal('intervenido_nombre', '{intervenido_nombre}');
     const dni = getVal('intervenido_dni', '{intervenido_dni}');
@@ -594,7 +626,6 @@
       `   ${grado} PNP ${efectivo}                         DNI N° ${dni}`;
   }
 
-  // MODAL ESPECIES
   function abrirEspecieModal(fieldId, fieldLabel) {
     campoEspecieActual = fieldId;
     nombreEspecieActual = fieldLabel;
@@ -654,7 +685,6 @@
     }
   }
 
-  // DINÁMICOS PASO 1
   function evaluarTipoActividad() {
     const tipo = document.getElementById('tipo_actividad').value;
     document.getElementById('box_nombre_operativo').style.display = (tipo === 'OPERATIVO POLICIAL') ? 'block' : 'none';
@@ -674,7 +704,6 @@
     }
   }
 
-  // PASO 1 -> PASO 2: IR AL REDACTOR
   function irAPaso2Redactor() {
     const form = document.getElementById('expedienteForm');
     if (!form.checkValidity()) {
@@ -695,7 +724,6 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // CONSTRUIR EL PANEL LATERAL DE FICHAS CON TODOS LOS DATOS INGRESADOS
   function construirFichasDatosPanel() {
     const cont = document.getElementById('panel_fichas_datos');
     cont.innerHTML = "";
@@ -743,7 +771,6 @@
     });
   }
 
-  // CONSTRUCCIÓN DE SECCIONES CON TÍTULO INGRESABLE DIRECTAMENTE
   function construirSeccionesNarrativa() {
     const cant = parseInt(document.getElementById('cant_secciones').value, 10) || 1;
     const cont = document.getElementById('contenedor_parrafos_intervencion');
@@ -778,7 +805,6 @@
     txt.focus();
   }
 
-  // 01. MODELO EXTORSIÓN
   function cargarModeloExtorsion() {
     document.getElementById('cant_secciones').value = 6;
     construirSeccionesNarrativa();
@@ -814,7 +840,6 @@
       generarBloqueCierreYFirmas(horaFin);
   }
 
-  // 02. MODELO ACCIDENTE DE TRÁNSITO
   function cargarModeloAccidenteTransito() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
@@ -841,7 +866,6 @@
       generarBloqueCierreYFirmas(horaFin);
   }
 
-  // 03. MODELO CONTROL DE IDENTIDAD
   function cargarModeloControlIdentidad() {
     document.getElementById('cant_secciones').value = 2;
     construirSeccionesNarrativa();
@@ -861,7 +885,6 @@
       generarBloqueCierreYFirmas(horaFin);
   }
 
-  // 04. MODELO HURTO EN FLAGRANCIA
   function cargarModeloHurtoFlagrancia() {
     document.getElementById('cant_secciones').value = 4;
     construirSeccionesNarrativa();
@@ -889,7 +912,6 @@
       generarBloqueCierreYFirmas(horaFin);
   }
 
-  // 05. MODELO VIOLENCIA / RESISTENCIA A LA AUTORIDAD
   function cargarModeloResistenciaAutoridad() {
     document.getElementById('cant_secciones').value = 5;
     construirSeccionesNarrativa();
@@ -922,7 +944,6 @@
       generarBloqueCierreYFirmas(horaFin);
   }
 
-  // 06. MODELO CONDUCCIÓN EN ESTADO DE EBRIEDAD / DROGADICCIÓN (TEXTOS COMPLETOS RETRAN - AJUSTADO A +20 MIN Y FIRMAS)
   function cargarModeloEbriedadPruebas() {
     document.getElementById('cant_secciones').value = 5;
     construirSeccionesNarrativa();
@@ -960,7 +981,7 @@
       `   PASÓ LA PRUEBA: [ ] SI   [X] NO\n\n` +
       `3. Juntar el dedo índice de una mano con la nariz, estando con los ojos cerrados y partiendo de los brazos extendidos hacia abajo.\n` +
       `   PASÓ LA PRUEBA: [ ] SI   [X] NO\n\n` +
-      `4. Situar el individuo de pie with los pies juntos, las manos extendidas hacia adelante y con los ojos cerrados. La vacilación en las personas en estado normal es leve, aumentando con la presencia del alcohol (PRUEBA DE ROMBERG).\n` +
+      `4. Situar el individuo de pie con los pies juntos, las manos extendidas hacia adelante y con los ojos cerrados. La vacilación en las personas en estado normal es leve, aumentando con la presencia del alcohol (PRUEBA DE ROMBERG).\n` +
       `   PASÓ LA PRUEBA: [ ] SI   [X] NO\n\n` +
       `--- RESULTADO: El intervenido NO PASÓ LAS PRUEBAS por presentar inestabilidad, falta de coordinación motora y signos evidentes de intoxicación alcohólica.`;
 
