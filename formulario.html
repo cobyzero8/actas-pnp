@@ -746,15 +746,31 @@
     return lista;
   }
 
+  // --- NARRATIVA Y GRAMÁTICA DINÁMICA DE INTERVENIDOS ---
   function obtenerTextoIntervenidosNarrativa() {
     const lista = obtenerListaIntervenidos();
     if (lista.length === 0) return "el intervenido";
     if (lista.length === 1) {
-      return `${lista[0].nombre} (${lista[0].edad}), identificado con DNI N° ${lista[0].dni}`;
+      return `${lista[0].nombre} (${lista[0].edad} años), identificado con DNI N° ${lista[0].dni}`;
     }
-    const textos = lista.map(item => `${item.nombre} (${item.edad}), identificado con DNI N° ${item.dni}`);
+    const textos = lista.map(item => `${item.nombre} (${item.edad} años), DNI N° ${item.dni}`);
     const ultimo = textos.pop();
     return `${textos.join(', ')} y ${ultimo}`;
+  }
+
+  function obtenerGramaticaIntervenidos() {
+    const lista = obtenerListaIntervenidos();
+    const cant = lista.length;
+    return {
+      cant: cant,
+      etiquetaSujeto: cant <= 1 ? "al ciudadano" : "a los ciudadanos",
+      sujeto: cant <= 1 ? "el ciudadano" : "los ciudadanos",
+      verboEncontrar: cant <= 1 ? "se encontraba" : "se encontraban",
+      verboProceder: cant <= 1 ? "se le procedió" : "se les procedió",
+      calidadDetenido: cant <= 1 ? "DETENIDO" : "DETENIDOS",
+      calidadRetenido: cant <= 1 ? "RETENIDO" : "RETENIDOS",
+      texto: obtenerTextoIntervenidosNarrativa()
+    };
   }
 
   // GESTIÓN DINÁMICA DE TARJETAS DE VEHÍCULOS INVOLUCRADOS
@@ -826,15 +842,27 @@
     return lista;
   }
 
+  // --- NARRATIVA Y GRAMÁTICA DINÁMICA DE VEHÍCULOS ---
   function obtenerTextoVehiculosNarrativa() {
     const lista = obtenerListaVehiculos();
     if (lista.length === 0) return "el vehículo intervenido";
     if (lista.length === 1) {
       return `el vehículo de placa N° ${lista[0].placa} (Marca: ${lista[0].marca}, Modelo: ${lista[0].modelo}, Color/Estado: ${lista[0].color})`;
     }
-    const textos = lista.map(v => `el vehículo de placa N° ${v.placa} (Marca: ${v.marca}, Modelo: ${v.modelo})`);
+    const textos = lista.map(v => `el vehículo de placa N° ${v.placa} (Marca: ${v.marca}, Modelo: ${v.modelo}, Color/Estado: ${v.color})`);
     const ultimo = textos.pop();
     return `${textos.join(', ')} y ${ultimo}`;
+  }
+
+  function obtenerGramaticaVehiculos() {
+    const lista = obtenerListaVehiculos();
+    const cant = lista.length;
+    return {
+      cant: cant,
+      etiquetaVehiculo: cant <= 1 ? "al vehículo" : "a los vehículos",
+      sujetoVehiculo: cant <= 1 ? "el vehículo" : "los vehículos",
+      texto: obtenerTextoVehiculosNarrativa()
+    };
   }
 
   function cargarDatosEjemplo() {
@@ -953,6 +981,7 @@
       .join('\n');
   }
 
+  // --- BLOQUE DE FIRMAS ADAPTATIVO AL NÚMERO DE PERSONAS ---
   function generarBloqueCierreYFirmas(horaFin) {
     const lista = obtenerListaIntervenidos();
     const efectivo = getVal('personal_interviniente', '{personal_interviniente}');
@@ -1112,6 +1141,7 @@
     }
   }
 
+  // --- CONSTRUCCIÓN DEL PANEL LATERAL AGRUPADO Y POR COLORES ---
   function construirFichasDatosPanel() {
     const cont = document.getElementById('panel_fichas_datos');
     cont.innerHTML = "";
@@ -1119,7 +1149,6 @@
     const listaInt = obtenerListaIntervenidos();
     const listaVeh = obtenerListaVehiculos();
 
-    // ESTRUCTURA DE CATEGORÍAS AGRUPADAS Y COLOR-CODED
     const categorias = [
       {
         id: "cat_intervenidos",
@@ -1159,7 +1188,7 @@
       }
     ];
 
-    // A) CATEGORÍA 1: INTERVENIDOS Y FILIACIÓN COMPLETA
+    // A) INTERVENIDOS (MUESTRA 1 O VARIOS SEGÚN EL FORMULARIO)
     if (listaInt.length > 1) {
       categorias[0].items.push({
         titulo: "Resumen Todos los Intervenidos",
@@ -1168,9 +1197,7 @@
     }
 
     listaInt.forEach((item, idx) => {
-      const num = idx + 1;
-      const prefijo = listaInt.length > 1 ? `Int. ${num} - ` : '';
-
+      const prefijo = listaInt.length > 1 ? `Int. ${idx + 1} - ` : '';
       const filiacionCompleta = `${item.nombre}, con ${item.edad} años de edad, natural de ${item.natural}, de ocupación ${item.ocupacion}, identificado con DNI N° ${item.dni}, quien refiere domiciliar en ${item.domicilio}, celular N° ${item.celular || 'S/N'}, estado civil ${item.estado_civil}, hijo de don ${item.papa || 'S/D'} y doña ${item.mama || 'S/D'}`;
 
       categorias[0].items.push(
@@ -1194,7 +1221,7 @@
       }
     });
 
-    // B) CATEGORÍA 2: VEHÍCULOS INVOLUCRADOS
+    // B) VEHÍCULOS (MUESTRA 1 O VARIOS SEGÚN EL FORMULARIO)
     if (listaVeh.length > 1) {
       categorias[1].items.push({
         titulo: "Resumen Todos los Vehículos",
@@ -1203,9 +1230,7 @@
     }
 
     listaVeh.forEach((veh, idx) => {
-      const num = idx + 1;
-      const prefijo = listaVeh.length > 1 ? `Veh. ${num} - ` : '';
-
+      const prefijo = listaVeh.length > 1 ? `Veh. ${idx + 1} - ` : '';
       categorias[1].items.push(
         { titulo: `${prefijo}Placa`, val: veh.placa },
         { titulo: `${prefijo}Marca / Modelo`, val: `${veh.marca} ${veh.modelo}` },
@@ -1213,7 +1238,7 @@
       );
     });
 
-    // C) CATEGORÍA 3: LUGAR, TIEMPO Y MOTIVO
+    // C) LUGAR Y TIEMPO
     categorias[2].items.push(
       { titulo: "Lugar Exacto de Intervención", val: getVal('lugar') },
       { titulo: "Hora de Intervención", val: getVal('hora_intervencion') + " hrs" },
@@ -1223,13 +1248,13 @@
       { titulo: "Motivo Justificatorio Traslado", val: getVal('motivo_justificatorio') }
     );
 
-    // D) CATEGORÍA 4: FISCAL (RMP) Y UNIDAD POLICIAL
+    // D) FISCAL Y UNIDAD
     categorias[3].items.push(
       { titulo: "Fiscal RMP Competente", val: getVal('fiscal', "RMP NO ESPECIFICADO") },
       { titulo: "Unidad Puesta a Disposición", val: getVal('unidad_disposicion') }
     );
 
-    // E) CATEGORÍA 5: PERSONAL Y UNIDADES PNP
+    // E) PERSONAL PNP
     categorias[4].items.push(
       { titulo: "Efectivo Interviniente", val: `${getVal('grado')} PNP ${getVal('personal_interviniente')}` },
       { titulo: "CIP Efectivo", val: getVal('cip') }
@@ -1243,13 +1268,13 @@
       }
     }
 
-    // F) CATEGORÍA 6: ESPECIES / HALLAZGOS
+    // F) ESPECIES
     const positivo = getVal('narrar_positivo');
     if (positivo && positivo !== 'NINGUNO') {
       categorias[5].items.push({ titulo: "Hallazgos Positivos Incautados", val: positivo });
     }
 
-    // RENDERIZAR BLOQUES EN EL PANEL LATERAL
+    // RENDERIZADO FINAL
     categorias.forEach(cat => {
       if (cat.items.length === 0) return;
 
@@ -1311,13 +1336,15 @@
     txt.focus();
   }
 
+  // ================= PLANTILLAS CON ADAPTACIÓN GRAMATICAL DINÁMICA =================
+
   // MODELO 01: EXTORSIÓN
   function cargarModeloExtorsion() {
     document.getElementById('cant_secciones').value = 6;
     construirSeccionesNarrativa();
 
-    const intervenidosText = obtenerTextoIntervenidosNarrativa();
-    const vehiculosText = obtenerTextoVehiculosNarrativa();
+    const gInt = obtenerGramaticaIntervenidos();
+    const gVeh = obtenerGramaticaVehiculos();
     const lugar = getVal('lugar');
     const hora = getVal('hora_intervencion', '14:30');
     const fiscal = getVal('fiscal', 'el RMP');
@@ -1326,23 +1353,23 @@
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 70) : getVal('hora2', '15:40');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
-    document.getElementById('agregar_intervencion_1').value = `--- El personal policial, en circunstancias que realizaba ${getVal('tipo_actividad') === 'OPERATIVO POLICIAL' ? 'el O/P ' + getVal('nombre_operativo') : 'patrullaje de rutina'} siendo las ${hora} hrs aprox., en ${lugar}; se intervino a ${vehiculosText}, donde se encontraban los ciudadanos ${intervenidosText}, quienes circulaban en actitud sospechosa. Asimismo, se tomó conocimiento por parte de la superioridad que el vehículo en mención estaría involucrado en la denuncia por el presunto delito contra el patrimonio en la modalidad de Extorsión.`;
+    document.getElementById('agregar_intervencion_1').value = `--- El personal policial, en circunstancias que realizaba ${getVal('tipo_actividad') === 'OPERATIVO POLICIAL' ? 'el O/P ' + getVal('nombre_operativo') : 'patrullaje de rutina'} siendo las ${hora} hrs aprox., en ${lugar}; se intervino ${gVeh.etiquetaVehiculo} ${gVeh.texto}, donde ${gInt.verboEncontrar} ${gInt.sujeto} ${gInt.texto}, quien(es) circulaba(n) en actitud sospechosa. Asimismo, se tomó conocimiento que el vehículo estaría involucrado en una denuncia por el presunto delito de Extorsión.`;
 
     document.getElementById('titulo_sec_2').value = "II. REGISTRO VEHICULAR:";
-    document.getElementById('agregar_intervencion_2').value = `--- Que, siendo las ${(typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 10) : hora} hrs, se procede a realizar el respectivo registro vehicular en presencia de los intervenidos, hallándose los siguientes elementos:\n${hallazgos}`;
+    document.getElementById('agregar_intervencion_2').value = `--- Que, siendo las ${(typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 10) : hora} hrs, se procede a realizar el respectivo registro vehicular en presencia de los participantes, hallándose los siguientes elementos:\n${hallazgos}`;
 
     document.getElementById('titulo_sec_3').value = "III. INCAUTACION:";
-    document.getElementById('agregar_intervencion_3').value = `--- Que, siendo las ${(typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 20) : hora} hrs, se procede a realizar la INCAUTACIÓN de las especies, documentos y bienes hallados durante el registro vehicular a las personas de los intervenidos.`;
+    document.getElementById('agregar_intervencion_3').value = `--- Que, siendo las ${(typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 20) : hora} hrs, se procede a realizar la INCAUTACIÓN de las especies y documentos hallados durante el registro vehicular.`;
 
     document.getElementById('titulo_sec_4').value = "IV. LACRADO Y CADENA DE CUSTODIA:";
-    document.getElementById('agregar_intervencion_4').value = `--- Que, siendo las ${(typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 25) : hora} hrs, se procede a realizar el LACRADO de las especies incautadas, las cuales son introducidas en sobres/cajas de seguridad con las firmas y post firmas de los participantes y asegurados con cinta de embalaje transparente.`;
+    document.getElementById('agregar_intervencion_4').value = `--- Que, siendo las ${(typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 25) : hora} hrs, se procede al LACRADO de las especies incautadas en sobres/cajas de seguridad, debidamente firmados y rotulados.`;
 
     document.getElementById('titulo_sec_5').value = "V. DETENCION:";
-    document.getElementById('agregar_intervencion_5').value = `--- Que, siendo las ${(typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 60) : hora} hrs, se procede a la DETENCIÓN de las personas de ${intervenidosText}, por encontrarse en flagrancia delictiva por el presunto delito contra el patrimonio en la modalidad de Extorsión (Art. 259 del CPP).`;
+    document.getElementById('agregar_intervencion_5').value = `--- Que, siendo las ${(typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 60) : hora} hrs, se procede a la DETENCIÓN de ${gInt.etiquetaSujeto} ${gInt.texto}, por encontrarse en flagrancia delictiva por el delito de Extorsión (Art. 259 del CPP).`;
 
     document.getElementById('titulo_sec_6').value = "VI. COMUNICACIÓN AL RMP Y ADJUNTOS:";
     document.getElementById('agregar_intervencion_6').value = 
-      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, las personas intervenidas son puestas a disposición de la ${unidadDisp} en calidad de DETENIDOS, con las actas instruidas.` +
+      `--- De los hechos se comunicó de manera inmediata al RMP Abog. ${fiscal}, asimismo, ${gInt.sujeto} ${gInt.verboEncontrar === 'se encontraba' ? 'fue puesto' : 'fueron puestos'} a disposición de la ${unidadDisp} en calidad de ${gInt.calidadDetenido}, con las actas correspondientes.` +
       generarBloqueCierreYFirmas(horaFin);
 
     minimizarPlantillas();
@@ -1353,8 +1380,8 @@
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
 
-    const intervenidosText = obtenerTextoIntervenidosNarrativa();
-    const vehiculosText = obtenerTextoVehiculosNarrativa();
+    const gInt = obtenerGramaticaIntervenidos();
+    const gVeh = obtenerGramaticaVehiculos();
     const lugar = getVal('lugar');
     const hora = getVal('hora_intervencion', '00:00');
     const pnp1 = getVal('placa_policial_1', 'unidad policial');
@@ -1363,14 +1390,14 @@
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 40) : getVal('hora2', '00:40');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
-    document.getElementById('agregar_intervencion_1').value = `--- Constituídos en ${lugar}, a bordo de la UUMM ${pnp1}, por información de transeúntes de la vía quienes comunicaron de un accidente de tránsito (colisión/choque) con consecuencia de daños materiales, se procedió a verificar la intervención de los vehículos participantes conforme a los artículos del CPP.`;
+    document.getElementById('agregar_intervencion_1').value = `--- Constituídos en ${lugar}, a bordo de la UUMM ${pnp1}, por información de transeúntes que comunicaron un accidente de tránsito (colisión/choque) con daños materiales, se procedió a verificar la intervención de ${gVeh.sujetoVehiculo} participante(s).`;
 
     document.getElementById('titulo_sec_2').value = "II. FUNDAMENTOS DE LOS HECHOS FÁCTICOS:";
-    document.getElementById('agregar_intervencion_2').value = `--- Se encontró en el lugar de la intervención a ${vehiculosText}, con la presencia de sus conductores y ocupantes identificados como ${intervenidosText}, refiriendo que en circunstancias que se desplazaban por la vía colisionaron entre sí, sufriendo daños materiales en la estructura de los vehículos (ruptura de faros, parachoques y abolladuras varias). Se procedió a la formulación de las actas correspondientes e inventario de cada unidad.`;
+    document.getElementById('agregar_intervencion_2').value = `--- Se encontró en el lugar de la intervención a ${gVeh.texto}, con la presencia de su(s) conductor(es) e identificado(s) como ${gInt.texto}, refiriendo que colisionaron entre sí sufriendo daños materiales. Se procedió a la formulación de las actas e inventario vehicular.`;
 
     document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y MEDIDAS DE SEGURIDAD:";
     document.getElementById('agregar_intervencion_3').value = 
-      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, los intervenidos son puestos a disposición de la ${unidadDisp} en calidad de DETENIDOS, con las actas instruidas.` +
+      `--- De los hechos se comunicó al RMP Abog. ${fiscal}, trasladando a los participantes a la ${unidadDisp} en calidad de ${gInt.calidadDetenido} para las investigaciones de ley.` +
       generarBloqueCierreYFirmas(horaFin);
 
     minimizarPlantillas();
@@ -1381,7 +1408,7 @@
     document.getElementById('cant_secciones').value = 2;
     construirSeccionesNarrativa();
 
-    const intervenidosText = obtenerTextoIntervenidosNarrativa();
+    const gInt = obtenerGramaticaIntervenidos();
     const lugar = getVal('lugar');
     const hora = getVal('hora_intervencion', '10:00');
     const fiscal = getVal('fiscal', 'el RMP');
@@ -1389,11 +1416,11 @@
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 30) : getVal('hora2', '10:30');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
-    document.getElementById('agregar_intervencion_1').value = `--- En circunstancias que el personal policial realizaba patrullaje motorizado para la prevención de delitos y faltas en ${lugar}, al amparo del Art. 205 del CPP, se procedió a solicitar la identificación plena de los ciudadanos ${intervenidosText}, quienes indicaron no portar documento físico de identidad en el momento.`;
+    document.getElementById('agregar_intervencion_1').value = `--- En circunstancias que el personal policial realizaba patrullaje en ${lugar}, al amparo del Art. 205 del CPP, se procedió a solicitar la identificación plena de ${gInt.etiquetaSujeto} ${gInt.texto}, quien(es) indicó/indicaron no portar DNI físico en el momento.`;
 
     document.getElementById('titulo_sec_2').value = "II. RETENCIÓN Y VERIFICACIÓN E-SINPOL:";
     document.getElementById('agregar_intervencion_2').value = 
-      `--- Al no contar con documentos que acrediten su identidad, fueron conducidos a la ${unidadDisp} para su plena identificación (otorgándoles las facilidades para comunicarse con sus familiares), consultándose sus datos en el sistema virtual policial E-SINPOL PNP, dando como resultado NEGATIVO para requisitorias vigentes. De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, las personas intervenidas son puestas a disposición de la ${unidadDisp} en calidad de RETENIDOS, con las actas instruidas.` +
+      `--- Al no contar con documento de identidad, fue(ron) conducido(s) a la ${unidadDisp} para su identificación plena. La consulta en el sistema E-SINPOL PNP dio como resultado NEGATIVO para requisitorias vigentes. Se comunicó al RMP Abog. ${fiscal}, quedando en calidad de ${gInt.calidadRetenido}.` +
       generarBloqueCierreYFirmas(horaFin);
 
     minimizarPlantillas();
@@ -1404,7 +1431,7 @@
     document.getElementById('cant_secciones').value = 4;
     construirSeccionesNarrativa();
 
-    const intervenidosText = obtenerTextoIntervenidosNarrativa();
+    const gInt = obtenerGramaticaIntervenidos();
     const lugar = getVal('lugar');
     const hora = getVal('hora_intervencion', '11:00');
     const fiscal = getVal('fiscal', 'el RMP');
@@ -1412,17 +1439,17 @@
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 45) : getVal('hora2', '11:45');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y FLAGRANCIA:";
-    document.getElementById('agregar_intervencion_1').value = `--- Realizando patrullaje motorizado por ${lugar}, a solicitud de la persona agraviada, se realizó la búsqueda de los presuntos autores del hurto. La denunciante reconoció e identificó plenamente a ${intervenidosText}, por lo que se procedió a su inmediata intervención al amparo del Art. 259 del CPP.`;
+    document.getElementById('agregar_intervencion_1').value = `--- Realizando patrullaje por ${lugar}, a solicitud de la agraviada, se realizó la búsqueda de los autores del hurto, reconociendo plenamente a ${gInt.texto}, por lo que se procedió a su intervención inmediata.`;
 
     document.getElementById('titulo_sec_2').value = "II. REGISTRO PERSONAL Y RECUPERACIÓN:";
-    document.getElementById('agregar_intervencion_2').value = `--- Sometidos al registro personal, se les halló en su poder los bienes sustraídos descritos por la víctima. Los intervenidos no ejercieron violencia ni amenaza durante la sustracción.`;
+    document.getElementById('agregar_intervencion_2').value = `--- Sometido(s) al registro personal, se le(s) halló los bienes sustraídos descritos por la víctima.`;
 
     document.getElementById('titulo_sec_3').value = "III. DETENCION Y LECTURA DE DERECHOS:";
-    document.getElementById('agregar_intervencion_3').value = `--- Se procedió a la DETENCIÓN de los intervenidos, notificándoles sus derechos previstos en el Art. 71 del CPP, trasladándolos a la dependencia policial. La consulta en E-SINPOL PNP dio resultado NEGATIVO para requisitorias.`;
+    document.getElementById('agregar_intervencion_3').value = `--- Se procedió a la DETENCIÓN de ${gInt.etiquetaSujeto} ${gInt.texto}, notificándole(s) sus derechos conforme al Art. 71 del CPP.`;
 
     document.getElementById('titulo_sec_4').value = "IV. COMUNICACIÓN AL RMP Y DISPOSICIÓN:";
     document.getElementById('agregar_intervencion_4').value = 
-      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, las personas intervenidas son puestas a disposición de la ${unidadDisp} en calidad de DETENIDOS, con las actas instruidas.` +
+      `--- De los hechos se comunicó al RMP Abog. ${fiscal}, poniéndolo(s) a disposición de la ${unidadDisp} en calidad de ${gInt.calidadDetenido}.` +
       generarBloqueCierreYFirmas(horaFin);
 
     minimizarPlantillas();
@@ -1433,8 +1460,8 @@
     document.getElementById('cant_secciones').value = 5;
     construirSeccionesNarrativa();
 
-    const intervenidosText = obtenerTextoIntervenidosNarrativa();
-    const vehiculosText = obtenerTextoVehiculosNarrativa();
+    const gInt = obtenerGramaticaIntervenidos();
+    const gVeh = obtenerGramaticaVehiculos();
     const lugar = getVal('lugar');
     const hora = getVal('hora_intervencion', '19:00');
     const pnp1 = getVal('placa_policial_1', 'EP-1420');
@@ -1443,20 +1470,20 @@
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 50) : getVal('hora2', '19:50');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y PERSECUCIÓN:";
-    document.getElementById('agregar_intervencion_1').value = `--- El personal policial, en circunstancias que realizaba patrullaje en ${lugar} siendo las ${hora} hrs aprox., se percató de ${vehiculosText}, el cual circulaba con las luces apagadas infringiendo el RNT. Al indicarle que se detenga, los ocupantes desobedecieron la orden y aceleraron temerariamente contra el efectivo PNP para atropellarlo, dándose a la fuga. A bordo de la unidad ${pnp1} se inició la persecución.`;
+    document.getElementById('agregar_intervencion_1').value = `--- En patrullaje por ${lugar} a horas ${hora} aprox., se percató de ${gVeh.texto}, el cual circulaba en actitud sospechosa. Al darle la orden de detenerse, los ocupantes aceleraron dándose a la fuga, iniciándose la persecución a bordo de la UUMM ${pnp1}.`;
 
     document.getElementById('titulo_sec_2').value = "II. CAPTURA Y DAÑOS A UNIDAD PNP:";
-    document.getElementById('agregar_intervencion_2').value = `--- Durante la persecución, la unidad policial ${pnp1} logró interponerse para cerrar el paso, chocando el vehículo en fuga contra la motocicleta policial ocasionándole daños materiales. Se logró reducir e intervenir a ${intervenidosText}.`;
+    document.getElementById('agregar_intervencion_2').value = `--- La unidad policial logró cerrar el paso, logrando la reducción e intervención de ${gInt.texto}.`;
 
     document.getElementById('titulo_sec_3').value = "III. RECOJO Y LACRADO DE EVIDENCIA:";
-    document.getElementById('agregar_intervencion_3').value = `--- Que, siendo las ${(typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 15) : hora} hrs, se procedió al recojo de las partes dañadas de la unidad policial (soporte de placa) y posterior LACRADO en caja/sobre de seguridad con las firmas correspondientes.`;
+    document.getElementById('agregar_intervencion_3').value = `--- Se procedió al recojo y posterior LACRADO de los elementos de prueba hallados en la escena.`;
 
     document.getElementById('titulo_sec_4').value = "IV. INCAUTACIÓN DE VEHÍCULO Y DETENCIÓN:";
-    document.getElementById('agregar_intervencion_4').value = `--- Se realizó la INCAUTACIÓN de los vehículos intervenidos y la DETENCIÓN de ${intervenidosText} por la presunta comisión del delito contra la Administración Pública - Resistencia o Desobediencia a la Autoridad.`;
+    document.getElementById('agregar_intervencion_4').value = `--- Se realizó la INCAUTACIÓN de ${gVeh.sujetoVehiculo} y la DETENCIÓN de ${gInt.texto} por el delito de Resistencia o Desobediencia a la Autoridad.`;
 
     document.getElementById('titulo_sec_5').value = "V. COMUNICACIÓN AL RMP Y DISPOSICIÓN:";
     document.getElementById('agregar_intervencion_5').value = 
-      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, las personas intervenidas son puestas a disposición de la ${unidadDisp} en calidad de DETENIDOS, con las actas instruidas.` +
+      `--- De los hechos se comunicó al RMP Abog. ${fiscal}, poniéndolo(s) a disposición de la ${unidadDisp} en calidad de ${gInt.calidadDetenido}.` +
       generarBloqueCierreYFirmas(horaFin);
 
     minimizarPlantillas();
@@ -1467,15 +1494,14 @@
     document.getElementById('cant_secciones').value = 5;
     construirSeccionesNarrativa();
 
-    const intervenidosText = obtenerTextoIntervenidosNarrativa();
-    const vehiculosText = obtenerTextoVehiculosNarrativa();
+    const gInt = obtenerGramaticaIntervenidos();
+    const gVeh = obtenerGramaticaVehiculos();
     const listaInt = obtenerListaIntervenidos();
     const intPrincipal = listaInt[0] || { nombre: 'el conductor', dni: 'S/D', edad: 'S/E' };
 
     const lugar = getVal('lugar');
     const hora = getVal('hora_intervencion', '07:16');
     const pnp1 = getVal('placa_policial_1', 'unidad policial');
-    const pnp2 = getVal('placa_policial_2', 'unidad de apoyo');
     const fiscal = getVal('fiscal', 'el RMP');
     const unidadDisp = getVal('unidad_disposicion', 'SIAT-COM PNP HUANTA');
 
@@ -1483,32 +1509,21 @@
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 45) : getVal('hora2', '08:01');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y MANIOBRAS TEMERARIAS:";
-    document.getElementById('agregar_intervencion_1').value = `--- El suscrito, en circunstancias que realizaba patrullaje motorizado a bordo de la UUMM de placa ${pnp1}, siendo las ${hora} hrs aprox., divisó a ${vehiculosText}, cuyo conductor realizaba maniobras temerarias por ${lugar}, por lo que se procedió a darle el alcance e intervención inmediata.`;
+    document.getElementById('agregar_intervencion_1').value = `--- A bordo de la UUMM ${pnp1}, siendo las ${hora} hrs aprox., se divisó a ${gVeh.texto}, cuyo conductor realizaba maniobras temerarias por ${lugar}, interveniéndolo de inmediato.`;
 
     document.getElementById('titulo_sec_2').value = "II. IDENTIFICACIÓN Y SIGNOS DE HALITOSIS ALCOHÓLICA:";
-    document.getElementById('agregar_intervencion_2').value = `--- Intervenido el vehículo, se identificó a los ocupantes resultando ser ${intervenidosText}. Al solicitarle la documentación al conductor ${intPrincipal.nombre}, se descubrió que presentaba signos evidentes de estar bajo la influencia de bebidas alcohólicas (halitosis alcohólica), motivo por el cual fueron trasladados a las instalaciones de la UTSEVI PNP con apoyo de la UUMM ${pnp2}.`;
+    document.getElementById('agregar_intervencion_2').value = `--- Intervenido el vehículo, se identificó a los ocupantes resultando ser ${gInt.texto}. Al solicitar la documentación al conductor ${intPrincipal.nombre}, presentaba evidentes signos de ebriedad (halitosis alcohólica).`;
 
     document.getElementById('titulo_sec_3').value = "III. EJECUCIÓN DE PRUEBAS DE EQUILIBRIO Y COORDINACIÓN (RETRAN):";
     document.getElementById('agregar_intervencion_3').value = 
-      `--- Al intervenido ${intPrincipal.nombre} luego de hacerle de conocimiento el motivo de la intervención policial, de conformidad a las normativas vigentes y al Art. 307.2 del Reglamento Nacional de Tránsito, se procedió a la ejecución de pruebas de equilibrio y coordinación (Test de Hogan y Romberg), con el siguiente detalle:\n\n` +
-      `a) En este estado a horas ${horaPrueba} se le exhorta al conductor mencionado que descienda del volante de ${vehiculosText}.\n\n` +
-      `b) Con relación al Acta de Intervención Policial, y en aplicación al Art. 307.4 del RETRAN, se procede a realizar las siguiente (s) prueba (s) de equilibrio y/o coordinación:\n\n` +
-      `1. Andar con los ojos vendados o cerrados y los brazos en alto, poniendo un pie justo delante de otro, sobre una línea recta.\n` +
-      `   PASÓ LA PRUEBA: [ ] SI   [X] NO\n\n` +
-      `2. Juntar los dedos índices de cada mano, a la altura de la barbilla, estando los ojos cerrados y partiendo de los brazos extendidos hacia abajo.\n` +
-      `   PASÓ LA PRUEBA: [ ] SI   [X] NO\n\n` +
-      `3. Juntar el dedo índice de una mano con la nariz, estando con los ojos cerrados y partiendo de los brazos extendidos hacia abajo.\n` +
-      `   PASÓ LA PRUEBA: [ ] SI   [X] NO\n\n` +
-      `4. Situar el individuo de pie con los pies juntos, las manos extendidas hacia adelante y con los ojos cerrados. La vacilación en las personas en estado normal es leve, aumentando con la presencia del alcohol (PRUEBA DE ROMBERG).\n` +
-      `   PASÓ LA PRUEBA: [ ] SI   [X] NO\n\n` +
-      `--- RESULTADO: El intervenido NO PASÓ LAS PRUEBAS por presentar inestabilidad, falta de coordinación motora y signos evidentes de intoxicación alcohólica.`;
+      `--- Al intervenido conductor ${intPrincipal.nombre}, a horas ${horaPrueba}, en aplicación al Art. 307 del RETRAN, se le aplicó el Test de Hogan y Romberg resultando NO APTO / POSITIVO para inestabilidad motora e intoxicación alcohólica.`;
 
     document.getElementById('titulo_sec_4').value = "IV. DERECHOS DEL IMPUTADO Y CONSULTA E-SINPOL:";
-    document.getElementById('agregar_intervencion_4').value = `--- Asimismo, se le dio a conocer sus derechos previstos en el Artículo 71 del CPP, se procedió a su traslado a la oficina de la UTSEVI PNP Huanta para las diligencias correspondientes, dejando constancia que los intervenidos han recibido buen trato físico y psicológico, siendo tratados con dignidad y respeto; asimismo se precisa que las Actas (diligencias) que se adjunta a la presente se realizaron en esta dependencia por medidas de seguridad del personal policial interviniente y de los propios intervenidos. La consulta en E-SINPOL PNP dio como resultado NEGATIVO para requisitorias.`;
+    document.getElementById('agregar_intervencion_4').value = `--- Se le leyeron sus derechos (Art. 71 CPP), trasladándolo a la dependencia policial. La consulta E-SINPOL dio resultado NEGATIVO para requisitorias.`;
 
     document.getElementById('titulo_sec_5').value = "V. DISPOSICIÓN Y COMUNICACIÓN AL RMP:";
     document.getElementById('agregar_intervencion_5').value = 
-      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, asimismo, las personas intervenidas son puestas a disposición de la ${unidadDisp} en calidad de DETENIDOS, con las actas instruidas.` +
+      `--- De los hechos se comunicó de manera inmediata al RMP Abog. ${fiscal}, siendo puesto(s) a disposición de la ${unidadDisp} en calidad de ${gInt.calidadDetenido}.` +
       generarBloqueCierreYFirmas(horaFin);
 
     minimizarPlantillas();
