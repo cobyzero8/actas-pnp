@@ -223,6 +223,12 @@
   <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
       <a href="menu.html" style="text-decoration: none; color: var(--primary); font-weight: bold; font-size: 13px;">← Cambiar Delito / Actas</a>
+      
+      <!-- BOTÓN PARA CARGAR DATOS DE EJEMPLO/PRUEBA -->
+      <button type="button" onclick="cargarDatosEjemplo()" class="btn btn-primary" style="width: auto; padding: 6px 14px; font-size: 12px; background: #0d9488; border-color: #0d9488;">
+        ⚡ Cargar Datos de Prueba
+      </button>
+
       <button onclick="cerrarSesion()" class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size: 11px;">Salir</button>
     </div>
 
@@ -240,7 +246,7 @@
       <!-- ================= PASO 1: CAPTURA DE DATOS GENERALES ================= -->
       <div id="paso1_formulario">
         
-        <!-- BLOQUE 1: LUGAR Y TIEMPO (AZUL) -> SOLICITADO PRIMERO -->
+        <!-- BLOQUE 1: LUGAR Y TIEMPO (AZUL) -->
         <div class="section-block block-location">
           <div class="section-title">📍 1. Lugar y Tiempo de Intervención</div>
           <div class="grid">
@@ -627,6 +633,57 @@
     if (elDelito) elDelito.innerText = delitoSel;
     if (elCant) elCant.innerText = `${cantActas} acta(s) seleccionada(s) para este expediente.`;
   });
+
+  // FUNCIÓN PARA AUTOCOMPLETAR EL FORMULARIO CON DATOS REALISTAS DE PRUEBA
+  function cargarDatosEjemplo() {
+    const hoy = new Date().toISOString().split('T')[0];
+    
+    document.getElementById('distrito').value = "Huanta";
+    document.getElementById('provincia').value = "Huanta";
+    document.getElementById('region').value = "Ayacucho";
+    document.getElementById('hora_intervencion').value = "07:15";
+    document.getElementById('fecha').value = hoy;
+    document.getElementById('hora1').value = "07:00";
+    document.getElementById('hora2').value = "08:30";
+    document.getElementById('lugar').value = "Av. San Martín Cdra. 3, Huanta";
+
+    document.getElementById('intervenido_nombre').value = "QUISPE ROJAS, Carlos Alberto";
+    document.getElementById('intervenido_dni').value = "45892134";
+    document.getElementById('edad').value = "28";
+    document.getElementById('estado_civil').value = "soltero";
+    document.getElementById('natural').value = "Huanta - Ayacucho";
+    document.getElementById('celular1').value = "966123456";
+    document.getElementById('papa').value = "Juan Quispe Morales";
+    document.getElementById('mama').value = "María Rojas Mendoza";
+    document.getElementById('ocupacion').value = "Chofer";
+    document.getElementById('domicilio').value = "Jr. Miguel Grau N° 245, Huanta";
+    document.getElementById('asistido_confianza').value = "no deseando ser asistido por ninguna persona";
+
+    document.getElementById('fiscal').value = "Abog. Marco Antonio PÉREZ PALOMINO, Fiscal Adjunto de la FPPC Huanta";
+    document.getElementById('unidad_disposicion').value = "SIAT-COM PNP HUANTA";
+    document.getElementById('tipo_actividad').value = "PATRULLAJE DE RUTINA";
+    evaluarTipoActividad();
+
+    document.getElementById('personal_interviniente').value = "GARCÍA TAYPE, Pedro";
+    document.getElementById('grado').value = "S2";
+    document.getElementById('cip').value = "32145689";
+
+    document.getElementById('cant_vehiculos_pnp').value = 1;
+    generarCamposVehiculosPNP();
+    if (document.getElementById('placa_policial_1')) {
+      document.getElementById('placa_policial_1').value = "EP-7978";
+    }
+
+    document.getElementById('placa_vehiculo').value = "Y1B-452";
+    document.getElementById('marca_vehiculo').value = "Honda";
+    document.getElementById('modelo_vehiculo').value = "GL125";
+    document.getElementById('color_vehiculo').value = "Rojo / Buen estado de conservación";
+
+    document.getElementById('fec_soat').value = hoy;
+    document.getElementById('fec_itv').value = hoy;
+
+    alert("⚡ ¡Datos de prueba cargados exitosamente!");
+  }
 
   function getVal(id, fallback = "S/D") {
     const el = document.getElementById(id);
@@ -1051,7 +1108,7 @@
       `--- RESULTADO: El intervenido NO PASÓ LAS PRUEBAS por presentar inestabilidad, falta de coordinación motora y signos evidentes de intoxicación alcohólica.`;
 
     document.getElementById('titulo_sec_4').value = "IV. DERECHOS DEL IMPUTADO Y CONSULTA E-SINPOL:";
-    document.getElementById('agregar_intervencion_4').value = `--- Asimismo, le dio a conocer sus derechos previstos en el Artículo 71 del CPP, se procedió a su traslado a la oficina de la UTSEVI PNP Huanta para las diligencias correspondientes, dejando constancia que el intervenido ha recibido buen trato físico y psicológico, siendo tratado con dignidad y respeto; asimismo se precisa que las Actas (diligencias) que se adjunta a la presente se realizó en esta dependencia por medidas de seguridad del personal policial interviniente y del propio intervenido. La consulta en E-SINPOL PNP dio como resultado NEGATIVO para requisitorias.`;
+    document.getElementById('agregar_intervencion_4').value = `--- Asimismo, le dio a conocer sus derechos previstos en el Artículo 71 del CPP, se procedió a su traslado a la oficina de la UTSEVI PNP Huanta para las diligencias correspondientes, dejando constancia que el intervenido ha recibido buen trato físico y psicológico, siendo treatedo con dignidad y respeto; asimismo se precisa que las Actas (diligencias) que se adjunta a la presente se realizó en esta dependencia por medidas de seguridad del personal policial interviniente y del propio intervenido. La consulta en E-SINPOL PNP dio como resultado NEGATIVO para requisitorias.`;
 
     document.getElementById('titulo_sec_5').value = "V. DISPOSICIÓN Y COMUNICACIÓN AL RMP:";
     document.getElementById('agregar_intervencion_5').value = 
