@@ -581,7 +581,7 @@
 </div>
 
 <script src="js/auth.js"></script>
-<script src="js/word.js?v=13"></script>
+<script src="js/word.js?v=14"></script>
   
 <script>
   const detallesEspecies = { drogas: null, moneda: null, joyas: null, municion: null, otros: null };
@@ -696,8 +696,12 @@
             <input type="text" id="domicilio_${id}" class="inp-int-domicilio" placeholder="Dirección actual" required value="${datos?.domicilio || ''}">
           </div>
           <div class="full">
-            <label style="color: #991b1b; font-weight: bold;">📞 Persona de Confianza / Familiar a comunicar ({asistido_confianza}):</label>
+            <label style="color: #991b1b; font-weight: bold;">📞 Persona de Confianza / Familiar a comunicar detención ({asistido_confianza}):</label>
             <input type="text" id="asistido_confianza_${id}" class="inp-int-asistido" placeholder="Ej: su hermano Juan PÉREZ ROJAS (Cel: 987654321)" value="${datos?.asistido || 'su hermano Juan PÉREZ ROJAS (Cel: 987654321)'}" required style="border: 1.5px solid #ef4444;">
+          </div>
+          <div class="full">
+            <label style="color: #0284c7; font-weight: bold;">🛡️ Asistencia durante el Registro Personal ({asistido_confianza_registro}):</label>
+            <input type="text" id="asistido_confianza_registro_${id}" class="inp-int-asistido-reg" placeholder="Ej: no deseando ser asistido por ninguna persona" value="${datos?.asistido_registro || 'no deseando ser asistido por ninguna persona'}" required style="border: 1.5px solid #0284c7;">
           </div>
         </div>
       </div>
@@ -739,7 +743,8 @@
         mama: getVal(`mama_${id}`),
         ocupacion: getVal(`ocupacion_${id}`),
         domicilio: getVal(`domicilio_${id}`),
-        asistido_confianza: getVal(`asistido_confianza_${id}`)
+        asistido_confianza: getVal(`asistido_confianza_${id}`),
+        asistido_confianza_registro: getVal(`asistido_confianza_registro_${id}`)
       });
     });
     return lista;
@@ -878,7 +883,8 @@
       mama: "María Rojas Mendoza",
       ocupacion: "Chofer",
       domicilio: "Jr. Miguel Grau N° 245, Huanta",
-      asistido: "su hermano Juan PÉREZ ROJAS (Cel: 987654321)"
+      asistido: "su hermano Juan PÉREZ ROJAS (Cel: 987654321)",
+      asistido_registro: "no deseando ser asistido por ninguna persona"
     });
 
     agregarIntervenidoCard({
@@ -892,7 +898,8 @@
       mama: "Rosa Flores Castro",
       ocupacion: "Comerciante",
       domicilio: "Av. San Martín N° 102, Huanta",
-      asistido: "su esposa María LÓPEZ MEZA (Cel: 912345678)"
+      asistido: "su esposa María LÓPEZ MEZA (Cel: 912345678)",
+      asistido_registro: "no deseando ser asistido por ninguna persona"
     });
 
     document.getElementById('contenedor_vehiculos').innerHTML = "";
@@ -1111,7 +1118,10 @@
       );
 
       if (item.asistido_confianza) {
-        categorias[0].items.push({ titulo: `${prefijo}Persona de Confianza / Familiar`, val: item.asistido_confianza });
+        categorias[0].items.push({ titulo: `${prefijo}Familiar a Comunicar`, val: item.asistido_confianza });
+      }
+      if (item.asistido_confianza_registro) {
+        categorias[0].items.push({ titulo: `${prefijo}Asistencia Reg. Personal`, val: item.asistido_confianza_registro });
       }
     });
 
