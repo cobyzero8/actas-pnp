@@ -1,5 +1,5 @@
 /**
- * CATALOGO MASTER DE ACTAS PNP (14 ACTAS OFICIALES + SOPORTE MANUAL)
+ * CATALOGO MASTER DE ACTAS PNP (14 ACTAS OFICIALES + SOPORTE MANUAL Y MULTI-VEHÍCULO)
  */
 const CATALOGO_ACTAS = [
   { 
@@ -8,7 +8,7 @@ const CATALOGO_ACTAS = [
     titulo: "01. Acta de Intervención Policial", 
     archivo: "plantilla/acta_intervencion.docx", 
     llevaHora: true, 
-    esIndividual: false // ÚNICA PARA TODOS LOS DETENIDOS
+    esIndividual: false // ÚNICA Y COLECTIVA PARA TODOS
   },
   { 
     id: "reg_personal", 
@@ -24,7 +24,7 @@ const CATALOGO_ACTAS = [
     titulo: "03. Acta de Lectura de Derechos", 
     archivo: "plantilla/acta_lectura_derechos.docx", 
     llevaHora: true, 
-    esIndividual: true 
+    esIndividual: true // INDIVIDUAL POR DETENIDO
   },
   { 
     id: "detencion", 
@@ -32,7 +32,7 @@ const CATALOGO_ACTAS = [
     titulo: "04. Acta de Detención Policial", 
     archivo: "plantilla/acta_detencion.docx", 
     llevaHora: true, 
-    esIndividual: true 
+    esIndividual: true // INDIVIDUAL POR DETENIDO
   },
   { 
     id: "buen_trato", 
@@ -40,7 +40,7 @@ const CATALOGO_ACTAS = [
     titulo: "05. Constancia de Buen Trato e Integridad Física", 
     archivo: "plantilla/acta_buen_trato.docx", 
     llevaHora: false, 
-    esIndividual: true 
+    esIndividual: true // INDIVIDUAL POR DETENIDO
   },
   { 
     id: "sit_vehicular", 
@@ -48,7 +48,8 @@ const CATALOGO_ACTAS = [
     titulo: "06. Acta de Situación Vehicular", 
     archivo: "plantilla/acta_situacion_vehicular.docx", 
     llevaHora: true, 
-    esIndividual: true 
+    esIndividual: true,
+    esVehicular: true // INDIVIDUAL POR VEHÍCULO / PLACA
   },
   { 
     id: "reg_vehicular", 
@@ -56,7 +57,8 @@ const CATALOGO_ACTAS = [
     titulo: "07. Acta de Registro Vehicular", 
     archivo: "plantilla/acta_registro_vehicular.docx", 
     llevaHora: true, 
-    esIndividual: true 
+    esIndividual: true,
+    esVehicular: true // INDIVIDUAL POR VEHÍCULO / PLACA
   },
   { 
     id: "lacrado", 
@@ -116,7 +118,7 @@ const CATALOGO_ACTAS = [
   }
 ];
 
-let actasManualesAdicionales = []; // Guarda actas creadas dinámicamente
+let actasManualesAdicionales = [];
 let delitoConfigurado = "";
 let idsActasConfiguradas = [];
 
@@ -127,10 +129,8 @@ let horariosPorActa = {};
 
 /**
  * FUNCION PARA AGREGAR UN ACTA MANUALMENTE AL SISTEMA
- * Puede llamarse desde consola, un modal o desde el menu de configuración
  */
 function registrarActaManual(nuevaActa) {
-  // Estructura esperada: { id, titulo, archivo, llevaHora, esIndividual }
   if (!nuevaActa.id || !nuevaActa.titulo) {
     console.error("⚠️ El acta manual requiere al menos 'id' y 'titulo'.");
     return;
@@ -142,10 +142,10 @@ function registrarActaManual(nuevaActa) {
     titulo: nuevaActa.titulo,
     archivo: nuevaActa.archivo || `plantilla/${nuevaActa.id}.docx`,
     llevaHora: nuevaActa.llevaHora !== false,
-    esIndividual: nuevaActa.esIndividual !== false // Por defecto es individual salvo que se indique false
+    esIndividual: nuevaActa.esIndividual !== false,
+    esVehicular: nuevaActa.esVehicular === true
   };
 
-  // Evitar duplicados
   const existe = CATALOGO_ACTAS.find(a => a.id === estructuraCompleta.id);
   if (!existe) {
     CATALOGO_ACTAS.push(estructuraCompleta);
@@ -231,7 +231,7 @@ function procesarDocumentosRNT() {
   return hallazgos.length > 0 ? hallazgos.join(', ') : "NO PRESENTA DOCUMENTACIÓN / EN PROCESO DE VERIFICACIÓN";
 }
 
-// OBTENER TODOS LOS INTERVENIDOS REGISTRADOS EN EL PASO 1
+// CAPTURA LA LISTA DE TODOS LOS INTERVENIDOS
 function obtenerListaIntervenidosForm() {
   if (typeof obtenerListaIntervenidos === 'function') {
     const lista = obtenerListaIntervenidos();
@@ -266,12 +266,50 @@ function obtenerListaIntervenidosForm() {
   }];
 }
 
+// CAPTURA LA LISTA DE TODOS LOS VEHÍCULOS INVOLUCRADOS
+function obtenerListaVehiculosForm() {
+  if (typeof obtenerListaVehiculos === 'function') {
+    const lista = obtenerListaVehiculos();
+    if (lista && lista.length > 0) return lista;
+  }
+
+  if (window.pnp_lista_vehiculos && window.pnp_lista_vehiculos.length > 0) {
+    return window.pnp_lista_vehiculos;
+  }
+
+  const local = localStorage.getItem('pnp_lista_vehiculos');
+  if (local) {
+    try {
+      const parsed = JSON.parse(local);
+      if (parsed && parsed.length > 0) return parsed;
+    } catch (e) {}
+  }
+
+  const getValSafe = (id) => document.getElementById(id) ? document.getElementById(id).value.trim() : "";
+  const placa = getValSafe('placa_vehiculo_1') || getValSafe('placa_vehiculo') || "NO REGISTRA";
+  const marca = getValSafe('marca_vehiculo_1') || getValSafe('marca_vehiculo') || "NO REGISTRA";
+  const modelo = getValSafe('modelo_vehiculo_1') || getValSafe('modelo_vehiculo') || "NO REGISTRA";
+  const color = getValSafe('color_vehiculo_1') || getValSafe('color_vehiculo') || "NO REGISTRA";
+
+  return [{ placa, marca, modelo, color }];
+}
+
+function construirTextoVehiculosResumen(listaVehiculos) {
+  if (!listaVehiculos || listaVehiculos.length === 0) return "NO REGISTRA";
+  if (listaVehiculos.length === 1) {
+    const v = listaVehiculos[0];
+    return `el vehículo de placa N° ${v.placa} (Marca: ${v.marca}, Modelo: ${v.modelo}, Color/Estado: ${v.color})`;
+  }
+  const partes = listaVehiculos.map(v => `el vehículo de placa N° ${v.placa} (Marca: ${v.marca}, Modelo: ${v.modelo})`);
+  const ultimo = partes.pop();
+  return `${partes.join(', ')} y ${ultimo}`;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   delitoConfigurado = localStorage.getItem('pnp_delito_seleccionado') || "CONTROL DE IDENTIDAD POLICIAL";
   const actasJSON = localStorage.getItem('pnp_actas_seleccionadas');
   idsActasConfiguradas = actasJSON ? JSON.parse(actasJSON) : ["reg_personal"];
 
-  // Cargar actas manuales personalizadas si existen en localStorage
   const actasManualesGuardadas = localStorage.getItem('pnp_actas_manuales_custom');
   if (actasManualesGuardadas) {
     try {
@@ -294,18 +332,15 @@ document.addEventListener('DOMContentLoaded', () => {
 document.getElementById('expedienteForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  // Mapear actas seleccionadas resolviendo catálogo estándar y dinámicas/manuales
   actasAProcesarSecuencia = [];
   
   idsActasConfiguradas.forEach(idSel => {
     const idLimpio = (typeof idSel === 'object' && idSel !== null) ? idSel.id : idSel;
     
-    // Buscar en catálogo
     let coincide = CATALOGO_ACTAS.find(acta => 
       acta.id === idLimpio || acta.aliases.includes(idLimpio)
     );
 
-    // Si no está en el catálogo oficial (es una acta agregada manualmente sobre la marcha)
     if (!coincide) {
       coincide = {
         id: idLimpio,
@@ -313,7 +348,8 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
         titulo: (typeof idSel === 'object' && idSel.titulo) ? idSel.titulo : `Acta de ${idLimpio}`,
         archivo: (typeof idSel === 'object' && idSel.archivo) ? idSel.archivo : `plantilla/${idLimpio}.docx`,
         llevaHora: true,
-        esIndividual: true // Por defecto se individualiza por detenido
+        esIndividual: true,
+        esVehicular: false
       };
     }
 
@@ -325,11 +361,9 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     return;
   }
 
-  const placaInput = document.getElementById('placa_vehiculo');
-  const marcaInput = document.getElementById('marca_vehiculo');
-  const modeloInput = document.getElementById('modelo_vehiculo');
-  const colorInput = document.getElementById('color_vehiculo');
   const fechaRaw = document.getElementById('fecha').value;
+  const listaVehiculos = obtenerListaVehiculosForm();
+  const vehPrincipal = listaVehiculos[0] || { placa: "NO REGISTRA", marca: "NO REGISTRA", modelo: "NO REGISTRA", color: "NO REGISTRA" };
 
   datosFormularioBase = {
     delito: delitoConfigurado,
@@ -341,10 +375,11 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
 
     motivo_justificatorio: document.getElementById('motivo_justificatorio') ? document.getElementById('motivo_justificatorio').value : "",
 
-    placa_vehiculo: placaInput ? (placaInput.value || "NO REGISTRA") : "NO REGISTRA",
-    marca_vehiculo: marcaInput ? (marcaInput.value || "NO REGISTRA") : "NO REGISTRA",
-    modelo_vehiculo: modeloInput ? (modeloInput.value || "NO REGISTRA") : "NO REGISTRA",
-    color_vehiculo: colorInput ? (colorInput.value || "NO REGISTRA") : "NO REGISTRA",
+    placa_vehiculo: vehPrincipal.placa,
+    marca_vehiculo: vehPrincipal.marca,
+    modelo_vehiculo: vehPrincipal.modelo,
+    color_vehiculo: vehPrincipal.color,
+    vehiculos_resumen: construirTextoVehiculosResumen(listaVehiculos),
 
     drogas: document.getElementById('drogas') ? document.getElementById('drogas').value : "NEGATIVO",
     moneda: document.getElementById('moneda') ? document.getElementById('moneda').value : "NEGATIVO",
@@ -446,7 +481,7 @@ async function ejecutarGeneracionFinalExpediente() {
   const statusMsg = document.getElementById('statusMsg');
   statusMsg.className = "alert-msg alert-success";
   statusMsg.style.display = "block";
-  statusMsg.innerText = `Procesando actas e individualizando intervenidos... Por favor espere.`;
+  statusMsg.innerText = `Procesando actas e individualizando intervenidos y vehículos... Por favor espere.`;
 
   try {
     const regPersonal = horariosPorActa['reg_personal'] || { horaInicio: "08:00", horaTermino: "08:05" };
@@ -491,10 +526,11 @@ async function ejecutarGeneracionFinalExpediente() {
       seccionesObj[`agregar_intervencion${i}`] = `${tituloFinal}\n${contenido}`;
     }
 
-    // OBTENER LISTA DE TODOS LOS INTERVENIDOS
+    // LISTA DE INTERVENIDOS Y VEHÍCULOS
     const listaIntervenidos = obtenerListaIntervenidosForm();
+    const listaVehiculos = obtenerListaVehiculosForm();
 
-    // RESUMEN COLECTIVO PARA NARRATIVA DEL ACTA DE INTERVENCIÓN
+    // RESUMEN COLECTIVO DE PERSONAS
     let textoIntervenidosColectivo = "";
     if (listaIntervenidos.length === 1) {
       textoIntervenidosColectivo = `${listaIntervenidos[0].nombre} (${listaIntervenidos[0].edad} años), DNI N° ${listaIntervenidos[0].dni}`;
@@ -504,11 +540,15 @@ async function ejecutarGeneracionFinalExpediente() {
       textoIntervenidosColectivo = `${partes.join(', ')} y ${ultimo}`;
     }
 
+    // RESUMEN COLECTIVO DE VEHÍCULOS
+    const textoVehiculosColectivo = construirTextoVehiculosResumen(listaVehiculos);
+
     const datosFinalesBase = {
       ...datosFormularioBase,
       ...vehiculosPNPObj,
       ...seccionesObj,
       intervenidos_resumen: textoIntervenidosColectivo,
+      vehiculos_resumen: textoVehiculosColectivo,
       hora_intervencion: horaIntVal,
       fiscal: fiscalVal,
       actividad_realizada: actividadTexto,
@@ -543,14 +583,15 @@ async function ejecutarGeneracionFinalExpediente() {
     const zip = new JSZipLib();
     let archivosAgregados = 0;
 
-    // PROCESAMIENTO SEGÚN LA NATURALEZA DEL ACTA (GENERAL VS INDIVIDUAL)
+    // GENERACIÓN DE DOCUMENTOS (COLECTIVOS vs INDIVIDUALES PERSONA vs INDIVIDUALES VEHÍCULO)
     for (let acta of actasAProcesarSecuencia) {
       const hor = horariosPorActa[acta.id] || { horaInicio: "", horaTermino: "" };
-      const esActaIndividual = (acta.esIndividual !== false && acta.id !== 'intervencion');
+      const esActaColectiva = (acta.esIndividual === false || acta.id === 'intervencion');
+      const esActaVehicular = (acta.esVehicular === true || acta.id === 'sit_vehicular' || acta.id === 'reg_vehicular');
 
-      if (!esActaIndividual) {
+      if (esActaColectiva) {
         // =========================================================
-        // CASO A: ACTA COLECTIVA / ÚNICA (ACTA DE INTERVENCIÓN)
+        // CASO A: ACTA ÚNICA / GENERAL (ACTA DE INTERVENCIÓN)
         // =========================================================
         const datosDocIntervencion = {
           ...datosFinalesBase,
@@ -577,9 +618,38 @@ async function ejecutarGeneracionFinalExpediente() {
           console.error(`Error al generar ${acta.archivo}:`, err);
         }
 
+      } else if (esActaVehicular) {
+        // =========================================================
+        // CASO B: ACTAS VEHICULARES INDIVIDUALES (REPLICADAS POR CADA VEHÍCULO)
+        // =========================================================
+        for (let idxV = 0; idxV < listaVehiculos.length; idxV++) {
+          const veh = listaVehiculos[idxV];
+
+          const datosDocVehiculo = {
+            ...datosFinalesBase,
+            placa_vehiculo: veh.placa,
+            marca_vehiculo: veh.marca,
+            modelo_vehiculo: veh.modelo,
+            color_vehiculo: veh.color,
+            hora1: hor.horaInicio || datosFinalesBase.hora1,
+            hora2: hor.horaTermino || datosFinalesBase.hora2
+          };
+
+          try {
+            const blobDoc = await generarDocumentoWord(acta.archivo, datosDocVehiculo);
+            const sufijoVehiculo = (listaVehiculos.length > 1) ? `_PLACA_${veh.placa}` : '';
+            const nombreArchivoDoc = `${acta.titulo}${sufijoVehiculo}.docx`;
+
+            zip.file(nombreArchivoDoc, blobDoc);
+            archivosAgregados++;
+          } catch (err) {
+            console.error(`Error al generar ${acta.archivo} para vehículo placa ${veh.placa}:`, err);
+          }
+        }
+
       } else {
         // =========================================================
-        // CASO B: ACTAS INDIVIDUALES (REPLICADAS POR CADA INTERVENIDO)
+        // CASO C: ACTAS PERSONALES INDIVIDUALES (REPLICADAS POR CADA DETENIDO)
         // =========================================================
         for (let idx = 0; idx < listaIntervenidos.length; idx++) {
           const persona = listaIntervenidos[idx];
@@ -615,8 +685,8 @@ async function ejecutarGeneracionFinalExpediente() {
       }
     }
 
-    // DESCARGA DE RESULTADO (.ZIP O .DOCX)
-    if (archivosAgregados === 1 && listaIntervenidos.length === 1) {
+    // DESCARGA FINAL (.ZIP O .DOCX)
+    if (archivosAgregados === 1 && listaIntervenidos.length === 1 && listaVehiculos.length === 1) {
       const soloFicheroKey = Object.keys(zip.files)[0];
       const blobUnico = await zip.file(soloFicheroKey).async("blob");
       saveAs(blobUnico, soloFicheroKey);
