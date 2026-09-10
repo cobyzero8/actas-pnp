@@ -236,38 +236,6 @@
   </div>
 </div>
 
-<!-- MODAL PARA REGISTRO CRONOLÓGICO DE HORAS DE CADA ACTA -->
-<div id="modalHoras" class="modal-overlay">
-  <div class="modal-content" style="max-width: 420px;">
-    <h3 id="modalHorasTitulo" style="margin-top: 0; color: #003366; font-size: 16px; border-bottom: 2px solid #003366; padding-bottom: 8px;">
-      ⏰ Horas de la Diligencia
-    </h3>
-    <p id="modalHorasSubtitulo" style="font-size: 13px; font-weight: bold; color: #555; margin-bottom: 15px;">
-      Ajuste el horario para la siguiente acta:
-    </p>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-      <div>
-        <label style="font-size: 12px; font-weight: bold; color: #333; display: block; margin-bottom: 4px;">Hora Inicio:</label>
-        <input type="time" id="modalHoraInicio" style="width: 100%; box-sizing: border-box; padding: 8px; font-size: 14px; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; text-align: center;">
-      </div>
-      <div>
-        <label style="font-size: 12px; font-weight: bold; color: #333; display: block; margin-bottom: 4px;">Hora Término:</label>
-        <input type="time" id="modalHoraTermino" style="width: 100%; box-sizing: border-box; padding: 8px; font-size: 14px; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; text-align: center;">
-      </div>
-    </div>
-
-    <div style="display: flex; gap: 8px; justify-content: flex-end;">
-      <button type="button" class="btn btn-secondary" onclick="cancelarProcesoHoras()" style="width: auto; padding: 8px 12px; font-size: 12px;">
-        Cancelar
-      </button>
-      <button type="button" class="btn btn-success" id="btnSiguienteHora" onclick="confirmarHoraActaActual()" style="width: auto; padding: 8px 16px; font-size: 13px;">
-        Siguiente ➡️
-      </button>
-    </div>
-  </div>
-</div>
-
 <div class="container" style="max-width: 1150px;">
   <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -571,7 +539,7 @@
 
         </div>
 
-        <button type="submit" class="btn btn-success" style="margin-top: 25px; font-size: 16px; padding: 12px;">
+        <button type="button" onclick="procesarYGenerarExpediente()" class="btn btn-success" style="margin-top: 25px; font-size: 16px; padding: 12px; width: 100%;">
           📦 Finalizar y Generar Expediente / Actas (.docx / .zip)
         </button>
       </div>
@@ -581,7 +549,7 @@
 </div>
 
 <script src="js/auth.js"></script>
-<script src="js/word.js?v=10"></script>
+<script src="js/word.js?v=11"></script>
   
 <script>
   const detallesEspecies = { drogas: null, moneda: null, joyas: null, municion: null, otros: null };
@@ -746,7 +714,6 @@
     return lista;
   }
 
-  // --- NARRATIVA Y GRAMÁTICA DINÁMICA DE INTERVENIDOS ---
   function obtenerTextoIntervenidosNarrativa() {
     const lista = obtenerListaIntervenidos();
     if (lista.length === 0) return "el intervenido";
@@ -771,6 +738,16 @@
       calidadRetenido: cant <= 1 ? "RETENIDO" : "RETENIDOS",
       texto: obtenerTextoIntervenidosNarrativa()
     };
+  }
+
+  function obtenerTextoFiliacionCompletaMultiples() {
+    const lista = obtenerListaIntervenidos();
+    if (lista.length === 0) return "No registra intervenidos.";
+    
+    return lista.map((item, idx) => {
+      const prefijo = lista.length > 1 ? `INTERVENIDO N° ${idx + 1}: ` : '';
+      return `${prefijo}${item.nombre}, con ${item.edad} años de edad, natural de ${item.natural}, de ocupación ${item.ocupacion}, identificado con DNI N° ${item.dni}, quien refiere domiciliar en ${item.domicilio}, celular N° ${item.celular || 'S/N'}, estado civil ${item.estado_civil}, hijo de don ${item.papa || 'S/D'} y doña ${item.mama || 'S/D'}.`;
+    }).join('\n\n');
   }
 
   // GESTIÓN DINÁMICA DE TARJETAS DE VEHÍCULOS INVOLUCRADOS
@@ -842,7 +819,6 @@
     return lista;
   }
 
-  // --- NARRATIVA Y GRAMÁTICA DINÁMICA DE VEHÍCULOS ---
   function obtenerTextoVehiculosNarrativa() {
     const lista = obtenerListaVehiculos();
     if (lista.length === 0) return "el vehículo intervenido";
@@ -871,7 +847,6 @@
     document.getElementById('contenedor_intervenidos').innerHTML = "";
     contadorIntervenidos = 0;
 
-    // Intervenido 1
     agregarIntervenidoCard({
       nombre: "QUISPE ROJAS, Carlos Alberto",
       dni: "45892134",
@@ -886,7 +861,6 @@
       asistido: "no deseando ser asistido por ninguna persona"
     });
 
-    // Intervenido 2
     agregarIntervenidoCard({
       nombre: "LÓPEZ FLORES, Juan Carlos",
       dni: "71234567",
@@ -904,7 +878,6 @@
     document.getElementById('contenedor_vehiculos').innerHTML = "";
     contadorVehiculos = 0;
 
-    // Vehículo 1
     agregarVehiculoCard({
       placa: "Y1B-452",
       marca: "Honda",
@@ -912,7 +885,6 @@
       color: "Rojo / Abolladura frontal"
     });
 
-    // Vehículo 2
     agregarVehiculoCard({
       placa: "B8W-210",
       marca: "Toyota",
@@ -981,38 +953,32 @@
       .join('\n');
   }
 
-  // --- BLOQUE DE FIRMAS ADAPTATIVO AL NÚMERO DE PERSONAS ---
+  // --- FIRMAS ÚNICAMENTE DE INTERVENIDOS (EL INSTRUCTOR COLOCA SU SELLO MANUAL) ---
   function generarBloqueCierreYFirmas(horaFin) {
     const lista = obtenerListaIntervenidos();
-    const efectivo = getVal('personal_interviniente', '{personal_interviniente}');
-    const cip = getVal('cip', '{cip}');
-    const grado = getVal('grado', '{grado}');
 
-    let bloqueFirmas = `\n\n--- Siendo las ${horaFin} Horas del mismo día se dio por concluido la presente diligencia, firmando todos los participantes presentes en señal de conformidad. -------------------\n\n` +
+    let textoCierre = `\n--- Siendo las ${horaFin} Horas del mismo día se dio por concluida la presente diligencia, firmando los participantes en señal de conformidad. -------------------\n\n` +
       `Se adjunta:\n` +
       `${obtenerListaAdjuntosFormateada()}\n\n\n`;
 
     if (lista.length <= 1) {
       const int1 = lista[0] || { nombre: '{intervenido_nombre}', dni: '{intervenido_dni}' };
-      bloqueFirmas += `__________________________________             __________________________________\n` +
-        `          EL INSTRUCTOR                                  EL INTERVENIDO\n\n` +
-        `           CIP: ${cip}                                  ${int1.nombre}\n` +
-        `   ${grado} PNP ${efectivo}                         DNI N° ${int1.dni}`;
+      textoCierre += 
+        `                                              __________________________________\n` +
+        `                                                        EL INTERVENIDO\n\n` +
+        `                                              Nombre: ${int1.nombre}\n` +
+        `                                              DNI N°: ${int1.dni}`;
     } else {
-      bloqueFirmas += `__________________________________             __________________________________\n` +
-        `          EL INSTRUCTOR                                  EL INTERVENIDO N° 1\n\n` +
-        `           CIP: ${cip}                                  ${lista[0].nombre}\n` +
-        `   ${grado} PNP ${efectivo}                         DNI N° ${lista[0].dni}\n\n`;
-
-      for (let i = 1; i < lista.length; i++) {
-        bloqueFirmas += `\n                                               __________________________________\n` +
-          `                                                 EL INTERVENIDO N° ${i + 1}\n\n` +
-          `                                                 ${lista[i].nombre}\n` +
-          `                                                 DNI N° ${lista[i].dni}\n`;
-      }
+      lista.forEach((item, idx) => {
+        textoCierre += 
+          `                                              __________________________________\n` +
+          `                                                    EL INTERVENIDO N° ${idx + 1}\n\n` +
+          `                                              Nombre: ${item.nombre}\n` +
+          `                                              DNI N°: ${item.dni}\n\n`;
+      });
     }
 
-    return bloqueFirmas;
+    return textoCierre;
   }
 
   function abrirEspecieModal(fieldId, fieldLabel) {
@@ -1100,7 +1066,6 @@
       return;
     }
 
-    // Guardar intervenidos y vehículos en memoria global y localStorage para word.js
     window.pnp_lista_intervenidos = obtenerListaIntervenidos();
     localStorage.setItem('pnp_lista_intervenidos', JSON.stringify(window.pnp_lista_intervenidos));
 
@@ -1141,7 +1106,6 @@
     }
   }
 
-  // --- CONSTRUCCIÓN DEL PANEL LATERAL AGRUPADO Y POR COLORES ---
   function construirFichasDatosPanel() {
     const cont = document.getElementById('panel_fichas_datos');
     cont.innerHTML = "";
@@ -1150,50 +1114,16 @@
     const listaVeh = obtenerListaVehiculos();
 
     const categorias = [
-      {
-        id: "cat_intervenidos",
-        titulo: "👥 Datos del Intervenido (Filiación e Identificación)",
-        clase: "cat-intervenido",
-        items: []
-      },
-      {
-        id: "cat_vehiculos",
-        titulo: "🚘 Datos de Vehículos Involucrados",
-        clase: "cat-vehiculo",
-        items: []
-      },
-      {
-        id: "cat_lugar",
-        titulo: "📍 Lugar, Tiempo y Motivo de Intervención",
-        clase: "cat-lugar",
-        items: []
-      },
-      {
-        id: "cat_fiscal",
-        titulo: "⚖️ Datos del Fiscal (RMP) y Unidad Policial",
-        clase: "cat-fiscal",
-        items: []
-      },
-      {
-        id: "cat_pnp",
-        titulo: "👮‍♂️ Personal Policial e Unidades PNP",
-        clase: "cat-pnp",
-        items: []
-      },
-      {
-        id: "cat_especies",
-        titulo: "📦 Especies y Hallazgos Positivos",
-        clase: "cat-especies",
-        items: []
-      }
+      { id: "cat_intervenidos", titulo: "👥 Datos del Intervenido (Filiación e Identificación)", clase: "cat-intervenido", items: [] },
+      { id: "cat_vehiculos", titulo: "🚘 Datos de Vehículos Involucrados", clase: "cat-vehiculo", items: [] },
+      { id: "cat_lugar", titulo: "📍 Lugar, Tiempo y Motivo de Intervención", clase: "cat-lugar", items: [] },
+      { id: "cat_fiscal", titulo: "⚖️ Datos del Fiscal (RMP) y Unidad Policial", clase: "cat-fiscal", items: [] },
+      { id: "cat_pnp", titulo: "👮‍♂️ Personal Policial e Unidades PNP", clase: "cat-pnp", items: [] },
+      { id: "cat_especies", titulo: "📦 Especies y Hallazgos Positivos", clase: "cat-especies", items: [] }
     ];
 
-    // A) INTERVENIDOS (MUESTRA 1 O VARIOS SEGÚN EL FORMULARIO)
     if (listaInt.length > 1) {
-      categorias[0].items.push({
-        titulo: "Resumen Todos los Intervenidos",
-        val: obtenerTextoIntervenidosNarrativa()
-      });
+      categorias[0].items.push({ titulo: "Resumen Todos los Intervenidos", val: obtenerTextoIntervenidosNarrativa() });
     }
 
     listaInt.forEach((item, idx) => {
@@ -1214,19 +1144,12 @@
       );
 
       if (item.asistido_confianza) {
-        categorias[0].items.push({
-          titulo: `${prefijo}Persona de Confianza`,
-          val: item.asistido_confianza
-        });
+        categorias[0].items.push({ titulo: `${prefijo}Persona de Confianza`, val: item.asistido_confianza });
       }
     });
 
-    // B) VEHÍCULOS (MUESTRA 1 O VARIOS SEGÚN EL FORMULARIO)
     if (listaVeh.length > 1) {
-      categorias[1].items.push({
-        titulo: "Resumen Todos los Vehículos",
-        val: obtenerTextoVehiculosNarrativa()
-      });
+      categorias[1].items.push({ titulo: "Resumen Todos los Vehículos", val: obtenerTextoVehiculosNarrativa() });
     }
 
     listaVeh.forEach((veh, idx) => {
@@ -1238,7 +1161,6 @@
       );
     });
 
-    // C) LUGAR Y TIEMPO
     categorias[2].items.push(
       { titulo: "Lugar Exacto de Intervención", val: getVal('lugar') },
       { titulo: "Hora de Intervención", val: getVal('hora_intervencion') + " hrs" },
@@ -1248,13 +1170,11 @@
       { titulo: "Motivo Justificatorio Traslado", val: getVal('motivo_justificatorio') }
     );
 
-    // D) FISCAL Y UNIDAD
     categorias[3].items.push(
       { titulo: "Fiscal RMP Competente", val: getVal('fiscal', "RMP NO ESPECIFICADO") },
       { titulo: "Unidad Puesta a Disposición", val: getVal('unidad_disposicion') }
     );
 
-    // E) PERSONAL PNP
     categorias[4].items.push(
       { titulo: "Efectivo Interviniente", val: `${getVal('grado')} PNP ${getVal('personal_interviniente')}` },
       { titulo: "CIP Efectivo", val: getVal('cip') }
@@ -1263,18 +1183,14 @@
     const cantVehPnp = parseInt(document.getElementById('cant_vehiculos_pnp').value, 10) || 1;
     for (let i = 1; i <= cantVehPnp; i++) {
       const p = document.getElementById(`placa_policial_${i}`) ? document.getElementById(`placa_policial_${i}`).value : '';
-      if (p) {
-        categorias[4].items.push({ titulo: `Unidad Policial PNP ${i}`, val: p });
-      }
+      if (p) categorias[4].items.push({ titulo: `Unidad Policial PNP ${i}`, val: p });
     }
 
-    // F) ESPECIES
     const positivo = getVal('narrar_positivo');
     if (positivo && positivo !== 'NINGUNO') {
       categorias[5].items.push({ titulo: "Hallazgos Positivos Incautados", val: positivo });
     }
 
-    // RENDERIZADO FINAL
     categorias.forEach(cat => {
       if (cat.items.length === 0) return;
 
@@ -1336,9 +1252,7 @@
     txt.focus();
   }
 
-  // ================= PLANTILLAS CON ADAPTACIÓN GRAMATICAL DINÁMICA =================
-
-  // MODELO 01: EXTORSIÓN
+  // MODELOS ADAPTATIVOS
   function cargarModeloExtorsion() {
     document.getElementById('cant_secciones').value = 6;
     construirSeccionesNarrativa();
@@ -1375,7 +1289,6 @@
     minimizarPlantillas();
   }
 
-  // MODELO 02: ACCIDENTE DE TRÁNSITO
   function cargarModeloAccidenteTransito() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
@@ -1403,7 +1316,6 @@
     minimizarPlantillas();
   }
 
-  // MODELO 03: CONTROL DE IDENTIDAD
   function cargarModeloControlIdentidad() {
     document.getElementById('cant_secciones').value = 2;
     construirSeccionesNarrativa();
@@ -1426,7 +1338,6 @@
     minimizarPlantillas();
   }
 
-  // MODELO 04: HURTO EN FLAGRANCIA
   function cargarModeloHurtoFlagrancia() {
     document.getElementById('cant_secciones').value = 4;
     construirSeccionesNarrativa();
@@ -1455,7 +1366,6 @@
     minimizarPlantillas();
   }
 
-  // MODELO 05: RESISTENCIA A LA AUTORIDAD
   function cargarModeloResistenciaAutoridad() {
     document.getElementById('cant_secciones').value = 5;
     construirSeccionesNarrativa();
@@ -1489,7 +1399,6 @@
     minimizarPlantillas();
   }
 
-  // MODELO 06: EBRIEDAD / PRUEBAS
   function cargarModeloEbriedadPruebas() {
     document.getElementById('cant_secciones').value = 5;
     construirSeccionesNarrativa();
