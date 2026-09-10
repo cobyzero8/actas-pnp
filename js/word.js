@@ -70,6 +70,32 @@ function sumarMinutosAHora(horaStr, minutosASumar) {
   return `${h}:${m}`;
 }
 
+function procesarDocumentosRNT() {
+  let hallazgos = [];
+
+  const chkSoat = document.getElementById('chk_soat');
+  if (chkSoat && chkSoat.checked) {
+    const st = document.getElementById('st_soat') ? document.getElementById('st_soat').value : 'VIGENTE';
+    const fec = document.getElementById('fec_soat') ? document.getElementById('fec_soat').value : '';
+    hallazgos.push(`SOAT ${st}` + (st === 'VENCIDO' && fec ? ` con fecha de vencimiento ${formatearFechaPolicial(fec)}` : ''));
+  }
+
+  const chkItv = document.getElementById('chk_itv');
+  if (chkItv && chkItv.checked) {
+    const st = document.getElementById('st_itv') ? document.getElementById('st_itv').value : 'VIGENTE';
+    const fec = document.getElementById('fec_itv') ? document.getElementById('fec_itv').value : '';
+    hallazgos.push(`CITV (Inspección Técnica) ${st}` + (st === 'VENCIDO' && fec ? ` con fecha de vencimiento ${formatearFechaPolicial(fec)}` : ''));
+  }
+
+  const chkLunas = document.getElementById('chk_lunas');
+  if (chkLunas && chkLunas.checked) {
+    const st = document.getElementById('st_lunas') ? document.getElementById('st_lunas').value : 'CUENTA Y VIGENTE';
+    hallazgos.push(`Permiso de Lunas Polarizadas: ${st}`);
+  }
+
+  return hallazgos.length > 0 ? hallazgos.join(', ') : "NO PRESENTA DOCUMENTACIÓN / EN PROCESO DE VERIFICACIÓN";
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   delitoConfigurado = localStorage.getItem('pnp_delito_seleccionado') || "CONTROL DE IDENTIDAD POLICIAL";
   const actasJSON = localStorage.getItem('pnp_actas_seleccionadas');
@@ -154,7 +180,6 @@ function avanzarAoSaltarAQuienLleveHora(horaSugeridaInicio) {
   while (indiceActaActual < actasAProcesarSecuencia.length) {
     const actaActual = actasAProcesarSecuencia[indiceActaActual];
     
-    // EXCLUSIÓN EXPLÍCITA: Si es la constancia de buen trato (por id o propiedad llevaHora), saltar el modal
     if (actaActual.id === "buen_trato" || actaActual.llevaHora === false) {
       horariosPorActa[actaActual.id] = { horaInicio: "", horaTermino: "" };
       indiceActaActual++;
@@ -243,8 +268,59 @@ async function ejecutarGeneracionFinalExpediente() {
     const hora6Val = detencionHorario.horaTermino || sumarMinutosAHora(hora5Val, 5);
     const horaDetencionVal = sumarMinutosAHora(hora6Val, 2);
 
+    // DATO DE ESTADO CIVIL, FISCAL Y HORA DE INTERVENCIÓN
+    const estadoCivilElem = document.getElementById('estado_civil');
+    const estadoCivilVal = estadoCivilElem ? estadoCivilElem.value : "soltero";
+
+    const horaIntElem = document.getElementById('hora_intervencion');
+    const horaIntVal = horaIntElem ? horaIntElem.value : regPersonal.horaInicio;
+
+    const fiscalElem = document.getElementById('fiscal');
+    const fiscalVal = fiscalElem ? (fiscalElem.value.trim() || "RMP NO ESPECIFICADO") : "RMP NO ESPECIFICADO";
+
+    // ACTIVIDAD REALIZADA
+    const tipoActElem = document.getElementById('tipo_actividad');
+    const tipoActVal = tipoActElem ? tipoActElem.value : 'PATRULLAJE DE RUTINA';
+    const nomOpElem = document.getElementById('nombre_operativo');
+    const nomOpVal = nomOpElem ? nomOpElem.value.trim() : '';
+    const actividadTexto = tipoActVal === 'OPERATIVO POLICIAL' ? `el O/P ${nomOpVal}` : `Patrullaje de Rutina`;
+
+    // VEHÍCULOS PNP
+    const cantVehElem = document.getElementById('cant_vehiculos_pnp');
+    const cantVeh = cantVehElem ? (parseInt(cantVehElem.value, 10) || 1) : 1;
+    const vehiculosPNPObj = {};
+    for (let i = 1; i <= cantVeh; i++) {
+      const inputElem = document.getElementById(`placa_policial_${i}`);
+      vehiculosPNPObj[`placa_policial${i}`] = inputElem ? (inputElem.value.trim() || "S/P") : "S/P";
+    }
+
+    // SECCIONES DE NARRATIVA DE INTERVENCIÓN
+    const cantSecElem = document.getElementById('cant_secciones');
+    const cantSec = cantSecElem ? (parseInt(cantSecElem.value, 10) || 1) : 1;
+    const seccionesObj = {};
+    for (let i = 1; i <= cantSec; i++) {
+      const selTitElem = document.getElementById(`titulo_sec_${i}`);
+      const selTit = selTitElem ? selTitElem.value : `SECCIÓN ${i}:`;
+      const customTitElem = document.getElementById(`custom_titulo_sec_${i}`);
+      const customTit = customTitElem ? customTitElem.value : '';
+      const tituloFinal = selTit === "CUSTOM" ? customTit : selTit;
+      
+      const txtAreaElem = document.getElementById(`agregar_intervencion_${i}`);
+      const contenido = txtAreaElem ? txtAreaElem.value : '';
+      
+      seccionesObj[`titulo_intervencion${i}`] = tituloFinal;
+      seccionesObj[`agregar_intervencion${i}`] = `${tituloFinal}\n${contenido}`;
+    }
+
     const datosFinales = {
       ...datosFormularioBase,
+      ...vehiculosPNPObj,
+      ...seccionesObj,
+      estado_civil: estadoCivilVal,
+      hora_intervencion: horaIntVal,
+      fiscal: fiscalVal,
+      actividad_realizada: actividadTexto,
+      documentos_retran: procesarDocumentosRNT(),
       hora1: regPersonal.horaInicio,
       hora2: regPersonal.horaTermino,
       hora3: lecturaDerechos.horaInicio,
@@ -320,9 +396,10 @@ async function generarDocumentoWord(rutaPlantilla, datos) {
 
   if (!PizZipLib) throw new Error("No se pudo cargar PizZip.");
 
-  const response = await fetch(rutaPlantilla);
+  const urlAntiCache = `${rutaPlantilla}?t=${new Date().getTime()}`;
+  const response = await fetch(urlAntiCache);
   if (!response.ok) throw new Error(`Plantilla no encontrada: ${rutaPlantilla}`);
-  
+
   const arrayBuffer = await response.arrayBuffer();
   const zip = new PizZipLib(arrayBuffer);
 
