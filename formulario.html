@@ -65,7 +65,6 @@
     }
 
     .preset-btn {
-      background: #3b82f6;
       color: #fff;
       border: none;
       padding: 8px 10px;
@@ -74,11 +73,12 @@
       font-weight: bold;
       cursor: pointer;
       width: 100%;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
       text-align: left;
+      transition: opacity 0.2s ease;
     }
     .preset-btn:hover {
-      background: #1d4ed8;
+      opacity: 0.9;
     }
   </style>
 </head>
@@ -469,17 +469,29 @@
           <div style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; position: sticky; top: 15px; max-height: 85vh; overflow-y: auto;">
             
             <h4 style="margin-top: 0; color: #003366; font-size: 13px; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px;">
-              ⚡ Plantillas / Modelos de Casos
+              ⚡ Plantillas Rápidas Oficiales
             </h4>
             <p style="font-size: 11px; color: #64748b; margin-top: 0; margin-bottom: 8px;">
-              Selecciona un caso típico para autocompletar la narrativa con los datos ingresados:
+              Haz clic en el tipo de delito para autocompletar la narrativa con los datos del Paso 1:
             </p>
 
-            <button type="button" class="preset-btn" onclick="cargarModeloPersecucionFuga()">
-              🏎️ Fuga / Persecución / Desobediencia
+            <button type="button" class="preset-btn" onclick="cargarModeloExtorsion()" style="background: #7c3aed;">
+              🔴 01. Extorsión (Reg. Vehicular, Incautación y Lacrado)
             </button>
-            <button type="button" class="preset-btn" onclick="cargarModeloAlcoholemiaRNT()" style="background: #059669;">
-              🍺 Conducción Ebriedad / RNT
+            <button type="button" class="preset-btn" onclick="cargarModeloAccidenteTransito()" style="background: #2563eb;">
+              🚗 02. Accidente de Tránsito (Choque / Daños Materiales)
+            </button>
+            <button type="button" class="preset-btn" onclick="cargarModeloControlIdentidad()" style="background: #475569;">
+              🪪 03. Control de Identidad (Retenido / E-SINPOL)
+            </button>
+            <button type="button" class="preset-btn" onclick="cargarModeloHurtoFlagrancia()" style="background: #d97706;">
+              🎒 04. Hurto en Flagrancia (Reconocimiento Agraviado)
+            </button>
+            <button type="button" class="preset-btn" onclick="cargarModeloResistenciaAutoridad()" style="background: #dc2626;">
+              🚨 05. Violencia o Resistencia a la Autoridad (Fuga / Choque)
+            </button>
+            <button type="button" class="preset-btn" onclick="cargarModeloEbriedadPruebas()" style="background: #0284c7;">
+              🍺 06. Conducción Ebriedad / Drogadicción (Test HOGAN / ROMBERG)
             </button>
 
             <hr style="margin: 12px 0;">
@@ -508,7 +520,7 @@
 </div>
 
 <script src="js/auth.js"></script>
-<script src="js/word.js?v=8"></script>
+<script src="js/word.js?v=9"></script>
   
 <script>
   const detallesEspecies = { drogas: null, moneda: null, joyas: null, municion: null, otros: null };
@@ -536,6 +548,12 @@
       horaIntInput.value = new Date().toTimeString().slice(0, 5);
     }
   });
+
+  // HELPER PARA OBTENER VALORES DEL PASO 1 CON FALLBACK
+  function getVal(id, fallback = "S/D") {
+    const el = document.getElementById(id);
+    return el && el.value.trim() !== "" ? el.value.trim() : fallback;
+  }
 
   // MODAL ESPECIES
   function abrirEspecieModal(fieldId, fieldLabel) {
@@ -644,28 +662,28 @@
     cont.innerHTML = "";
 
     const datos = [
-      { titulo: "Intervenido", val: document.getElementById('intervenido_nombre').value },
-      { titulo: "DNI", val: document.getElementById('intervenido_dni').value },
-      { titulo: "Edad", val: document.getElementById('edad').value + " años" },
-      { titulo: "Estado Civil", val: document.getElementById('estado_civil').value },
-      { titulo: "Natural de", val: document.getElementById('natural').value },
-      { titulo: "Celular", val: document.getElementById('celular1').value },
-      { titulo: "Padre", val: document.getElementById('papa').value },
-      { titulo: "Madre", val: document.getElementById('mama').value },
-      { titulo: "Ocupación", val: document.getElementById('ocupacion').value },
-      { titulo: "Domicilio", val: document.getElementById('domicilio').value },
-      { titulo: "Asistencia Confianza", val: document.getElementById('asistido_confianza').value },
-      { titulo: "Lugar Intervención", val: document.getElementById('lugar').value },
-      { titulo: "Hora Intervención", val: document.getElementById('hora_intervencion').value + " hrs" },
-      { titulo: "Fiscal RMP", val: document.getElementById('fiscal').value.trim() || "RMP NO ESPECIFICADO" },
-      { titulo: "Actividad Realizada", val: document.getElementById('tipo_actividad').value === 'OPERATIVO POLICIAL' ? `el O/P ${document.getElementById('nombre_operativo').value}` : 'Patrullaje de Rutina' },
-      { titulo: "Placa Vehículo", val: document.getElementById('placa_vehiculo').value || "NO REGISTRA" },
-      { titulo: "Marca Vehículo", val: document.getElementById('marca_vehiculo').value || "NO REGISTRA" },
-      { titulo: "Modelo Vehículo", val: document.getElementById('modelo_vehiculo').value || "NO REGISTRA" },
-      { titulo: "Color / Estado", val: document.getElementById('color_vehiculo').value || "NO REGISTRA" },
-      { titulo: "Hallazgos Positivos", val: document.getElementById('narrar_positivo').value },
-      { titulo: "Efectivo PNP", val: `${document.getElementById('grado').value} ${document.getElementById('personal_interviniente').value}` },
-      { titulo: "CIP Efectivo", val: document.getElementById('cip').value }
+      { titulo: "Intervenido", val: getVal('intervenido_nombre') },
+      { titulo: "DNI", val: getVal('intervenido_dni') },
+      { titulo: "Edad", val: getVal('edad') + " años" },
+      { titulo: "Estado Civil", val: getVal('estado_civil') },
+      { titulo: "Natural de", val: getVal('natural') },
+      { titulo: "Celular", val: getVal('celular1') },
+      { titulo: "Padre", val: getVal('papa') },
+      { titulo: "Madre", val: getVal('mama') },
+      { titulo: "Ocupación", val: getVal('ocupacion') },
+      { titulo: "Domicilio", val: getVal('domicilio') },
+      { titulo: "Asistencia Confianza", val: getVal('asistido_confianza') },
+      { titulo: "Lugar Intervención", val: getVal('lugar') },
+      { titulo: "Hora Intervención", val: getVal('hora_intervencion') + " hrs" },
+      { titulo: "Fiscal RMP", val: getVal('fiscal', "RMP NO ESPECIFICADO") },
+      { titulo: "Actividad Realizada", val: getVal('tipo_actividad') === 'OPERATIVO POLICIAL' ? `el O/P ${getVal('nombre_operativo')}` : 'Patrullaje de Rutina' },
+      { titulo: "Placa Vehículo", val: getVal('placa_vehiculo', "NO REGISTRA") },
+      { titulo: "Marca Vehículo", val: getVal('marca_vehiculo', "NO REGISTRA") },
+      { titulo: "Modelo Vehículo", val: getVal('modelo_vehiculo', "NO REGISTRA") },
+      { titulo: "Color / Estado", val: getVal('color_vehiculo', "NO REGISTRA") },
+      { titulo: "Hallazgos Positivos", val: getVal('narrar_positivo') },
+      { titulo: "Efectivo PNP", val: `${getVal('grado')} ${getVal('personal_interviniente')}` },
+      { titulo: "CIP Efectivo", val: getVal('cip') }
     ];
 
     const cantVeh = parseInt(document.getElementById('cant_vehiculos_pnp').value, 10) || 1;
@@ -721,53 +739,167 @@
     txt.focus();
   }
 
-  // PLANTILLA / MODELO 1: FUGA Y PERSECUCIÓN
-  function cargarModeloPersecucionFuga() {
-    document.getElementById('cant_secciones').value = 4;
+  // 01. MODELO EXTORSIÓN
+  function cargarModeloExtorsion() {
+    document.getElementById('cant_secciones').value = 6;
     construirSeccionesNarrativa();
 
-    const intervenido = document.getElementById('intervenido_nombre').value || "el intervenido";
-    const dni = document.getElementById('intervenido_dni').value || "S/D";
-    const edad = document.getElementById('edad').value || "";
-    const placa = document.getElementById('placa_vehiculo').value || "S/P";
-    const lugar = document.getElementById('lugar').value || "el lugar de la intervención";
-    const hora = document.getElementById('hora_intervencion').value || "00:00";
-    const pnp1 = document.getElementById('placa_policial_1') ? document.getElementById('placa_policial_1').value : "unidad policial";
-    const fiscal = document.getElementById('fiscal').value || "el RMP";
+    const intervenido = getVal('intervenido_nombre', 'el intervenido');
+    const dni = getVal('intervenido_dni');
+    const edad = getVal('edad');
+    const placa = getVal('placa_vehiculo', 'S/P');
+    const lugar = getVal('lugar');
+    const hora = getVal('hora_intervencion', '14:30');
+    const pnp1 = getVal('placa_policial_1', 'unidad policial');
+    const fiscal = getVal('fiscal', 'el RMP');
+    const hallazgos = getVal('narrar_positivo', 'especies variadas descritas en la diligencia');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
-    document.getElementById('agregar_intervencion_1').value = `--- En circunstancias que el personal policial realizaba patrullaje de rutina siendo las ${hora} hrs aprox., en ${lugar}, se percató de la circulación del vehículo de placa de rodaje N° ${placa}, haciendo maniobras temerarias. Se le hicieron las señales reglamentarias con la finalidad de que detenga su marcha; sin embargo, el conductor desobedeció la orden policial y aceleró dándose a la fuga.`;
+    document.getElementById('agregar_intervencion_1').value = `--- El personal policial, en circunstancias que realizaba ${getVal('tipo_actividad') === 'OPERATIVO POLICIAL' ? 'el O/P ' + getVal('nombre_operativo') : 'patrullaje de rutina'} siendo las ${hora} hrs aprox., en ${lugar}; se intervino el vehículo de placa de rodaje N° ${placa}, conducido por ${intervenido} (${edad}), identificado con DNI N° ${dni}, quien circulaba en actitud sospechosa. Asimismo, se tomó conocimiento por parte de la superioridad que el vehículo en mención estaría involucrado en la denuncia por el presunto delito contra el patrimonio en la modalidad de Extorsión.`;
 
-    document.getElementById('titulo_sec_2').value = "II. PERSECUCIÓN Y CAPTURA:";
-    document.getElementById('agregar_intervencion_2').value = `--- Ante ello, el personal PNP a bordo de la unidad ${pnp1} inició la persecución del vehículo en mención, logrando interponerse delante de la unidad a fin de evitar un accidente y logrando intervenir a ${intervenido} (${edad}), identificado con DNI N° ${dni}.`;
+    document.getElementById('titulo_sec_2').value = "II. REGISTRO VEHICULAR:";
+    document.getElementById('agregar_intervencion_2').value = `--- Que, siendo las ${sumarMinutosAHora(hora, 10)} hrs, se procede a realizar el respectivo registro vehicular en presencia del intervenido ${intervenido}, hallándose los siguientes elementos:\n${hallazgos}`;
 
-    document.getElementById('titulo_sec_3').value = "III. DETENCION:";
-    document.getElementById('agregar_intervencion_3').value = `--- Siendo las ${hora} hrs se procedió a la detención del ciudadano ${intervenido} por la presunta comisión del delito contra la seguridad pública, notificándole sus derechos constitucionales.`;
+    document.getElementById('titulo_sec_3').value = "III. INCAUTACION:";
+    document.getElementById('agregar_intervencion_3').value = `--- Que, siendo las ${sumarMinutosAHora(hora, 20)} hrs, se procede a realizar la INCAUTACIÓN de las especies, documentos y bienes hallados durante el registro vehicular a la persona de ${intervenido}.`;
 
-    document.getElementById('titulo_sec_4').value = "IV. COMUNICACIÓN AL RMP:";
-    document.getElementById('agregar_intervencion_4').value = `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, Fiscal Adjunto de la Fiscalía Provincial Penal Corporativa de Huanta.`;
+    document.getElementById('titulo_sec_4').value = "IV. LACRADO Y CADENA DE CUSTODIA:";
+    document.getElementById('agregar_intervencion_4').value = `--- Que, siendo las ${sumarMinutosAHora(hora, 25)} hrs, se procede a realizar el LACRADO de las especies incautadas, las cuales son introducidas en sobres/cajas de seguridad con las firmas y post firmas de los participantes y asegurados con cinta de embalaje transparente.`;
+
+    document.getElementById('titulo_sec_5').value = "V. DETENCION:";
+    document.getElementById('agregar_intervencion_5').value = `--- Que, siendo las ${sumarMinutosAHora(hora, 60)} hrs, se procede a la DETENCIÓN de ${intervenido} (${edad}), por encontrarse en flagrancia delictiva por el presunto delito contra el patrimonio en la modalidad de Extorsión (Art. 259 del CPP).`;
+
+    document.getElementById('titulo_sec_6').value = "VI. COMUNICACIÓN AL RMP:";
+    document.getElementById('agregar_intervencion_6').value = `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, Fiscal Adjunto de la Fiscalía Provincial Penal Corporativa de Huanta.`;
   }
 
-  // PLANTILLA / MODELO 2: ALCOHOLEMIA Y RNT
-  function cargarModeloAlcoholemiaRNT() {
+  // 02. MODELO ACCIDENTE DE TRÁNSITO
+  function cargarModeloAccidenteTransito() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
 
-    const intervenido = document.getElementById('intervenido_nombre').value || "el intervenido";
-    const dni = document.getElementById('intervenido_dni').value || "S/D";
-    const placa = document.getElementById('placa_vehiculo').value || "S/P";
-    const lugar = document.getElementById('lugar').value || "el lugar de la intervención";
-    const hora = document.getElementById('hora_intervencion').value || "00:00";
-    const fiscal = document.getElementById('fiscal').value || "el RMP";
+    const intervenido = getVal('intervenido_nombre', 'el conductor');
+    const dni = getVal('intervenido_dni');
+    const edad = getVal('edad');
+    const placa = getVal('placa_vehiculo', 'S/P');
+    const lugar = getVal('lugar');
+    const hora = getVal('hora_intervencion', '00:00');
+    const pnp1 = getVal('placa_policial_1', 'unidad policial');
+    const fiscal = getVal('fiscal', 'el RMP');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
-    document.getElementById('agregar_intervencion_1').value = `--- Siendo las ${hora} hrs en ${lugar}, se intervino al vehículo de placa N° ${placa}, conducido por ${intervenido}, identificado con DNI N° ${dni}, quien presentaba visibles síntomas de ebriedad (aliento alcohólico).`;
+    document.getElementById('agregar_intervencion_1').value = `--- Constituídos en ${lugar}, a bordo de la UUMM ${pnp1}, por información de transeúntes de la vía quienes comunicaron de un accidente de tránsito con consecuencia de daños materiales, se procedió a verificar la intervención de los vehículos participantes conforme a los artículos del CPP.`;
 
-    document.getElementById('titulo_sec_2').value = "II. INCAUTACIÓN DE VEHICULO Y DETENCION:";
-    document.getElementById('agregar_intervencion_2').value = `--- Se procedió a la incautación del vehículo de placa N° ${placa} y a la detención del conductor ${intervenido} por la presunta comisión del delito de Conducción en Estado de Ebriedad (Peligro Común).`;
+    document.getElementById('titulo_sec_2').value = "II. FUNDAMENTOS DE LOS HECHOS FÁCTICOS:";
+    document.getElementById('agregar_intervencion_2').value = `--- Se encontró en el lugar la unidad de placa de rodaje N° ${placa}, conducida por ${intervenido} (${edad}), identificado con DNI N° ${dni}, domicilado en ${getVal('domicilio')}, quien refiere que en circunstancias que se desplazaba por la vía, colisionó sufriendo daños materiales en la estructura del vehículo (ruptura de faros, parachoques y abolladuras varias). Se procedió a la formulación de las actas correspondientes.`;
 
-    document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP:";
-    document.getElementById('agregar_intervencion_3').value = `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, Fiscal Adjunto de la Fiscalía Provincial Penal Corporativa de Huanta.`;
+    document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y MEDIDAS DE SEGURIDAD:";
+    document.getElementById('agregar_intervencion_3').value = `--- Se comunicó de la diligencia al RMP Abog. ${fiscal}. Asimismo, se precisa que las actas se redactan en la dependencia policial por medidas de seguridad del personal interviniente y participantes (Art. 240 del CPP).`;
+  }
+
+  // 03. MODELO CONTROL DE IDENTIDAD
+  function cargarModeloControlIdentidad() {
+    document.getElementById('cant_secciones').value = 2;
+    construirSeccionesNarrativa();
+
+    const intervenido = getVal('intervenido_nombre', 'el ciudadano');
+    const dni = getVal('intervenido_dni');
+    const edad = getVal('edad');
+    const lugar = getVal('lugar');
+
+    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
+    document.getElementById('agregar_intervencion_1').value = `--- En circunstancias que el personal policial realizaba patrullaje motorizado para la prevención de delitos y faltas en ${lugar}, al amparo del Art. 205 del CPP, se procedió a solicitar la identificación plena de la persona de ${intervenido} (${edad}), quien indicó no portar documento físico de identidad en el momento.`;
+
+    document.getElementById('titulo_sec_2').value = "II. RETENCIÓN Y VERIFICACIÓN E-SINPOL:";
+    document.getElementById('agregar_intervencion_2').value = `--- Al no contar con documento que acredite su identidad, fue conducido a la Comisaría de la jurisdicción para su plena identificación (otorgándole las facilidades para comunicarse con sus familiares), consultándose sus datos en el sistema virtual policial E-SINPOL PNP, dando como resultado NEGATIVO para requisitorias vigentes.`;
+  }
+
+  // 04. MODELO HURTO EN FLAGRANCIA
+  function cargarModeloHurtoFlagrancia() {
+    document.getElementById('cant_secciones').value = 4;
+    construirSeccionesNarrativa();
+
+    const intervenido = getVal('intervenido_nombre', 'el presunto autor');
+    const dni = getVal('intervenido_dni');
+    const edad = getVal('edad');
+    const lugar = getVal('lugar');
+    const fiscal = getVal('fiscal', 'el RMP');
+
+    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y FLAGRANCIA:";
+    document.getElementById('agregar_intervencion_1').value = `--- Realizando patrullaje motorizado por ${lugar}, a solicitud de la persona agraviada, se realizó la búsqueda del presunto autor de hurto. La denunciante reconoció e identificó plenamente a ${intervenido} (${edad}), DNI N° ${dni}, por lo que se procedió a su inmediata intervención al amparo del Art. 259 del CPP.`;
+
+    document.getElementById('titulo_sec_2').value = "II. REGISTRO PERSONAL Y RECUPERACIÓN:";
+    document.getElementById('agregar_intervencion_2').value = `--- Sometido al registro personal, se le halló en su poder los bienes sustraídos descritos por la víctima. El intervenido no ejerció violencia ni amenaza durante la sustracción.`;
+
+    document.getElementById('titulo_sec_3').value = "III. DETENCION Y LECTURA DE DERECHOS:";
+    document.getElementById('agregar_intervencion_3').value = `--- Se procedió a la DETENCIÓN de ${intervenido}, notificándole sus derechos previstos en el Art. 71 del CPP, trasladándolo a la dependencia policial. La consulta en E-SINPOL PNP dio resultado NEGATIVO para requisitorias.`;
+
+    document.getElementById('titulo_sec_4').value = "IV. COMUNICACIÓN AL RMP:";
+    document.getElementById('agregar_intervencion_4').value = `--- Se comunicó del hecho en forma inmediata al RMP Abog. ${fiscal}, poniendo al detenido a disposición de la Comisaría PNP.`;
+  }
+
+  // 05. MODELO VIOLENCIA / RESISTENCIA A LA AUTORIDAD
+  function cargarModeloResistenciaAutoridad() {
+    document.getElementById('cant_secciones').value = 5;
+    construirSeccionesNarrativa();
+
+    const intervenido = getVal('intervenido_nombre', 'el intervenido');
+    const dni = getVal('intervenido_dni');
+    const edad = getVal('edad');
+    const placa = getVal('placa_vehiculo', 'S/P');
+    const lugar = getVal('lugar');
+    const hora = getVal('hora_intervencion', '19:00');
+    const pnp1 = getVal('placa_policial_1', 'EP-1420');
+    const fiscal = getVal('fiscal', 'el RMP');
+
+    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y PERSECUCIÓN:";
+    document.getElementById('agregar_intervencion_1').value = `--- El personal policial, en circunstancias que realizaba patrullaje en ${lugar} siendo las ${hora} hrs aprox., se percató del vehículo de placa N° ${placa}, el cual circulaba con las luces apagadas infringiendo el RNT. Al indicarle que se detenga, el conductor desobedeció la orden y aceleró temerariamente contra el efectivo PNP para atropellarlo, dándose a la fuga. A bordo de la unidad ${pnp1} se inició la persecución.`;
+
+    document.getElementById('titulo_sec_2').value = "II. CAPTURA Y DAÑOS A UNIDAD PNP:";
+    document.getElementById('agregar_intervencion_2').value = `--- Durante la persecución, la unidad policial ${pnp1} logró interponerse para cerrar el paso, chocando el vehículo en fuga contra la motocicleta policial ocasionándole daños materiales. Se logró reducir e intervenir a ${intervenido} (${edad}), DNI N° ${dni}, quien no contaba con licencia de conducir.`;
+
+    document.getElementById('titulo_sec_3').value = "III. RECOJO Y LACRADO DE EVIDENCIA:";
+    document.getElementById('agregar_intervencion_3').value = `--- Que, siendo las ${sumarMinutosAHora(hora, 15)} hrs, se procedió al recojo de las partes dañadas de la unidad policial (soporte de placa) y posterior LACRADO en caja/sobre de seguridad con las firmas correspondientes.`;
+
+    document.getElementById('titulo_sec_4').value = "IV. INCAUTACIÓN DE VEHÍCULO Y DETENCIÓN:";
+    document.getElementById('agregar_intervencion_4').value = `--- Se realizó la INCAUTACIÓN del vehículo de placa N° ${placa} y la DETENCIÓN de ${intervenido} (${edad}) por la presunta comisión del delito contra la Administración Pública - Resistencia o Desobediencia a la Autoridad.`;
+
+    document.getElementById('titulo_sec_5').value = "V. COMUNICACIÓN AL RMP:";
+    document.getElementById('agregar_intervencion_5').value = `--- De los hechos se comunicó de manera inmediata al RMP Abog. ${fiscal}, trasladando los actuados a la Comisaría PNP por medidas de seguridad.`;
+  }
+
+  // 06. MODELO CONDUCCIÓN EN ESTADO DE EBRIEDAD / DROGADICCIÓN (PRUEBAS RETRAN)
+  function cargarModeloEbriedadPruebas() {
+    document.getElementById('cant_secciones').value = 5;
+    construirSeccionesNarrativa();
+
+    const intervenido = getVal('intervenido_nombre', 'el intervenido');
+    const dni = getVal('intervenido_dni');
+    const edad = getVal('edad');
+    const placa = getVal('placa_vehiculo', 'S/P');
+    const marca = getVal('marca_vehiculo', 'S/M');
+    const modelo = getVal('modelo_vehiculo', 'S/M');
+    const color = getVal('color_vehiculo', 'S/C');
+    const lugar = getVal('lugar');
+    const hora = getVal('hora_intervencion', '07:16');
+    const pnp1 = getVal('placa_policial_1', 'unidad policial');
+    const pnp2 = getVal('placa_policial_2', 'unidad de apoyo');
+    const fiscal = getVal('fiscal', 'el RMP');
+
+    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y MANIOBRAS TEMERARIAS:";
+    document.getElementById('agregar_intervencion_1').value = `--- El suscrito, en circunstancias que realizaba patrullaje motorizado a bordo de la UUMM de placa ${pnp1}, siendo las ${hora} hrs aprox., divisó al vehículo menor de placa de rodaje N° ${placa}, cuyo conductor realizaba maniobras temerarias por ${lugar}, por lo que se procedió a darle el alcance e intervención inmediata.`;
+
+    document.getElementById('titulo_sec_2').value = "II. IDENTIFICACIÓN Y SIGNOS DE HALITOSIS ALCOHÓLICA:";
+    document.getElementById('agregar_intervencion_2').value = `--- Intervenido el vehículo de placa N° ${placa} (Marca: ${marca}, Modelo: ${modelo}, Color: ${color}), se identificó al conductor como ${intervenido} (${edad}), DNI N° ${dni}, domiciliado en ${getVal('domicilio')}. Al solicitarle la documentación, se descubrió que presentaba signos evidentes de estar bajo la influencia de bebidas alcohólicas (halitosis alcohólica), motivo por el cual fue trasladado a las instalaciones de la UTSEVI PNP con apoyo de la UUMM ${pnp2}.`;
+
+    document.getElementById('titulo_sec_3').value = "III. EJECUCIÓN DE PRUEBAS DE EQUILIBRIO Y COORDINACIÓN (RETRAN):";
+    document.getElementById('agregar_intervencion_3').value = `--- De conformidad al Art. 307.2 del Reglamento Nacional de Tránsito (RETRAN), siendo las ${sumarMinutosAHora(hora, 25)} hrs, se le exigió al conductor someterse a las pruebas de equilibrio y coordinación (Test de Hogan y Prueba de Romberg), dando como resultado NO PASÓ LAS PRUEBAS (presentando inestabilidad al andar sobre línea recta, incapacidad para juntar índices y prueba de Romberg positiva por presencia de alcohol/sustancias).`;
+
+    document.getElementById('titulo_sec_4').value = "IV. DERECHOS DEL IMPUTADO Y CONSULTA E-SINPOL:";
+    document.getElementById('agregar_intervencion_4').value = `--- Se le hicieron conocer sus derechos previstos en el Art. 71 del CPP, dejándose constancia de haber recibido buen trato físico y psicológico. La consulta en el sistema virtual E-SINPOL PNP dio como resultado NEGATIVO para requisitorias vigentes.`;
+
+    document.getElementById('titulo_sec_5').value = "V. DISPOSICIÓN Y COMUNICACIÓN AL RMP:";
+    document.getElementById('agregar_intervencion_5').value = `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}. El intervenido es puesto a disposición de la SIAT-COM PNP en calidad de DETENIDO con las actas instruidas correspondientes.`;
   }
 </script>
 </body>
