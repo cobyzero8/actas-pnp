@@ -1,12 +1,14 @@
 /**
  * CATALOGO MASTER DE ACTAS PNP (14 ACTAS OFICIALES + SOPORTE MANUAL Y MULTI-VEHÍCULO)
+ * Sistema de Gestión e Individualización de Expedientes Policiales
  */
+
 const CATALOGO_ACTAS = [
   { 
     id: "intervencion", 
     aliases: ["intervencion", "acta_intervencion", "01_ACTA_DE_INTERVENCION_POLICIAL"], 
     titulo: "01. Acta de Intervención Policial", 
-    archivo: "plantilla/acta_intervencion.docx", 
+    archivo: "plantillas/acta_intervencion.docx", 
     llevaHora: true, 
     esIndividual: false // ÚNICA Y COLECTIVA PARA TODOS
   },
@@ -14,7 +16,7 @@ const CATALOGO_ACTAS = [
     id: "reg_personal", 
     aliases: ["reg_personal", "acta_registro_personal", "registro_personal", "ACTA_DE_REGISTRO_PERSONAL"], 
     titulo: "02. Acta de Registro Personal e Incautación", 
-    archivo: "plantilla/acta_registro_personal.docx", 
+    archivo: "plantillas/acta_registro_personal.docx", 
     llevaHora: true, 
     esIndividual: true // INDIVIDUAL POR DETENIDO
   },
@@ -22,7 +24,7 @@ const CATALOGO_ACTAS = [
     id: "lectura_derechos", 
     aliases: ["lectura_derechos", "acta_lectura_derechos", "ACTA_DE_LECTURA_DE_DERECHOS"], 
     titulo: "03. Acta de Lectura de Derechos", 
-    archivo: "plantilla/acta_lectura_derechos.docx", 
+    archivo: "plantillas/acta_lectura_derechos.docx", 
     llevaHora: true, 
     esIndividual: true // INDIVIDUAL POR DETENIDO
   },
@@ -30,7 +32,7 @@ const CATALOGO_ACTAS = [
     id: "detencion", 
     aliases: ["detencion", "acta_detencion", "ACTA_DE_DETENCION_POLICIAL"], 
     titulo: "04. Acta de Detención Policial", 
-    archivo: "plantilla/acta_detencion.docx", 
+    archivo: "plantillas/acta_detencion.docx", 
     llevaHora: true, 
     esIndividual: true // INDIVIDUAL POR DETENIDO
   },
@@ -38,7 +40,7 @@ const CATALOGO_ACTAS = [
     id: "buen_trato", 
     aliases: ["buen_trato", "constancia_buen_trato", "buentrato", "acta_buen_trato", "CONSTANCIA_DE_BUEN_TRATO"], 
     titulo: "05. Constancia de Buen Trato e Integridad Física", 
-    archivo: "plantilla/acta_buen_trato.docx", 
+    archivo: "plantillas/acta_buen_trato.docx", 
     llevaHora: false, 
     esIndividual: true // INDIVIDUAL POR DETENIDO
   },
@@ -46,7 +48,7 @@ const CATALOGO_ACTAS = [
     id: "sit_vehicular", 
     aliases: ["sit_vehicular", "acta_situacion_vehicular", "situacion_vehicular", "ACTA_DE_SITUACION_VEHICULAR"], 
     titulo: "06. Acta de Situación Vehicular", 
-    archivo: "plantilla/acta_situacion_vehicular.docx", 
+    archivo: "plantillas/acta_situacion_vehicular.docx", 
     llevaHora: true, 
     esIndividual: true,
     esVehicular: true // INDIVIDUAL POR VEHÍCULO / PLACA
@@ -55,7 +57,7 @@ const CATALOGO_ACTAS = [
     id: "reg_vehicular", 
     aliases: ["reg_vehicular", "acta_registro_vehicular", "registro_vehicular", "ACTA_DE_REGISTRO_VEHICULAR"], 
     titulo: "07. Acta de Registro Vehicular", 
-    archivo: "plantilla/acta_registro_vehicular.docx", 
+    archivo: "plantillas/acta_registro_vehicular.docx", 
     llevaHora: true, 
     esIndividual: true,
     esVehicular: true // INDIVIDUAL POR VEHÍCULO / PLACA
@@ -64,7 +66,7 @@ const CATALOGO_ACTAS = [
     id: "lacrado", 
     aliases: ["lacrado", "acta_lacrado", "ACTA_DE_LACRADO_CADENA_CUSTODIA"], 
     titulo: "08. Acta de Lacrado / Cadena de Custodia", 
-    archivo: "plantilla/acta_lacrado.docx", 
+    archivo: "plantillas/acta_lacrado.docx", 
     llevaHora: true, 
     esIndividual: true 
   },
@@ -72,7 +74,7 @@ const CATALOGO_ACTAS = [
     id: "comunicacion", 
     aliases: ["comunicacion", "comunicacion_fiscal", "acta_comunicacion", "ACTA_DE_COMUNICACION_AL_RMP"], 
     titulo: "09. Acta de Comunicación Telefónica al RMP", 
-    archivo: "plantilla/acta_comunicacion.docx", 
+    archivo: "plantillas/acta_comunicacion.docx", 
     llevaHora: true, 
     esIndividual: true 
   },
@@ -80,7 +82,7 @@ const CATALOGO_ACTAS = [
     id: "notif_detencion", 
     aliases: ["notif_detencion", "acta_notificacion_familiar", "ACTA_NOTIFICACION_DETENCION_FAMILIAR"], 
     titulo: "10. Acta de Notificación de Detención a Familiar", 
-    archivo: "plantilla/acta_notificacion_familiar.docx", 
+    archivo: "plantillas/acta_notificacion_familiar.docx", 
     llevaHora: true, 
     esIndividual: true 
   },
@@ -88,7 +90,7 @@ const CATALOGO_ACTAS = [
     id: "dosaje_etilico", 
     aliases: ["dosaje_etilico", "acta_dosaje_etilico", "ACTA_NOTIFICACION_DOSAJE_ETILICO"], 
     titulo: "11. Notificación para Dosaje Etílico", 
-    archivo: "plantilla/acta_dosaje_etilico.docx", 
+    archivo: "plantillas/acta_dosaje_etilico.docx", 
     llevaHora: true, 
     esIndividual: true 
   },
@@ -96,7 +98,7 @@ const CATALOGO_ACTAS = [
     id: "control_identidad", 
     aliases: ["control_identidad", "acta_control_identidad", "ACTA_DE_CONTROL_DE_IDENTIDAD"], 
     titulo: "12. Acta de Control de Identidad Policial", 
-    archivo: "plantilla/acta_control_identidad.docx", 
+    archivo: "plantillas/acta_control_identidad.docx", 
     llevaHora: true, 
     esIndividual: true 
   },
@@ -104,7 +106,7 @@ const CATALOGO_ACTAS = [
     id: "entrega_especies", 
     aliases: ["entrega_especies", "acta_entrega_especies", "ACTA_ENTREGA_DEVOLUCION_ESPECIES"], 
     titulo: "13. Acta de Entrega y Devolución de Especies", 
-    archivo: "plantilla/acta_entrega_especies.docx", 
+    archivo: "plantillas/acta_entrega_especies.docx", 
     llevaHora: true, 
     esIndividual: true 
   },
@@ -112,7 +114,7 @@ const CATALOGO_ACTAS = [
     id: "declaracion_intervenido", 
     aliases: ["declaracion_intervenido", "acta_declaracion", "ACTA_DECLARACION_DEL_INTERVENIDO"], 
     titulo: "14. Acta de Entrevista / Declaración del Intervenido", 
-    archivo: "plantilla/acta_declaracion.docx", 
+    archivo: "plantillas/acta_declaracion.docx", 
     llevaHora: true, 
     esIndividual: true 
   }
@@ -128,7 +130,7 @@ let datosFormularioBase = {};
 let horariosPorActa = {};
 
 /**
- * FUNCION PARA AGREGAR UN ACTA MANUALMENTE AL SISTEMA
+ * REGISTRAR ACTA CUSTOM O MANUAL
  */
 function registrarActaManual(nuevaActa) {
   if (!nuevaActa.id || !nuevaActa.titulo) {
@@ -140,7 +142,7 @@ function registrarActaManual(nuevaActa) {
     id: nuevaActa.id,
     aliases: [nuevaActa.id, nuevaActa.id.toLowerCase()],
     titulo: nuevaActa.titulo,
-    archivo: nuevaActa.archivo || `plantilla/${nuevaActa.id}.docx`,
+    archivo: nuevaActa.archivo || `plantillas/${nuevaActa.id}.docx`,
     llevaHora: nuevaActa.llevaHora !== false,
     esIndividual: nuevaActa.esIndividual !== false,
     esVehicular: nuevaActa.esVehicular === true
@@ -154,6 +156,9 @@ function registrarActaManual(nuevaActa) {
   }
 }
 
+/**
+ * FORMATEADORES Y AUXILIARES DE TEXTO
+ */
 function formatearFechaPolicial(fechaCadena) {
   if (!fechaCadena) return "";
 
@@ -190,7 +195,7 @@ function formatearFechaPolicial(fechaCadena) {
 }
 
 function sumarMinutosAHora(horaStr, minutosASumar) {
-  if (!horaStr) return "00:00";
+  if (!horaStr || !horaStr.includes(':')) return "00:00";
   const partes = horaStr.split(':');
   let horas = parseInt(partes[0], 10);
   let minutos = parseInt(partes[1], 10) + minutosASumar;
@@ -231,7 +236,6 @@ function procesarDocumentosRNT() {
   return hallazgos.length > 0 ? hallazgos.join(', ') : "NO PRESENTA DOCUMENTACIÓN / EN PROCESO DE VERIFICACIÓN";
 }
 
-// CAPTURA LA LISTA DE TODOS LOS INTERVENIDOS
 function obtenerListaIntervenidosForm() {
   if (typeof obtenerListaIntervenidos === 'function') {
     const lista = obtenerListaIntervenidos();
@@ -266,7 +270,6 @@ function obtenerListaIntervenidosForm() {
   }];
 }
 
-// CAPTURA LA LISTA DE TODOS LOS VEHÍCULOS INVOLUCRADOS
 function obtenerListaVehiculosForm() {
   if (typeof obtenerListaVehiculos === 'function') {
     const lista = obtenerListaVehiculos();
@@ -305,6 +308,42 @@ function construirTextoVehiculosResumen(listaVehiculos) {
   return `${partes.join(', ')} y ${ultimo}`;
 }
 
+function obtenerTextoFiliacionCompletaMultiples(lista) {
+  if (!lista || lista.length === 0) return "No registra intervenidos.";
+  return lista.map((item, idx) => {
+    const prefijo = lista.length > 1 ? `INTERVENIDO N° ${idx + 1}: ` : '';
+    return `${prefijo}${item.nombre}, con ${item.edad} años de edad, natural de ${item.natural}, de ocupación ${item.ocupacion}, identificado con DNI N° ${item.dni}, quien refiere domiciliar en ${item.domicilio}, celular N° ${item.celular || 'S/N'}, estado civil ${item.estado_civil}, hijo de don ${item.papa || 'S/D'} y doña ${item.mama || 'S/D'}.`;
+  }).join('\n\n');
+}
+
+function generarBloqueCierreYFirmas(horaFin, lista) {
+  let textoCierre = `\n--- Siendo las ${horaFin} Horas del mismo día se dio por concluida la presente diligencia, firmando los participantes en señal de conformidad. -------------------\n\n` +
+    `Se adjunta:\n` +
+    `${typeof obtenerListaAdjuntosFormateada === 'function' ? obtenerListaAdjuntosFormateada() : ''}\n\n\n`;
+
+  if (!lista || lista.length <= 1) {
+    const int1 = (lista && lista[0]) ? lista[0] : { nombre: '{intervenido_nombre}', dni: '{intervenido_dni}' };
+    textoCierre += 
+      `                                              __________________________________\n` +
+      `                                                        EL INTERVENIDO\n\n` +
+      `                                              Nombre: ${int1.nombre}\n` +
+      `                                              DNI N°: ${int1.dni}`;
+  } else {
+    lista.forEach((item, idx) => {
+      textoCierre += 
+        `                                              __________________________________\n` +
+        `                                                    EL INTERVENIDO N° ${idx + 1}\n\n` +
+        `                                              Nombre: ${item.nombre}\n` +
+        `                                              DNI N°: ${item.dni}\n\n`;
+    });
+  }
+
+  return textoCierre;
+}
+
+/**
+ * INICIALIZACIÓN
+ */
 document.addEventListener('DOMContentLoaded', () => {
   delitoConfigurado = localStorage.getItem('pnp_delito_seleccionado') || "CONTROL DE IDENTIDAD POLICIAL";
   const actasJSON = localStorage.getItem('pnp_actas_seleccionadas');
@@ -329,6 +368,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (hora1Input) hora1Input.value = new Date().toTimeString().slice(0, 5);
 });
 
+/**
+ * MANEJO DEL SUBMIT DEL FORMULARIO
+ */
 document.getElementById('expedienteForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -346,7 +388,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
         id: idLimpio,
         aliases: [idLimpio],
         titulo: (typeof idSel === 'object' && idSel.titulo) ? idSel.titulo : `Acta de ${idLimpio}`,
-        archivo: (typeof idSel === 'object' && idSel.archivo) ? idSel.archivo : `plantilla/${idLimpio}.docx`,
+        archivo: (typeof idSel === 'object' && idSel.archivo) ? idSel.archivo : `plantillas/${idLimpio}.docx`,
         llevaHora: true,
         esIndividual: true,
         esVehicular: false
@@ -374,6 +416,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     lugar: document.getElementById('lugar').value,
 
     motivo_justificatorio: document.getElementById('motivo_justificatorio') ? document.getElementById('motivo_justificatorio').value : "",
+    unidad_disposicion: document.getElementById('unidad_disposicion') ? document.getElementById('unidad_disposicion').value : "SIAT-COM PNP HUANTA",
 
     placa_vehiculo: vehPrincipal.placa,
     marca_vehiculo: vehPrincipal.marca,
@@ -413,7 +456,8 @@ function avanzarAoSaltarAQuienLleveHora(horaSugeridaInicio) {
     }
   }
 
-  document.getElementById('modalHoras').style.display = 'none';
+  const modal = document.getElementById('modalHoras');
+  if (modal) modal.style.display = 'none';
   ejecutarGeneracionFinalExpediente();
 }
 
@@ -472,16 +516,22 @@ async function confirmarHoraActaActual() {
     const siguienteSugerida = sumarMinutosAHora(hTermino, 1);
     avanzarAoSaltarAQuienLleveHora(siguienteSugerida);
   } else {
-    document.getElementById('modalHoras').style.display = 'none';
+    const modal = document.getElementById('modalHoras');
+    if (modal) modal.style.display = 'none';
     await ejecutarGeneracionFinalExpediente();
   }
 }
 
+/**
+ * GENERACIÓN Y COMPILACIÓN FINAL DEL EXPEDIENTE (.DOCX / .ZIP)
+ */
 async function ejecutarGeneracionFinalExpediente() {
   const statusMsg = document.getElementById('statusMsg');
-  statusMsg.className = "alert-msg alert-success";
-  statusMsg.style.display = "block";
-  statusMsg.innerText = `Procesando actas e individualizando intervenidos y vehículos... Por favor espere.`;
+  if (statusMsg) {
+    statusMsg.className = "alert-msg alert-success";
+    statusMsg.style.display = "block";
+    statusMsg.innerText = `Procesando actas e individualizando intervenidos y vehículos... Por favor espere.`;
+  }
 
   try {
     const regPersonal = horariosPorActa['reg_personal'] || { horaInicio: "08:00", horaTermino: "08:05" };
@@ -515,6 +565,8 @@ async function ejecutarGeneracionFinalExpediente() {
     const cantSecElem = document.getElementById('cant_secciones');
     const cantSec = cantSecElem ? (parseInt(cantSecElem.value, 10) || 1) : 1;
     const seccionesObj = {};
+    let bloquesNarrativaLista = [];
+
     for (let i = 1; i <= cantSec; i++) {
       const titInputElem = document.getElementById(`titulo_sec_${i}`);
       const tituloFinal = titInputElem ? (titInputElem.value.trim() || `SECCIÓN ${i}:`) : `SECCIÓN ${i}:`;
@@ -524,13 +576,17 @@ async function ejecutarGeneracionFinalExpediente() {
       
       seccionesObj[`titulo_intervencion${i}`] = tituloFinal;
       seccionesObj[`agregar_intervencion${i}`] = `${tituloFinal}\n${contenido}`;
+      
+      if (contenido.trim()) {
+        bloquesNarrativaLista.push(`${tituloFinal}\n${contenido}`);
+      }
     }
 
-    // LISTA DE INTERVENIDOS Y VEHÍCULOS
+    // LISTAS PRINCIPALES DE ENTRADA
     const listaIntervenidos = obtenerListaIntervenidosForm();
     const listaVehiculos = obtenerListaVehiculosForm();
 
-    // RESUMEN COLECTIVO DE PERSONAS
+    // SINTAXIS Y TEXTOS DINÁMICOS
     let textoIntervenidosColectivo = "";
     if (listaIntervenidos.length === 1) {
       textoIntervenidosColectivo = `${listaIntervenidos[0].nombre} (${listaIntervenidos[0].edad} años), DNI N° ${listaIntervenidos[0].dni}`;
@@ -540,13 +596,28 @@ async function ejecutarGeneracionFinalExpediente() {
       textoIntervenidosColectivo = `${partes.join(', ')} y ${ultimo}`;
     }
 
-    // RESUMEN COLECTIVO DE VEHÍCULOS
     const textoVehiculosColectivo = construirTextoVehiculosResumen(listaVehiculos);
+    const filiacionCompleta = obtenerTextoFiliacionCompletaMultiples(listaIntervenidos);
+    const horaTerminoTotal = horariosPorActa['intervencion']?.horaTermino || datosFormularioBase.hora2 || "08:30";
+    const horaPruebaG = sumarMinutosAHora(horaIntVal, 15);
+    const bloqueFirmasG = generarBloqueCierreYFirmas(horaTerminoTotal, listaIntervenidos);
 
+    // OBJETO DE DATOS BASE COMPLETO CON SOPORTE PARA TODAS LAS PLANTILLAS
     const datosFinalesBase = {
       ...datosFormularioBase,
       ...vehiculosPNPObj,
       ...seccionesObj,
+      
+      // VARIABLES MAESTRAS DE LA PLANTILLA MAESTRA ACTA_INTERVENCION.DOCX
+      filiacion_intervenidos: filiacionCompleta,
+      resumen_intervenidos: textoIntervenidosColectivo,
+      resumen_vehiculos: textoVehiculosColectivo,
+      secciones_narrativa: bloquesNarrativaLista.join('\n\n'),
+      calidad_detenido: listaIntervenidos.length > 1 ? "DETENIDOS" : "DETENIDO",
+      bloque_firmas: bloqueFirmasG,
+      hora_prueba: horaPruebaG,
+      hora_termino: horaTerminoTotal,
+
       intervenidos_resumen: textoIntervenidosColectivo,
       vehiculos_resumen: textoVehiculosColectivo,
       hora_intervencion: horaIntVal,
@@ -562,7 +633,7 @@ async function ejecutarGeneracionFinalExpediente() {
       hora_detencion: horaDetencionVal
     };
 
-    // REGISTRO EN SUPABASE
+    // GUARDA EL ESTADO REUTILIZABLE/CLONABLE EN SUPABASE
     try {
       if (typeof supabaseClient !== 'undefined' && supabaseClient.from) {
         await supabaseClient.from('intervenciones').insert([{
@@ -572,27 +643,26 @@ async function ejecutarGeneracionFinalExpediente() {
           lugar: datosFinalesBase.lugar,
           intervenido_nombre: listaIntervenidos[0].nombre,
           intervenido_dni: listaIntervenidos[0].dni,
-          efectivo_cargo: `${datosFinalesBase.grado} ${datosFinalesBase.personal_interviniente}`
+          efectivo_cargo: `${datosFinalesBase.grado} ${datosFinalesBase.personal_interviniente}`,
+          datos_json: datosFinalesBase // <-- Guarda la intervención editable para clonar en el futuro
         }]);
       }
     } catch (errSupabase) {
-      console.warn("Ejecutando en modo offline.");
+      console.warn("Supabase offline o no disponible. Continuando generación local.");
     }
 
     const JSZipLib = window.JSZip || (typeof JSZip !== 'undefined' ? JSZip : null);
     const zip = new JSZipLib();
     let archivosAgregados = 0;
 
-    // GENERACIÓN DE DOCUMENTOS (COLECTIVOS vs INDIVIDUALES PERSONA vs INDIVIDUALES VEHÍCULO)
+    // GENERACIÓN DE DOCUMENTOS (COLECTIVOS vs INDIVIDUALES)
     for (let acta of actasAProcesarSecuencia) {
       const hor = horariosPorActa[acta.id] || { horaInicio: "", horaTermino: "" };
       const esActaColectiva = (acta.esIndividual === false || acta.id === 'intervencion');
       const esActaVehicular = (acta.esVehicular === true || acta.id === 'sit_vehicular' || acta.id === 'reg_vehicular');
 
       if (esActaColectiva) {
-        // =========================================================
-        // CASO A: ACTA ÚNICA / GENERAL (ACTA DE INTERVENCIÓN)
-        // =========================================================
+        // CASO A: ACTA ÚNICA Y COLECTIVA (ACTA DE INTERVENCIÓN)
         const datosDocIntervencion = {
           ...datosFinalesBase,
           intervenido_nombre: textoIntervenidosColectivo,
@@ -619,9 +689,7 @@ async function ejecutarGeneracionFinalExpediente() {
         }
 
       } else if (esActaVehicular) {
-        // =========================================================
-        // CASO B: ACTAS VEHICULARES INDIVIDUALES (REPLICADAS POR CADA VEHÍCULO)
-        // =========================================================
+        // CASO B: ACTAS VEHICULARES INDIVIDUALES (REPLICADAS POR CADA VEHÍCULO / PLACA)
         for (let idxV = 0; idxV < listaVehiculos.length; idxV++) {
           const veh = listaVehiculos[idxV];
 
@@ -648,9 +716,7 @@ async function ejecutarGeneracionFinalExpediente() {
         }
 
       } else {
-        // =========================================================
         // CASO C: ACTAS PERSONALES INDIVIDUALES (REPLICADAS POR CADA DETENIDO)
-        // =========================================================
         for (let idx = 0; idx < listaIntervenidos.length; idx++) {
           const persona = listaIntervenidos[idx];
 
@@ -695,14 +761,22 @@ async function ejecutarGeneracionFinalExpediente() {
       saveAs(zipContent, `Expediente_PNP_${datosFinalesBase.distrito}_${datosFinalesBase.fecha}.zip`);
     }
 
-    statusMsg.innerText = "¡Expediente generado exitosamente!";
+    if (statusMsg) {
+      statusMsg.className = "alert-msg alert-success";
+      statusMsg.innerText = "✅ ¡Expediente generado exitosamente!";
+    }
 
   } catch (err) {
-    statusMsg.className = "alert-msg alert-danger";
-    statusMsg.innerText = "Error al procesar expediente: " + err.message;
+    if (statusMsg) {
+      statusMsg.className = "alert-msg alert-danger";
+      statusMsg.innerText = "❌ Error al procesar expediente: " + err.message;
+    }
   }
 }
 
+/**
+ * RENDERIZADOR DOCXTEMPLATER ANTI-CACHE
+ */
 async function generarDocumentoWord(rutaPlantilla, datos) {
   const PizZipLib = window.PizZip || (typeof PizZip !== 'undefined' ? PizZip : null);
   const DocxLib = window.docxtemplater || (typeof docxtemplater !== 'undefined' ? docxtemplater : null);
@@ -711,7 +785,7 @@ async function generarDocumentoWord(rutaPlantilla, datos) {
 
   const urlAntiCache = `${rutaPlantilla}?t=${new Date().getTime()}`;
   const response = await fetch(urlAntiCache);
-  if (!response.ok) throw new Error(`Plantilla no encontrada: ${rutaPlantilla}`);
+  if (!response.ok) throw new Error(`Plantilla no encontrada en GitHub: ${rutaPlantilla}`);
 
   const arrayBuffer = await response.arrayBuffer();
   const zip = new PizZipLib(arrayBuffer);
