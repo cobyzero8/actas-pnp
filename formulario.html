@@ -38,19 +38,31 @@
       text-align: center;
       transition: all 0.2s ease;
     }
-    .btn-tag {
-      background: #0284c7;
-      color: #fff;
-      border: none;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: bold;
+    
+    /* ESTILOS DEL PANEL LATERAL DE FICHAS RÁPIDAS (PASO 2) */
+    .chip-btn {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-left: 4px solid #0284c7;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      text-align: left;
       cursor: pointer;
-      transition: background 0.2s;
+      width: 100%;
+      transition: all 0.15s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
-    .btn-tag:hover {
-      background: #0369a1;
+    .chip-btn:hover {
+      background: #f0f9ff;
+      border-color: #0284c7;
+      transform: translateY(-1px);
+    }
+    .chip-btn strong {
+      color: #0369a1;
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
     }
   </style>
 </head>
@@ -120,7 +132,7 @@
   </div>
 </div>
 
-<div class="container">
+<div class="container" style="max-width: 1100px;">
   <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
       <a href="menu.html" style="text-decoration: none; color: var(--primary); font-weight: bold; font-size: 13px;">← Cambiar Delito / Actas</a>
@@ -137,309 +149,324 @@
     <div id="statusMsg" class="alert-msg"></div>
 
     <form id="expedienteForm">
-      
-      <!-- LUGAR Y TIEMPO GENERAL -->
-      <div class="grid">
-        <div>
-          <label>Distrito</label>
-          <input type="text" id="distrito" value="Huanta" required>
-        </div>
-        <div>
-          <label>Provincia</label>
-          <input type="text" id="provincia" value="Huanta" required>
-        </div>
-        <div>
-          <label>Región</label>
-          <input type="text" id="region" value="Ayacucho" required>
-        </div>
-        <div>
-          <label>Fecha</label>
-          <input type="date" id="fecha" required>
-        </div>
-        <div>
-          <label>Hora Inicio (General)</label>
-          <input type="time" id="hora1" required>
-        </div>
-        <div>
-          <label>Hora Término (General)</label>
-          <input type="time" id="hora2" required>
-        </div>
-        <div class="full">
-          <label>Lugar Exacto de Intervención</label>
-          <input type="text" id="lugar" placeholder="Ej: Av. San Martín Cdra. 2" required>
-        </div>
-      </div>
 
-      <hr style="margin: 15px 0;">
-
-      <!-- INTERVENIDO -->
-      <div class="grid">
-        <div class="full">
-          <label>Nombres y Apellidos del Intervenido</label>
-          <input type="text" id="intervenido_nombre" placeholder="Nombre completo" required>
-        </div>
-        <div>
-          <label>N° DNI</label>
-          <input type="text" id="intervenido_dni" placeholder="N° DNI" required>
-        </div>
-        <div>
-          <label>Edad</label>
-          <input type="number" id="edad" placeholder="Edad" required>
-        </div>
-        <div>
-          <label>Estado Civil ({estado_civil})</label>
-          <select id="estado_civil" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
-            <option value="soltero">Soltero</option>
-            <option value="casado">Casado</option>
-            <option value="viudo">Viudo</option>
-            <option value="conviviente">Conviviente</option>
-          </select>
-        </div>
-        <div>
-          <label>Dónde Nació</label>
-          <input type="text" id="natural" placeholder="Natural de" required>
-        </div>
-        <div>
-          <label>N° Celular</label>
-          <input type="text" id="celular1" placeholder="Ej: 987654321 o S/N">
-        </div>
-        <div>
-          <label>Hijo de Don</label>
-          <input type="text" id="papa" placeholder="Nombres del padre">
-        </div>
-        <div>
-          <label>Y Doña</label>
-          <input type="text" id="mama" placeholder="Nombres de la madre">
-        </div>
-        <div>
-          <label>Ocupación</label>
-          <input type="text" id="ocupacion" value="Su casa" required>
-        </div>
-        <div class="full">
-          <label>Domicilio</label>
-          <input type="text" id="domicilio" placeholder="Dirección actual" required>
-        </div>
-        <div class="full">
-          <label>Persona de Confianza (Asistencia)</label>
-          <input type="text" id="asistido_confianza" value="no deseando ser asistido por ninguna persona" required>
-        </div>
-      </div>
-
-      <hr style="margin: 15px 0;">
-
-      <!-- DETALLES ESPECÍFICOS DE INTERVENCIÓN POLICIAL -->
-      <div class="grid">
-        <div class="full">
-          <label style="color: var(--primary); font-weight: bold; font-size: 14px;">🚨 Datos Específicos para Acta de Intervención</label>
-        </div>
-
-        <div>
-          <label>Hora Real Intervención ({hora_intervencion})</label>
-          <input type="time" id="hora_intervencion" required>
-        </div>
-
-        <div class="full">
-          <label>Fiscal de Turno / RMP ({fiscal})</label>
-          <input type="text" id="fiscal" placeholder="Ej: Abog. Juan Pérez, Fiscal Adjunto de la FPPC Huanta">
-        </div>
-
-        <div class="full">
-          <label>Actividad Realizada ({actividad_realizada})</label>
-          <select id="tipo_actividad" onchange="evaluarTipoActividad()" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
-            <option value="PATRULLAJE DE RUTINA">Patrullaje de Rutina</option>
-            <option value="OPERATIVO POLICIAL">Operativo Policial</option>
-          </select>
-        </div>
-
-        <div class="full" id="box_nombre_operativo" style="display: none;">
-          <label>Nombre del Operativo Policial</label>
-          <input type="text" id="nombre_operativo" placeholder="Ej: O/P IMPACTO VRAEM 2026">
-        </div>
-
-        <!-- VEHÍCULOS POLICIALES -->
-        <div class="full" style="background: #f1f5f9; padding: 10px; border-radius: 6px;">
-          <label style="font-weight: bold; display: block; margin-bottom: 5px;">Unidades/Vehículos Policiales Participantes:</label>
-          <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
-            <span style="font-size: 12px;">¿Cuántos vehículos PNP participaron?</span>
-            <input type="number" id="cant_vehiculos_pnp" value="1" min="1" max="5" onchange="generarCamposVehiculosPNP()" style="width: 60px; text-align: center; font-weight: bold;">
+      <!-- ================= PASO 1: CAPTURA DE DATOS GENERALES ================= -->
+      <div id="paso1_formulario">
+        
+        <!-- LUGAR Y TIEMPO -->
+        <div class="grid">
+          <div>
+            <label>Distrito</label>
+            <input type="text" id="distrito" value="Huanta" required>
           </div>
-          <div id="contenedor_vehiculos_pnp" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <!-- Generado dinámicamente -->
+          <div>
+            <label>Provincia</label>
+            <input type="text" id="provincia" value="Huanta" required>
+          </div>
+          <div>
+            <label>Región</label>
+            <input type="text" id="region" value="Ayacucho" required>
+          </div>
+          <div>
+            <label>Fecha</label>
+            <input type="date" id="fecha" required>
+          </div>
+          <div>
+            <label>Hora Inicio (General)</label>
+            <input type="time" id="hora1" required>
+          </div>
+          <div>
+            <label>Hora Término (General)</label>
+            <input type="time" id="hora2" required>
+          </div>
+          <div class="full">
+            <label>Lugar Exacto de Intervención</label>
+            <input type="text" id="lugar" placeholder="Ej: Av. San Martín Cdra. 2" required>
           </div>
         </div>
 
-        <!-- DOCUMENTOS RNT -->
-        <div class="full" style="background: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px;">
-          <label style="font-weight: bold; color: var(--primary); display: block; margin-bottom: 8px;">📄 Verificación Documentaria RNT ({documentos_retran}):</label>
+        <hr style="margin: 15px 0;">
+
+        <!-- INTERVENIDO -->
+        <div class="grid">
+          <div class="full">
+            <label>Nombres y Apellidos del Intervenido</label>
+            <input type="text" id="intervenido_nombre" placeholder="Nombre completo" required>
+          </div>
+          <div>
+            <label>N° DNI</label>
+            <input type="text" id="intervenido_dni" placeholder="N° DNI" required>
+          </div>
+          <div>
+            <label>Edad</label>
+            <input type="number" id="edad" placeholder="Edad" required>
+          </div>
+          <div>
+            <label>Estado Civil</label>
+            <select id="estado_civil" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
+              <option value="soltero">Soltero</option>
+              <option value="casado">Casado</option>
+              <option value="viudo">Viudo</option>
+              <option value="conviviente">Conviviente</option>
+            </select>
+          </div>
+          <div>
+            <label>Dónde Nació</label>
+            <input type="text" id="natural" placeholder="Natural de" required>
+          </div>
+          <div>
+            <label>N° Celular</label>
+            <input type="text" id="celular1" placeholder="Ej: 987654321 o S/N">
+          </div>
+          <div>
+            <label>Hijo de Don</label>
+            <input type="text" id="papa" placeholder="Nombres del padre">
+          </div>
+          <div>
+            <label>Y Doña</label>
+            <input type="text" id="mama" placeholder="Nombres de la madre">
+          </div>
+          <div>
+            <label>Ocupación</label>
+            <input type="text" id="ocupacion" value="Su casa" required>
+          </div>
+          <div class="full">
+            <label>Domicilio</label>
+            <input type="text" id="domicilio" placeholder="Dirección actual" required>
+          </div>
+          <div class="full">
+            <label>Persona de Confianza (Asistencia)</label>
+            <input type="text" id="asistido_confianza" value="no deseando ser asistido por ninguna persona" required>
+          </div>
+        </div>
+
+        <hr style="margin: 15px 0;">
+
+        <!-- DATOS ESPECÍFICOS DE INTERVENCIÓN -->
+        <div class="grid">
+          <div>
+            <label>Hora Real Intervención ({hora_intervencion})</label>
+            <input type="time" id="hora_intervencion" required>
+          </div>
+
+          <div class="full">
+            <label>Fiscal de Turno / RMP ({fiscal})</label>
+            <input type="text" id="fiscal" placeholder="Ej: Abog. Juan Pérez, Fiscal Adjunto de la FPPC Huanta">
+          </div>
+
+          <div class="full">
+            <label>Actividad Realizada ({actividad_realizada})</label>
+            <select id="tipo_actividad" onchange="evaluarTipoActividad()" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
+              <option value="PATRULLAJE DE RUTINA">Patrullaje de Rutina</option>
+              <option value="OPERATIVO POLICIAL">Operativo Policial</option>
+            </select>
+          </div>
+
+          <div class="full" id="box_nombre_operativo" style="display: none;">
+            <label>Nombre del Operativo Policial</label>
+            <input type="text" id="nombre_operativo" placeholder="Ej: O/P IMPACTO VRAEM 2026">
+          </div>
+
+          <!-- VEHÍCULOS POLICIALES -->
+          <div class="full" style="background: #f1f5f9; padding: 10px; border-radius: 6px;">
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Unidades/Vehículos Policiales Participantes:</label>
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 12px;">¿Cuántos vehículos PNP participaron?</span>
+              <input type="number" id="cant_vehiculos_pnp" value="1" min="1" max="5" onchange="generarCamposVehiculosPNP()" style="width: 60px; text-align: center; font-weight: bold;">
+            </div>
+            <div id="contenedor_vehiculos_pnp" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <!-- Generado dinámicamente -->
+            </div>
+          </div>
+
+          <!-- DOCUMENTOS RNT -->
+          <div class="full" style="background: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px;">
+            <label style="font-weight: bold; color: var(--primary); display: block; margin-bottom: 8px;">📄 Verificación Documentaria RNT ({documentos_retran}):</label>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <label><input type="checkbox" id="chk_soat" checked> <strong>SOAT:</strong></label>
+                <select id="st_soat" style="padding: 4px;"><option value="VIGENTE">VIGENTE</option><option value="VENCIDO">VENCIDO</option><option value="NO CUENTA">NO CUENTA</option></select>
+                <span>Vencimiento:</span> <input type="date" id="fec_soat" style="padding: 3px;">
+              </div>
+
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <label><input type="checkbox" id="chk_itv" checked> <strong>CITV (Inspección Técnica):</strong></label>
+                <select id="st_itv" style="padding: 4px;"><option value="VIGENTE">VIGENTE</option><option value="VENCIDO">VENCIDO</option><option value="NO CUENTA">NO CUENTA</option></select>
+                <span>Vencimiento:</span> <input type="date" id="fec_itv" style="padding: 3px;">
+              </div>
+
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <label><input type="checkbox" id="chk_lunas"> <strong>Permiso Lunas Polarizadas:</strong></label>
+                <select id="st_lunas" style="padding: 4px;"><option value="CUENTA Y VIGENTE">CUENTA Y VIGENTE</option><option value="NO CUENTA">NO CUENTA O VENCIDO</option></select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr style="margin: 15px 0;">
+
+        <!-- DATOS DEL VEHÍCULO INTERVENIDO (OPCIONAL) -->
+        <div class="grid">
+          <div class="full">
+            <label style="color: var(--primary); font-weight: bold;">🚘 Datos del Vehículo Intervenido (Si aplica)</label>
+          </div>
+          <div>
+            <label>Placa del Vehículo</label>
+            <input type="text" id="placa_vehiculo" placeholder="Ej: ABC-123">
+          </div>
+          <div>
+            <label>Marca</label>
+            <input type="text" id="marca_vehiculo" placeholder="Ej: Toyota">
+          </div>
+          <div>
+            <label>Modelo</label>
+            <input type="text" id="modelo_vehiculo" placeholder="Ej: Yaris">
+          </div>
+          <div class="full">
+            <label>Color / Estado del Vehículo</label>
+            <input type="text" id="color_vehiculo" placeholder="Ej: Negro / Regular estado de conservación">
+          </div>
+        </div>
+
+        <hr style="margin: 15px 0;">
+
+        <!-- REGISTRO DE ESPECIES CON CUADRO FLOTANTE -->
+        <div class="grid">
+          <div class="full">
+            <label style="color: var(--primary); font-weight: bold;">
+              📦 Registro de Especies Incautadas / Halladas (Toque para registrar hallazgos):
+            </label>
+          </div>
+          <div>
+            <label>01. Drogas / Insumos</label>
+            <input type="text" class="especie-field" id="drogas" value="NEGATIVO" readonly onclick="abrirEspecieModal('drogas', '01. Drogas / Insumos')">
+          </div>
+          <div>
+            <label>02. Moneda Nac / Ext</label>
+            <input type="text" class="especie-field" id="moneda" value="NEGATIVO" readonly onclick="abrirEspecieModal('moneda', '02. Moneda Nac / Ext')">
+          </div>
+          <div>
+            <label>03. Joyas / Alhajas</label>
+            <input type="text" class="especie-field" id="joyas" value="NEGATIVO" readonly onclick="abrirEspecieModal('joyas', '03. Joyas / Alhajas')">
+          </div>
+          <div>
+            <label>04. Armas / Explosivos</label>
+            <input type="text" class="especie-field" id="municion" value="NEGATIVO" readonly onclick="abrirEspecieModal('municion', '04. Armas, Municiones y Explosivos')">
+          </div>
+          <div class="full">
+            <label>05. Otros</label>
+            <input type="text" class="especie-field" id="otros" value="NEGATIVO" readonly onclick="abrirEspecieModal('otros', '05. Otros Bienes / Especies')">
+          </div>
+
+          <div class="full" id="contenedorPositivo" style="display: none; margin-top: 10px;">
+            <label style="color: #d9534f; font-weight: bold;">⚠️ Resultado POSITIVO - Detalle Integrado:</label>
+            <textarea id="narrar_positivo" rows="4" readonly style="font-size: 13px; background: #fff5f5; border: 2px solid #d9534f; font-weight: 500;"></textarea>
+          </div>
+        </div>
+
+        <hr style="margin: 15px 0;">
+
+        <!-- MOTIVO JUSTIFICATORIO DE SEGURIDAD -->
+        <div class="grid">
+          <div class="full">
+            <label style="color: var(--primary); font-weight: bold;">
+              🛡️ Motivo Justificatorio (Traslado a la Dependencia / Medidas de Seguridad):
+            </label>
+            <select id="motivo_justificatorio" style="width: 100%; padding: 10px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 5px; font-weight: 500;">
+              <option value="debido a la falta de garantías para la integridad física del intervenido y del personal policial, ante la posible aglomeración y actitud hostil de personas en el lugar de la intervención.">
+                1. Falta de garantías e integridad física / Aglomeración y actitud hostil
+              </option>
+              <option value="debido a la escasa iluminación en la zona, el alto flujo vehicular y la falta de visibilidad, factores que impedían realizar una diligencia minuciosa y segura.">
+                2. Escasa iluminación / Alto flujo vehicular / Falta de visibilidad
+              </option>
+              <option value="debido a las inclemencias del tiempo (lluvias) y a la falta de un espacio adecuado que garantice el respeto a la dignidad y privacidad del intervenido.">
+                3. Inclemencias del tiempo (lluvias) / Privacidad y dignidad
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <hr style="margin: 15px 0;">
+
+        <!-- PERSONAL PNP -->
+        <div class="grid">
+          <div>
+            <label>Efectivo Interviniente</label>
+            <input type="text" id="personal_interviniente" placeholder="Nombres y Apellidos" required>
+          </div>
+          <div>
+            <label>Grado / CIP</label>
+            <div style="display:flex; gap:5px;">
+              <input type="text" id="grado" placeholder="Ej: S2" required>
+              <input type="text" id="cip" placeholder="SA-32112217" required>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-success" onclick="irAPaso2Redactor()" style="margin-top: 20px; font-size: 15px;">
+          ➡️ Continuar a Redacción de Ocurrencias (Paso 2)
+        </button>
+      </div>
+
+
+      <!-- ================= PASO 2: REDACTOR ASISTIDO DE INTERVENCIÓN ================= -->
+      <div id="paso2_redactor" style="display: none;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #003366; padding-bottom: 10px; margin-bottom: 15px;">
+          <h3 style="margin: 0; color: #003366;">📝 Redacción Asistida del Acta de Intervención</h3>
+          <button type="button" onclick="volverAPaso1()" class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 12px;">
+            ← Volver al Paso 1
+          </button>
+        </div>
+
+        <!-- LAYOUT DE 2 COLUMNAS (ÁREA DE REDACCIÓN Y PANEL DE FICHAS) -->
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: start;">
           
-          <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
-            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-              <label><input type="checkbox" id="chk_soat" checked> <strong>SOAT:</strong></label>
-              <select id="st_soat" style="padding: 4px;"><option value="VIGENTE">VIGENTE</option><option value="VENCIDO">VENCIDO</option><option value="NO CUENTA">NO CUENTA</option></select>
-              <span>Vencimiento:</span> <input type="date" id="fec_soat" style="padding: 3px;">
+          <!-- COLUMNA IZQUIERDA: BLOQUES DINÁMICOS DE NARRATIVA -->
+          <div>
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+              <label style="font-size: 13px; font-weight: bold;">Número de Secciones a Redactar:</label>
+              <input type="number" id="cant_secciones" value="2" min="1" max="8" style="width: 60px; text-align: center; font-weight: bold;">
+              <button type="button" class="btn btn-primary" onclick="construirSeccionesNarrativa()" style="width: auto; padding: 6px 14px; font-size: 12px;">
+                ⚙️ Generar Campos
+              </button>
             </div>
 
-            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-              <label><input type="checkbox" id="chk_itv" checked> <strong>CITV (Inspección Técnica):</strong></label>
-              <select id="st_itv" style="padding: 4px;"><option value="VIGENTE">VIGENTE</option><option value="VENCIDO">VENCIDO</option><option value="NO CUENTA">NO CUENTA</option></select>
-              <span>Vencimiento:</span> <input type="date" id="fec_itv" style="padding: 3px;">
+            <!-- CONTENEDOR DONDE SE INSERTAN LOS TEXTAREAS -->
+            <div id="contenedor_parrafos_intervencion"></div>
+          </div>
+
+          <!-- COLUMNA DERECHA: PANEL LATERAL DE FICHAS CON DATOS REALES INGRESADOS -->
+          <div style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; position: sticky; top: 15px;">
+            <h4 style="margin-top: 0; color: #003366; font-size: 13px; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px;">
+              📌 Fichas de Datos Rápida
+            </h4>
+            <p style="font-size: 11px; color: #64748b; margin-top: 0; margin-bottom: 10px;">
+              Haz clic sobre cualquier ficha para insertar su valor exacto dentro del cuadro de texto activo:
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 6px;" id="panel_fichas_datos">
+              <!-- Generadas dinámicamente al pasar al paso 2 -->
             </div>
-
-            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-              <label><input type="checkbox" id="chk_lunas"> <strong>Permiso Lunas Polarizadas:</strong></label>
-              <select id="st_lunas" style="padding: 4px;"><option value="CUENTA Y VIGENTE">CUENTA Y VIGENTE</option><option value="NO CUENTA">NO CUENTA O VENCIDO</option></select>
-            </div>
           </div>
+
         </div>
+
+        <button type="submit" class="btn btn-success" style="margin-top: 25px; font-size: 16px; padding: 12px;">
+          📦 Finalizar y Generar Expediente / Actas (.docx / .zip)
+        </button>
       </div>
 
-      <hr style="margin: 15px 0;">
-
-      <!-- REDACCIÓN MODULAR DE INTERVENCIÓN -->
-      <div class="grid">
-        <div class="full">
-          <label style="color: var(--primary); font-weight: bold; font-size: 14px;">📝 Redacción Modular de Ocurrencias / Intervención</label>
-          <p style="font-size: 12px; color: #64748b; margin-top: 2px;">Elija la cantidad de secciones que desea redactar para estructurar el acta:</p>
-        </div>
-
-        <div class="full" style="display: flex; gap: 10px; align-items: center;">
-          <label style="font-size: 13px; font-weight: bold;">Número de Secciones:</label>
-          <input type="number" id="cant_secciones" value="2" min="1" max="8" style="width: 60px; text-align: center; font-weight: bold;">
-          <button type="button" class="btn btn-primary" onclick="construirSeccionesNarrativa()" style="width: auto; padding: 6px 14px; font-size: 12px;">⚙️ Generar Campos</button>
-        </div>
-
-        <!-- REPOSITORIO DE BOTONES PARA INSERTAR TAGS -->
-        <div class="full" style="background: #e0f2fe; padding: 10px; border-radius: 6px; border: 1px solid #bae6fd;">
-          <span style="font-size: 11px; font-weight: bold; color: #0369a1; display: block; margin-bottom: 6px;">📌 Clic sobre una etiqueta para insertarla en el cuadro de texto activo:</span>
-          <div style="display: flex; flex-wrap: wrap; gap: 6px;" id="bar_variables">
-            <button type="button" class="btn-tag" onclick="insertarTag('{intervenido_nombre}')">{intervenido_nombre}</button>
-            <button type="button" class="btn-tag" onclick="insertarTag('{intervenido_dni}')">{intervenido_dni}</button>
-            <button type="button" class="btn-tag" onclick="insertarTag('{placa_vehiculo}')">{placa_vehiculo}</button>
-            <button type="button" class="btn-tag" onclick="insertarTag('{hora_intervencion}')">{hora_intervencion}</button>
-            <button type="button" class="btn-tag" onclick="insertarTag('{fiscal}')">{fiscal}</button>
-            <button type="button" class="btn-tag" onclick="insertarTag('{lugar}')">{lugar}</button>
-          </div>
-        </div>
-
-        <!-- CONTENEDOR DINÁMICO DE PÁRRAFOS DE INTERVENCIÓN -->
-        <div class="full" id="contenedor_parrafos_intervencion"></div>
-      </div>
-
-      <hr style="margin: 15px 0;">
-
-      <!-- DATOS DEL VEHÍCULO DE INTERVENIDO (OPCIONAL) -->
-      <div class="grid">
-        <div class="full">
-          <label style="color: var(--primary); font-weight: bold;">🚘 Datos del Vehículo Intervenido (Si aplica)</label>
-        </div>
-        <div>
-          <label>Placa del Vehículo</label>
-          <input type="text" id="placa_vehiculo" placeholder="Ej: ABC-123">
-        </div>
-        <div>
-          <label>Marca</label>
-          <input type="text" id="marca_vehiculo" placeholder="Ej: Toyota">
-        </div>
-        <div>
-          <label>Modelo</label>
-          <input type="text" id="modelo_vehiculo" placeholder="Ej: Yaris">
-        </div>
-        <div class="full">
-          <label>Color / Estado del Vehículo</label>
-          <input type="text" id="color_vehiculo" placeholder="Ej: Negro / Regular estado de conservación">
-        </div>
-      </div>
-
-      <hr style="margin: 15px 0;">
-
-      <!-- REGISTRO DE ESPECIES CON CUADRO FLOTANTE -->
-      <div class="grid">
-        <div class="full">
-          <label style="color: var(--primary); font-weight: bold;">
-            📦 Registro de Especies Incautadas / Halladas (Toque para registrar hallazgos):
-          </label>
-        </div>
-        <div>
-          <label>01. Drogas / Insumos</label>
-          <input type="text" class="especie-field" id="drogas" value="NEGATIVO" readonly onclick="abrirEspecieModal('drogas', '01. Drogas / Insumos')">
-        </div>
-        <div>
-          <label>02. Moneda Nac / Ext</label>
-          <input type="text" class="especie-field" id="moneda" value="NEGATIVO" readonly onclick="abrirEspecieModal('moneda', '02. Moneda Nac / Ext')">
-        </div>
-        <div>
-          <label>03. Joyas / Alhajas</label>
-          <input type="text" class="especie-field" id="joyas" value="NEGATIVO" readonly onclick="abrirEspecieModal('joyas', '03. Joyas / Alhajas')">
-        </div>
-        <div>
-          <label>04. Armas / Explosivos</label>
-          <input type="text" class="especie-field" id="municion" value="NEGATIVO" readonly onclick="abrirEspecieModal('municion', '04. Armas, Municiones y Explosivos')">
-        </div>
-        <div class="full">
-          <label>05. Otros</label>
-          <input type="text" class="especie-field" id="otros" value="NEGATIVO" readonly onclick="abrirEspecieModal('otros', '05. Otros Bienes / Especies')">
-        </div>
-
-        <div class="full" id="contenedorPositivo" style="display: none; margin-top: 10px;">
-          <label style="color: #d9534f; font-weight: bold;">⚠️ Resultado POSITIVO - Detalle Integrado:</label>
-          <textarea id="narrar_positivo" rows="4" readonly style="font-size: 13px; background: #fff5f5; border: 2px solid #d9534f; font-weight: 500;"></textarea>
-        </div>
-      </div>
-
-      <hr style="margin: 15px 0;">
-
-      <!-- MOTIVO JUSTIFICATORIO DE SEGURIDAD -->
-      <div class="grid">
-        <div class="full">
-          <label style="color: var(--primary); font-weight: bold;">
-            🛡️ Motivo Justificatorio (Traslado a la Dependencia / Medidas de Seguridad):
-          </label>
-          <select id="motivo_justificatorio" style="width: 100%; padding: 10px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 5px; font-weight: 500;">
-            <option value="debido a la falta de garantías para la integridad física del intervenido y del personal policial, ante la posible aglomeración y actitud hostil de personas en el lugar de la intervención.">
-              1. Falta de garantías e integridad física / Aglomeración y actitud hostil
-            </option>
-            <option value="debido a la escasa iluminación en la zona, el alto flujo vehicular y la falta de visibilidad, factores que impedían realizar una diligencia minuciosa y segura.">
-              2. Escasa iluminación / Alto flujo vehicular / Falta de visibilidad
-            </option>
-            <option value="debido a las inclemencias del tiempo (lluvias) y a la falta de un espacio adecuado que garantice el respeto a la dignidad y privacidad del intervenido.">
-              3. Inclemencias del tiempo (lluvias) / Privacidad y dignidad
-            </option>
-          </select>
-        </div>
-      </div>
-
-      <hr style="margin: 15px 0;">
-
-      <!-- PERSONAL PNP -->
-      <div class="grid">
-        <div>
-          <label>Efectivo Interviniente</label>
-          <input type="text" id="personal_interviniente" placeholder="Nombres y Apellidos" required>
-        </div>
-        <div>
-          <label>Grado / CIP</label>
-          <div style="display:flex; gap:5px;">
-            <input type="text" id="grado" placeholder="Ej: S2" required>
-            <input type="text" id="cip" placeholder="SA-32112217" required>
-          </div>
-        </div>
-      </div>
-
-      <button type="submit" class="btn btn-success" style="margin-top: 20px;">📦 Generar Expediente / Actas (.docx / .zip)</button>
-      <button type="button" class="btn btn-secondary" onclick="limpiarPantalla()">Finalizar e Iniciar Nueva Intervención</button>
     </form>
   </div>
 </div>
 
 <script src="js/auth.js"></script>
-<script src="js/word.js?v=6"></script>
+<script src="js/word.js?v=7"></script>
   
 <script>
-  // DICCIONARIO PARA ESPECIES INCAUTADAS
-  const detallesEspecies = {
-    drogas: null, moneda: null, joyas: null, municion: null, otros: null
-  };
-
+  const detallesEspecies = { drogas: null, moneda: null, joyas: null, municion: null, otros: null };
   let campoEspecieActual = null;
   let nombreEspecieActual = "";
   let textareaActivoId = null;
@@ -459,28 +486,20 @@
     generarCamposVehiculosPNP();
     construirSeccionesNarrativa();
     
-    // Auto-completar hora de intervención con la hora actual si está vacía
     const horaIntInput = document.getElementById('hora_intervencion');
     if (horaIntInput && !horaIntInput.value) {
       horaIntInput.value = new Date().toTimeString().slice(0, 5);
     }
   });
 
-  // GESTIÓN DE HALLAZGOS (MODAL)
+  // MODAL ESPECIES
   function abrirEspecieModal(fieldId, fieldLabel) {
     campoEspecieActual = fieldId;
     nombreEspecieActual = fieldLabel;
     document.getElementById('modalEspecieTitulo').innerText = `Registrar Hallazgo - ${fieldLabel}`;
-    
     const previo = detallesEspecies[fieldId];
-    if (previo) {
-      document.getElementById('modalQueSeEncontro').value = previo.que || "";
-      document.getElementById('modalDondeSeEncontro').value = previo.donde || "";
-    } else {
-      document.getElementById('modalQueSeEncontro').value = "";
-      document.getElementById('modalDondeSeEncontro').value = "";
-    }
-
+    document.getElementById('modalQueSeEncontro').value = previo ? previo.que || "" : "";
+    document.getElementById('modalDondeSeEncontro').value = previo ? previo.donde || "" : "";
     document.getElementById('modalEspecie').style.display = 'flex';
     document.getElementById('modalQueSeEncontro').focus();
   }
@@ -490,7 +509,7 @@
     const donde = document.getElementById('modalDondeSeEncontro').value.trim();
 
     if (!que || !donde) {
-      alert("⚠️ Debe completar ambos datos obligatorios (qué se encontró y dónde/cómo se encontró).");
+      alert("⚠️ Debe completar ambos datos obligatorios.");
       return;
     }
 
@@ -500,7 +519,6 @@
     inputElem.style.background = "#fee2e2";
     inputElem.style.color = "#991b1b";
     inputElem.style.borderColor = "#991b1b";
-
     cerrarModalYActualizarNarrativa();
   }
 
@@ -511,21 +529,17 @@
     inputElem.style.background = "#ffffff";
     inputElem.style.color = "#000000";
     inputElem.style.borderColor = "#cbd5e1";
-
     cerrarModalYActualizarNarrativa();
   }
 
   function cerrarModalYActualizarNarrativa() {
     document.getElementById('modalEspecie').style.display = 'none';
     let listaHallazgos = [];
-
     for (let key in detallesEspecies) {
-      const item = detallesEspecies[key];
-      if (item) {
-        listaHallazgos.push(`- ${item.que}, hallado en ${item.donde}.`);
+      if (detallesEspecies[key]) {
+        listaHallazgos.push(`- ${detallesEspecies[key].que}, hallado en ${detallesEspecies[key].donde}.`);
       }
     }
-
     const contenedorPositivo = document.getElementById('contenedorPositivo');
     const narrarPositivo = document.getElementById('narrar_positivo');
 
@@ -538,7 +552,7 @@
     }
   }
 
-  // LÓGICA DE INTERVENCIÓN POLICIAL
+  // DINÁMICOS PASO 1
   function evaluarTipoActividad() {
     const tipo = document.getElementById('tipo_actividad').value;
     document.getElementById('box_nombre_operativo').style.display = (tipo === 'OPERATIVO POLICIAL') ? 'block' : 'none';
@@ -548,7 +562,6 @@
     const cant = parseInt(document.getElementById('cant_vehiculos_pnp').value, 10) || 1;
     const cont = document.getElementById('contenedor_vehiculos_pnp');
     cont.innerHTML = "";
-
     for (let i = 1; i <= cant; i++) {
       cont.innerHTML += `
         <div>
@@ -557,6 +570,62 @@
         </div>
       `;
     }
+  }
+
+  // PASO 1 -> PASO 2: IR AL REDACTOR
+  function irAPaso2Redactor() {
+    const form = document.getElementById('expedienteForm');
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    document.getElementById('paso1_formulario').style.display = 'none';
+    document.getElementById('paso2_redactor').style.display = 'block';
+    
+    construirFichasDatosPanel();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function volverAPaso1() {
+    document.getElementById('paso2_redactor').style.display = 'none';
+    document.getElementById('paso1_formulario').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // CONSTRUIR EL PANEL DE FICHAS RÁPIDAS
+  function construirFichasDatosPanel() {
+    const cont = document.getElementById('panel_fichas_datos');
+    cont.innerHTML = "";
+
+    const datos = [
+      { titulo: "Intervenido", val: document.getElementById('intervenido_nombre').value },
+      { titulo: "DNI", val: document.getElementById('intervenido_dni').value },
+      { titulo: "Edad", val: document.getElementById('edad').value + " años" },
+      { titulo: "Lugar", val: document.getElementById('lugar').value },
+      { titulo: "Hora Intervención", val: document.getElementById('hora_intervencion').value + " hrs" },
+      { titulo: "Fiscal", val: document.getElementById('fiscal').value.trim() || "RMP NO ESPECIFICADO" },
+      { titulo: "Placa Vehículo", val: document.getElementById('placa_vehiculo').value || "NO REGISTRA" },
+      { titulo: "Efectivo PNP", val: `${document.getElementById('grado').value} ${document.getElementById('personal_interviniente').value}` }
+    ];
+
+    // Agregar placas policiales
+    const cantVeh = parseInt(document.getElementById('cant_vehiculos_pnp').value, 10) || 1;
+    for (let i = 1; i <= cantVeh; i++) {
+      const p = document.getElementById(`placa_policial_${i}`) ? document.getElementById(`placa_policial_${i}`).value : '';
+      if (p) datos.push({ titulo: `Unidad PNP ${i}`, val: p });
+    }
+
+    datos.forEach(item => {
+      if (item.val) {
+        cont.innerHTML += `
+          <button type="button" class="chip-btn" onclick="insertarTextoEnActivo('${item.val}')">
+            <strong>${item.titulo}:</strong>
+            <span>${item.val}</span>
+          </button>
+        `;
+      }
+    });
   }
 
   function construirSeccionesNarrativa() {
@@ -569,7 +638,7 @@
       let optionsHTML = TITULOS_SECCIONES_PNP.map(t => `<option value="${t}" ${t === tituloSugerido ? 'selected' : ''}>${t}</option>`).join('');
 
       cont.innerHTML += `
-        <div style="background: #fff; border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; margin-top: 10px;">
+        <div style="background: #fff; border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
           <label style="font-weight: bold; color: #003366; font-size: 13px;">Título de la Sección ${i}:</label>
           <select id="titulo_sec_${i}" onchange="cambiarTituloSeccion(${i})" style="width: 100%; padding: 6px; margin-top: 4px; margin-bottom: 6px; font-weight: bold;">
             ${optionsHTML}
@@ -601,15 +670,15 @@
     }
   }
 
-  function insertarTag(tag) {
+  function insertarTextoEnActivo(valor) {
     if (!textareaActivoId) {
-      alert("⚠️ Haga clic primero dentro del cuadro de texto donde desea insertar la variable.");
+      alert("⚠️ Haz clic primero dentro del cuadro de texto donde deseas colocar el dato.");
       return;
     }
     const txt = document.getElementById(textareaActivoId);
     const start = txt.selectionStart;
     const end = txt.selectionEnd;
-    txt.value = txt.value.substring(0, start) + tag + txt.value.substring(end);
+    txt.value = txt.value.substring(0, start) + valor + txt.value.substring(end);
     txt.focus();
   }
 </script>
