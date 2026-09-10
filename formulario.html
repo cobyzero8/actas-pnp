@@ -388,6 +388,17 @@
                 </option>
               </select>
             </div>
+
+            <div class="full">
+              <label style="color: #0369a1; font-weight: bold;">
+                👁️ Constancia / Lugar de Ejecución de la Diligencia ({constancia_testigo}):
+              </label>
+              <select id="opcion_constancia_testigo" style="width: 100%; padding: 10px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 5px; font-weight: 500;">
+                <option value="OFICINA">1. Realizado en la Dependencia Policial (Vinculado al motivo justificatorio por seguridad)</option>
+                <option value="LUGAR_SIN_TESTIGO">2. Realizado en el lugar de la intervención (Transeúntes se negaron a firmar como testigos)</option>
+                <option value="NINGUNO">3. Constancia genérica de cumplimiento de ley</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -640,7 +651,7 @@
 </div>
 
 <script src="js/auth.js"></script>
-<script src="js/word.js?v=15"></script>
+<script src="js/word.js?v=16"></script>
   
 <script>
   const detallesEspecies = { drogas: null, moneda: null, joyas: null, municion: null, otros: null };
@@ -1028,6 +1039,10 @@
     document.getElementById('tipo_actividad').value = "PATRULLAJE DE RUTINA";
     evaluarTipoActividad();
 
+    if (document.getElementById('opcion_constancia_testigo')) {
+      document.getElementById('opcion_constancia_testigo').value = "OFICINA";
+    }
+
     document.getElementById('personal_interviniente').value = "GARCÍA TAYPE, Pedro";
     document.getElementById('grado').value = "S2";
     document.getElementById('cip').value = "32145689";
@@ -1243,13 +1258,19 @@
       );
     });
 
+    const opcConstancia = getVal('opcion_constancia_testigo');
+    let resumenConstanciaChip = "Realizado en la Dependencia Policial";
+    if (opcConstancia === 'LUGAR_SIN_TESTIGO') resumenConstanciaChip = "Realizado en el lugar (Sin testigos civiles)";
+    else if (opcConstancia === 'NINGUNO') resumenConstanciaChip = "Constancia genérica conforme a ley";
+
     categorias[2].items.push(
       { titulo: "Lugar Exacto de Intervención", val: getVal('lugar') },
       { titulo: "Hora de Intervención", val: getVal('hora_intervencion') + " hrs" },
       { titulo: "Fecha General", val: getVal('fecha') },
       { titulo: "Jurisdicción", val: `${getVal('distrito')} - ${getVal('provincia')}` },
       { titulo: "Actividad Realizada", val: getVal('tipo_actividad') === 'OPERATIVO POLICIAL' ? `el O/P ${getVal('nombre_operativo')}` : 'Patrullaje de Rutina' },
-      { titulo: "Motivo Justificatorio Traslado", val: getVal('motivo_justificatorio') }
+      { titulo: "Motivo Justificatorio Traslado", val: getVal('motivo_justificatorio') },
+      { titulo: "Lugar / Constancia de Diligencia", val: resumenConstanciaChip }
     );
 
     categorias[3].items.push(
@@ -1409,7 +1430,7 @@
     document.getElementById('agregar_intervencion_1').value = `--- Constituídos en ${lugar}, a bordo de la UUMM ${pnp1}, por información de transeúntes que comunicaron un accidente de tránsito (colisión/choque) con daños materiales, se procedió a verificar la intervención de ${gVeh.sujetoVehiculo} participante(s).`;
 
     document.getElementById('titulo_sec_2').value = "II. FUNDAMENTOS DE LOS HECHOS FÁCTICOS:";
-    document.getElementById('agregar_intervencion_2').value = `--- Se encontró en el lugar de la intervención a ${gVeh.texto}, con la presencia de su(s) conductor(es) e identificado(s) como ${gInt.texto}, refiriendo que colisionaron entre sí sufriendo daños materiales. Se procedió a la formulación de las actas e inventario vehicular.`;
+    document.getElementById('agregar_intervencion_2').value = `--- Se encontró en el lugar de la intervención a ${gVeh.texto}, con la presencia de su(s) conductor(es) e identifiedo(s) como ${gInt.texto}, refiriendo que colisionaron entre sí sufriendo daños materiales. Se procedió a la formulación de las actas e inventario vehicular.`;
 
     document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y MEDIDAS DE SEGURIDAD:";
     document.getElementById('agregar_intervencion_3').value = 
