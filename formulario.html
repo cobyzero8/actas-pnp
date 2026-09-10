@@ -81,7 +81,6 @@
       opacity: 0.9;
     }
 
-    /* ESTILOS PARA CAJAS DE TEXTO AMPLIADAS */
     .narrativa-textarea {
       width: 100%;
       box-sizing: border-box;
@@ -101,7 +100,6 @@
       outline: none;
     }
 
-    /* ESTILOS PARA BLOQUES DE COLORES POR CATEGORÍA */
     .section-block {
       padding: 14px;
       border-radius: 8px;
@@ -136,14 +134,12 @@
     .block-especies { background-color: #f8fafc; border-color: #cbd5e1; }
     .block-especies .section-title { color: #334155; }
 
-    /* CONTENEDOR DESPLEGABLE */
     summary { user-select: none; outline: none; }
     summary::-webkit-details-marker { display: none; }
   </style>
 </head>
 <body>
 
-<!-- LISTA DE TÍTULOS PREDETERMINADOS PARA AUTOCOMPLETAR -->
 <datalist id="titulos_pnp_list">
   <option value="I. INTERVENCION POLICIAL:"></option>
   <option value="II. RECOJO Y LACRADO DE EVIDENCIA:"></option>
@@ -225,13 +221,12 @@
       <a href="menu.html" style="text-decoration: none; color: var(--primary); font-weight: bold; font-size: 13px;">← Cambiar Delito / Actas</a>
       
       <button type="button" onclick="cargarDatosEjemplo()" class="btn btn-primary" style="width: auto; padding: 6px 14px; font-size: 12px; background: #0d9488; border-color: #0d9488;">
-        ⚡ Cargar Datos de Prueba (2 Intervenidos)
+        ⚡ Cargar Prueba (2 Intervenidos + 2 Vehículos)
       </button>
 
       <button onclick="cerrarSesion()" class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size: 11px;">Salir</button>
     </div>
 
-    <!-- RESUMEN DE SELECCIÓN DESDE LOCALSTORAGE -->
     <div style="background: #003366; color: white; padding: 12px; border-radius: 6px; margin-bottom: 15px;">
       <div style="font-size: 11px; text-transform: uppercase; opacity: 0.8;">Presunto Delito Configurado:</div>
       <div id="resumenDelito" style="font-weight: bold; font-size: 13px; margin-top: 2px;">-</div>
@@ -293,7 +288,6 @@
             </button>
           </div>
 
-          <!-- CONTENEDOR DINÁMICO DE CARDS DE INTERVENIDOS -->
           <div id="contenedor_intervenidos"></div>
         </div>
 
@@ -365,55 +359,43 @@
                 <span style="font-size: 12px;">¿Cuántos vehículos PNP participaron?</span>
                 <input type="number" id="cant_vehiculos_pnp" value="1" min="1" max="5" onchange="generarCamposVehiculosPNP()" style="width: 60px; text-align: center; font-weight: bold;">
               </div>
-              <div id="contenedor_vehiculos_pnp" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                <!-- Generado dinámicamente -->
-              </div>
+              <div id="contenedor_vehiculos_pnp" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;"></div>
             </div>
           </div>
         </div>
 
-        <!-- BLOQUE 5: VEHÍCULO INTERVENIDO Y RETRAN (ÁMBAR/NARANJA) -->
+        <!-- BLOQUE 5: VEHÍCULOS INVOLUCRADOS Y RETRAN (DINÁMICO MULTI-VEHÍCULO) -->
         <div class="section-block block-vehiculo">
-          <div class="section-title">🚘 5. Vehículo Intervenido y Documentos RETRAN</div>
-          <div class="grid">
-            <div>
-              <label>Placa del Vehículo</label>
-              <input type="text" id="placa_vehiculo" placeholder="Ej: ABC-123" style="font-weight: bold;">
-            </div>
-            <div>
-              <label>Marca</label>
-              <input type="text" id="marca_vehiculo" placeholder="Ej: Toyota">
-            </div>
-            <div>
-              <label>Modelo</label>
-              <input type="text" id="modelo_vehiculo" placeholder="Ej: Yaris">
-            </div>
-            <div class="full">
-              <label>Color / Estado del Vehículo</label>
-              <input type="text" id="color_vehiculo" placeholder="Ej: Negro / Regular estado de conservación">
-            </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div class="section-title" style="margin: 0;">🚘 5. Vehículos Involucrados en la Intervención / Accidente</div>
+            <button type="button" class="btn btn-primary" onclick="agregarVehiculoCard()" style="width: auto; padding: 4px 12px; font-size: 12px; background: #d97706; border-color: #d97706;">
+              ➕ Agregar Otro Vehículo
+            </button>
+          </div>
 
-            <!-- DOCUMENTOS RNT -->
-            <div class="full" style="background: #ffffff; padding: 12px; border: 1px solid #fef08a; border-radius: 6px;">
-              <label style="font-weight: bold; color: #9a3412; display: block; margin-bottom: 8px;">📄 Verificación Documentaria RNT ({documentos_retran}):</label>
-              
-              <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
-                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                  <label><input type="checkbox" id="chk_soat" checked> <strong>SOAT:</strong></label>
-                  <select id="st_soat" style="padding: 4px;"><option value="VIGENTE">VIGENTE</option><option value="VENCIDO">VENCIDO</option><option value="NO CUENTA">NO CUENTA</option></select>
-                  <span>Vencimiento:</span> <input type="date" id="fec_soat" style="padding: 3px;">
-                </div>
+          <!-- CONTENEDOR DINÁMICO DE VEHÍCULOS -->
+          <div id="contenedor_vehiculos"></div>
 
-                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                  <label><input type="checkbox" id="chk_itv" checked> <strong>CITV (Inspección Técnica):</strong></label>
-                  <select id="st_itv" style="padding: 4px;"><option value="VIGENTE">VIGENTE</option><option value="VENCIDO">VENCIDO</option><option value="NO CUENTA">NO CUENTA</option></select>
-                  <span>Vencimiento:</span> <input type="date" id="fec_itv" style="padding: 3px;">
-                </div>
+          <!-- DOCUMENTOS RNT GENERALES -->
+          <div style="background: #ffffff; padding: 12px; border: 1px solid #fef08a; border-radius: 6px; margin-top: 10px;">
+            <label style="font-weight: bold; color: #9a3412; display: block; margin-bottom: 8px;">📄 Verificación Documentaria RNT ({documentos_retran}):</label>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <label><input type="checkbox" id="chk_soat" checked> <strong>SOAT:</strong></label>
+                <select id="st_soat" style="padding: 4px;"><option value="VIGENTE">VIGENTE</option><option value="VENCIDO">VENCIDO</option><option value="NO CUENTA">NO CUENTA</option></select>
+                <span>Vencimiento:</span> <input type="date" id="fec_soat" style="padding: 3px;">
+              </div>
 
-                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                  <label><input type="checkbox" id="chk_lunas"> <strong>Permiso Lunas Polarizadas:</strong></label>
-                  <select id="st_lunas" style="padding: 4px;"><option value="CUENTA Y VIGENTE">CUENTA Y VIGENTE</option><option value="NO CUENTA">NO CUENTA O VENCIDO</option></select>
-                </div>
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <label><input type="checkbox" id="chk_itv" checked> <strong>CITV (Inspección Técnica):</strong></label>
+                <select id="st_itv" style="padding: 4px;"><option value="VIGENTE">VIGENTE</option><option value="VENCIDO">VENCIDO</option><option value="NO CUENTA">NO CUENTA</option></select>
+                <span>Vencimiento:</span> <input type="date" id="fec_itv" style="padding: 3px;">
+              </div>
+
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <label><input type="checkbox" id="chk_lunas"> <strong>Permiso Lunas Polarizadas:</strong></label>
+                <select id="st_lunas" style="padding: 4px;"><option value="CUENTA Y VIGENTE">CUENTA Y VIGENTE</option><option value="NO CUENTA">NO CUENTA O VENCIDO</option></select>
               </div>
             </div>
           </div>
@@ -475,10 +457,8 @@
           </div>
         </div>
 
-        <!-- LAYOUT DE 2 COLUMNAS (REDACCIÓN A LA IZQUIERDA Y PANEL A LA DERECHA) -->
         <div id="contenedorPaso2Grid" style="display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start;">
           
-          <!-- COLUMNA PRINCIPAL: ÁREA DE REDACCIÓN AMPLIADA -->
           <div>
             <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
               <label style="font-size: 13px; font-weight: bold;">Número de Secciones a Redactar:</label>
@@ -491,10 +471,8 @@
             <div id="contenedor_parrafos_intervencion"></div>
           </div>
 
-          <!-- COLUMNA DERECHA: PANEL LATERAL DESPLEGABLE / PLEGABLE -->
           <div id="columnaLateralPaso2" style="position: sticky; top: 15px; max-height: 85vh; overflow-y: auto;">
             
-            <!-- CONTENEDOR DESPLEGABLE DE PLANTILLAS RÁPIDAS -->
             <details id="details_plantillas" open style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 10px; border-radius: 8px; margin-bottom: 12px;">
               <summary style="font-weight: bold; color: #003366; font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px;">
                 <span>⚡ Plantillas Rápidas Oficiales</span>
@@ -508,7 +486,7 @@
                 🔴 01. Extorsión (Reg. Vehicular, Incautación y Lacrado)
               </button>
               <button type="button" class="preset-btn" onclick="cargarModeloAccidenteTransito()" style="background: #2563eb;">
-                🚗 02. Accidente de Tránsito (Choque / Daños Materiales)
+                🚗 02. Accidente de Tránsito (Choque / Colisión Múltiple)
               </button>
               <button type="button" class="preset-btn" onclick="cargarModeloControlIdentidad()" style="background: #475569;">
                 🪪 03. Control de Identidad (Retenido / E-SINPOL)
@@ -524,7 +502,6 @@
               </button>
             </details>
 
-            <!-- CONTENEDOR DESPLEGABLE DE FICHAS DE DATOS -->
             <details id="details_fichas" open style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 10px; border-radius: 8px;">
               <summary style="font-weight: bold; color: #003366; font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px;">
                 <span>📌 Datos Registrados (Insertar)</span>
@@ -551,7 +528,7 @@
 </div>
 
 <script src="js/auth.js"></script>
-<script src="js/word.js?v=9"></script>
+<script src="js/word.js?v=10"></script>
   
 <script>
   const detallesEspecies = { drogas: null, moneda: null, joyas: null, municion: null, otros: null };
@@ -559,6 +536,7 @@
   let nombreEspecieActual = "";
   let textareaActivoId = null;
   let contadorIntervenidos = 0;
+  let contadorVehiculos = 0;
 
   const MAPA_TITULOS_ACTAS = {
     "reg_personal": "acta de registro personal",
@@ -584,8 +562,8 @@
   ];
 
   document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar con al menos 1 Intervenido por defecto
     agregarIntervenidoCard();
+    agregarVehiculoCard();
     
     generarCamposVehiculosPNP();
     construirSeccionesNarrativa();
@@ -726,8 +704,89 @@
     return `${textos.join(', ')} y ${ultimo}`;
   }
 
+  // GESTIÓN DINÁMICA DE TARJETAS DE VEHÍCULOS INVOLUCRADOS
+  function agregarVehiculoCard(datos = null) {
+    contadorVehiculos++;
+    const id = contadorVehiculos;
+    const cont = document.getElementById('contenedor_vehiculos');
+    const esPrimero = (document.querySelectorAll('.card-vehiculo').length === 0);
+
+    const cardHtml = `
+      <div class="card-vehiculo" id="card_vehiculo_${id}" style="background: #ffffff; border: 1.5px solid #fde047; padding: 12px; border-radius: 6px; margin-bottom: 12px; position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #fef08a; padding-bottom: 4px;">
+          <span style="font-weight: bold; color: #9a3412; font-size: 13px;">🚘 Vehículo Involucrado N° <span class="num-vehiculo"></span></span>
+          ${!esPrimero ? `<button type="button" onclick="eliminarVehiculoCard(${id})" style="padding: 3px 8px; font-size: 11px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">🗑️ Eliminar</button>` : '<span style="font-size: 10px; color: #9a3412; font-weight: bold;">[PRINCIPAL]</span>'}
+        </div>
+        <div class="grid">
+          <div>
+            <label>Placa del Vehículo</label>
+            <input type="text" id="placa_vehiculo_${id}" class="inp-veh-placa" placeholder="Ej: ABC-123" style="font-weight: bold;" value="${datos?.placa || ''}">
+          </div>
+          <div>
+            <label>Marca</label>
+            <input type="text" id="marca_vehiculo_${id}" class="inp-veh-marca" placeholder="Ej: Toyota" value="${datos?.marca || ''}">
+          </div>
+          <div>
+            <label>Modelo</label>
+            <input type="text" id="modelo_vehiculo_${id}" class="inp-veh-modelo" placeholder="Ej: Yaris" value="${datos?.modelo || ''}">
+          </div>
+          <div class="full">
+            <label>Color / Estado del Vehículo</label>
+            <input type="text" id="color_vehiculo_${id}" class="inp-veh-color" placeholder="Ej: Negro / Daños materiales en parachoque" value="${datos?.color || ''}">
+          </div>
+        </div>
+      </div>
+    `;
+    cont.insertAdjacentHTML('beforeend', cardHtml);
+    renumerarVehiculos();
+  }
+
+  function eliminarVehiculoCard(id) {
+    const card = document.getElementById(`card_vehiculo_${id}`);
+    if (card) {
+      card.remove();
+      renumerarVehiculos();
+    }
+  }
+
+  function renumerarVehiculos() {
+    const cards = document.querySelectorAll('.card-vehiculo');
+    cards.forEach((card, idx) => {
+      const numSpan = card.querySelector('.num-vehiculo');
+      if (numSpan) numSpan.innerText = idx + 1;
+    });
+  }
+
+  function obtenerListaVehiculos() {
+    const lista = [];
+    const cards = document.querySelectorAll('.card-vehiculo');
+    cards.forEach(card => {
+      const id = card.id.replace('card_vehiculo_', '');
+      lista.push({
+        idNum: id,
+        placa: getVal(`placa_vehiculo_${id}`, 'NO REGISTRA'),
+        marca: getVal(`marca_vehiculo_${id}`, 'NO REGISTRA'),
+        modelo: getVal(`modelo_vehiculo_${id}`, 'NO REGISTRA'),
+        color: getVal(`color_vehiculo_${id}`, 'NO REGISTRA')
+      });
+    });
+    return lista;
+  }
+
+  function obtenerTextoVehiculosNarrativa() {
+    const lista = obtenerListaVehiculos();
+    if (lista.length === 0) return "el vehículo intervenido";
+    if (lista.length === 1) {
+      return `el vehículo de placa N° ${lista[0].placa} (Marca: ${lista[0].marca}, Modelo: ${lista[0].modelo}, Color/Estado: ${lista[0].color})`;
+    }
+    const textos = lista.map(v => `el vehículo de placa N° ${v.placa} (Marca: ${v.marca}, Modelo: ${v.modelo})`);
+    const ultimo = textos.pop();
+    return `${textos.join(', ')} y ${ultimo}`;
+  }
+
   function cargarDatosEjemplo() {
     const hoy = new Date().toISOString().split('T')[0];
+    
     document.getElementById('contenedor_intervenidos').innerHTML = "";
     contadorIntervenidos = 0;
 
@@ -761,6 +820,25 @@
       asistido: "no deseando ser asistido por ninguna persona"
     });
 
+    document.getElementById('contenedor_vehiculos').innerHTML = "";
+    contadorVehiculos = 0;
+
+    // Vehículo 1
+    agregarVehiculoCard({
+      placa: "Y1B-452",
+      marca: "Honda",
+      modelo: "GL125",
+      color: "Rojo / Abolladura frontal"
+    });
+
+    // Vehículo 2
+    agregarVehiculoCard({
+      placa: "B8W-210",
+      marca: "Toyota",
+      modelo: "Yaris",
+      color: "Negro / Faro izquierdo roto"
+    });
+
     document.getElementById('distrito').value = "Huanta";
     document.getElementById('provincia').value = "Huanta";
     document.getElementById('region').value = "Ayacucho";
@@ -785,15 +863,10 @@
       document.getElementById('placa_policial_1').value = "EP-7978";
     }
 
-    document.getElementById('placa_vehiculo').value = "Y1B-452";
-    document.getElementById('marca_vehiculo').value = "Honda";
-    document.getElementById('modelo_vehiculo').value = "GL125";
-    document.getElementById('color_vehiculo').value = "Rojo / Buen estado de conservación";
-
     document.getElementById('fec_soat').value = hoy;
     document.getElementById('fec_itv').value = hoy;
 
-    alert("⚡ ¡Datos de prueba cargados exitosamente (2 Intervenidos)!");
+    alert("⚡ ¡Datos de prueba cargados exitosamente (2 Intervenidos y 2 Vehículos)!");
   }
 
   function getVal(id, fallback = "S/D") {
@@ -945,9 +1018,12 @@
       return;
     }
 
-    // Guardar intervenidos en memoria global para word.js
+    // Guardar intervenidos y vehículos en memoria global y localStorage para word.js
     window.pnp_lista_intervenidos = obtenerListaIntervenidos();
     localStorage.setItem('pnp_lista_intervenidos', JSON.stringify(window.pnp_lista_intervenidos));
+
+    window.pnp_lista_vehiculos = obtenerListaVehiculos();
+    localStorage.setItem('pnp_lista_vehiculos', JSON.stringify(window.pnp_lista_vehiculos));
 
     document.getElementById('paso1_formulario').style.display = 'none';
     document.getElementById('paso2_redactor').style.display = 'block';
@@ -988,14 +1064,21 @@
     cont.innerHTML = "";
 
     const listaInt = obtenerListaIntervenidos();
-    
+    const listaVeh = obtenerListaVehiculos();
+
     const datos = [
-      { titulo: "Todos los Intervenidos", val: obtenerTextoIntervenidosNarrativa() }
+      { titulo: "Todos los Intervenidos", val: obtenerTextoIntervenidosNarrativa() },
+      { titulo: "Todos los Vehículos", val: obtenerTextoVehiculosNarrativa() }
     ];
 
     listaInt.forEach((item, idx) => {
       datos.push({ titulo: `Intervenido ${idx + 1}`, val: `${item.nombre} (${item.edad} años)` });
       datos.push({ titulo: `DNI Intervenido ${idx + 1}`, val: item.dni });
+    });
+
+    listaVeh.forEach((veh, idx) => {
+      datos.push({ titulo: `Placa Vehículo ${idx + 1}`, val: veh.placa });
+      datos.push({ titulo: `Marca/Modelo Vehículo ${idx + 1}`, val: `${veh.marca} ${veh.modelo}` });
     });
 
     datos.push(
@@ -1004,17 +1087,13 @@
       { titulo: "Fiscal RMP", val: getVal('fiscal', "RMP NO ESPECIFICADO") },
       { titulo: "Unidad Disposición", val: getVal('unidad_disposicion') },
       { titulo: "Actividad Realizada", val: getVal('tipo_actividad') === 'OPERATIVO POLICIAL' ? `el O/P ${getVal('nombre_operativo')}` : 'Patrullaje de Rutina' },
-      { titulo: "Placa Vehículo", val: getVal('placa_vehiculo', "NO REGISTRA") },
-      { titulo: "Marca Vehículo", val: getVal('marca_vehiculo', "NO REGISTRA") },
-      { titulo: "Modelo Vehículo", val: getVal('modelo_vehiculo', "NO REGISTRA") },
-      { titulo: "Color / Estado", val: getVal('color_vehiculo', "NO REGISTRA") },
       { titulo: "Hallazgos Positivos", val: getVal('narrar_positivo') },
       { titulo: "Efectivo PNP", val: `${getVal('grado')} ${getVal('personal_interviniente')}` },
       { titulo: "CIP Efectivo", val: getVal('cip') }
     );
 
-    const cantVeh = parseInt(document.getElementById('cant_vehiculos_pnp').value, 10) || 1;
-    for (let i = 1; i <= cantVeh; i++) {
+    const cantVehPnp = parseInt(document.getElementById('cant_vehiculos_pnp').value, 10) || 1;
+    for (let i = 1; i <= cantVehPnp; i++) {
       const p = document.getElementById(`placa_policial_${i}`) ? document.getElementById(`placa_policial_${i}`).value : '';
       if (p) datos.push({ titulo: `Unidad PNP ${i}`, val: p });
     }
@@ -1073,7 +1152,7 @@
     construirSeccionesNarrativa();
 
     const intervenidosText = obtenerTextoIntervenidosNarrativa();
-    const placa = getVal('placa_vehiculo', 'S/P');
+    const vehiculosText = obtenerTextoVehiculosNarrativa();
     const lugar = getVal('lugar');
     const hora = getVal('hora_intervencion', '14:30');
     const fiscal = getVal('fiscal', 'el RMP');
@@ -1082,7 +1161,7 @@
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 70) : getVal('hora2', '15:40');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
-    document.getElementById('agregar_intervencion_1').value = `--- El personal policial, en circunstancias que realizaba ${getVal('tipo_actividad') === 'OPERATIVO POLICIAL' ? 'el O/P ' + getVal('nombre_operativo') : 'patrullaje de rutina'} siendo las ${hora} hrs aprox., en ${lugar}; se intervino el vehículo de placa de rodaje N° ${placa}, donde se encontraban los ciudadanos ${intervenidosText}, quienes circulaban en actitud sospechosa. Asimismo, se tomó conocimiento por parte de la superioridad que el vehículo en mención estaría involucrado en la denuncia por el presunto delito contra el patrimonio en la modalidad de Extorsión.`;
+    document.getElementById('agregar_intervencion_1').value = `--- El personal policial, en circunstancias que realizaba ${getVal('tipo_actividad') === 'OPERATIVO POLICIAL' ? 'el O/P ' + getVal('nombre_operativo') : 'patrullaje de rutina'} siendo las ${hora} hrs aprox., en ${lugar}; se intervino a ${vehiculosText}, donde se encontraban los ciudadanos ${intervenidosText}, quienes circulaban en actitud sospechosa. Asimismo, se tomó conocimiento por parte de la superioridad que el vehículo en mención estaría involucrado en la denuncia por el presunto delito contra el patrimonio en la modalidad de Extorsión.`;
 
     document.getElementById('titulo_sec_2').value = "II. REGISTRO VEHICULAR:";
     document.getElementById('agregar_intervencion_2').value = `--- Que, siendo las ${(typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 10) : hora} hrs, se procede a realizar el respectivo registro vehicular en presencia de los intervenidos, hallándose los siguientes elementos:\n${hallazgos}`;
@@ -1110,7 +1189,7 @@
     construirSeccionesNarrativa();
 
     const intervenidosText = obtenerTextoIntervenidosNarrativa();
-    const placa = getVal('placa_vehiculo', 'S/P');
+    const vehiculosText = obtenerTextoVehiculosNarrativa();
     const lugar = getVal('lugar');
     const hora = getVal('hora_intervencion', '00:00');
     const pnp1 = getVal('placa_policial_1', 'unidad policial');
@@ -1119,10 +1198,10 @@
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 40) : getVal('hora2', '00:40');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
-    document.getElementById('agregar_intervencion_1').value = `--- Constituídos en ${lugar}, a bordo de la UUMM ${pnp1}, por información de transeúntes de la vía quienes comunicaron de un accidente de tránsito con consecuencia de daños materiales, se procedió a verificar la intervención de los vehículos participantes conforme a los artículos del CPP.`;
+    document.getElementById('agregar_intervencion_1').value = `--- Constituídos en ${lugar}, a bordo de la UUMM ${pnp1}, por información de transeúntes de la vía quienes comunicaron de un accidente de tránsito (colisión/choque) con consecuencia de daños materiales, se procedió a verificar la intervención de los vehículos participantes conforme a los artículos del CPP.`;
 
     document.getElementById('titulo_sec_2').value = "II. FUNDAMENTOS DE LOS HECHOS FÁCTICOS:";
-    document.getElementById('agregar_intervencion_2').value = `--- Se encontró en el lugar la unidad de placa de rodaje N° ${placa}, con la presencia de ${intervenidosText}, refiriendo que en circunstancias que se desplazaban por la vía, colisionaron sufriendo daños materiales en la estructura del vehículo (ruptura de faros, parachoques y abolladuras varias). Se procedió a la formulación de las actas correspondientes.`;
+    document.getElementById('agregar_intervencion_2').value = `--- Se encontró en el lugar de la intervención a ${vehiculosText}, con la presencia de sus conductores y ocupantes identificados como ${intervenidosText}, refiriendo que en circunstancias que se desplazaban por la vía colisionaron entre sí, sufriendo daños materiales en la estructura de los vehículos (ruptura de faros, parachoques y abolladuras varias). Se procedió a la formulación de las actas correspondientes e inventario de cada unidad.`;
 
     document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y MEDIDAS DE SEGURIDAD:";
     document.getElementById('agregar_intervencion_3').value = 
@@ -1190,7 +1269,7 @@
     construirSeccionesNarrativa();
 
     const intervenidosText = obtenerTextoIntervenidosNarrativa();
-    const placa = getVal('placa_vehiculo', 'S/P');
+    const vehiculosText = obtenerTextoVehiculosNarrativa();
     const lugar = getVal('lugar');
     const hora = getVal('hora_intervencion', '19:00');
     const pnp1 = getVal('placa_policial_1', 'EP-1420');
@@ -1199,7 +1278,7 @@
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 50) : getVal('hora2', '19:50');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y PERSECUCIÓN:";
-    document.getElementById('agregar_intervencion_1').value = `--- El personal policial, en circunstancias que realizaba patrullaje en ${lugar} siendo las ${hora} hrs aprox., se percató del vehículo de placa N° ${placa}, el cual circulaba con las luces apagadas infringiendo el RNT. Al indicarle que se detenga, los ocupantes desobedecieron la orden y aceleraron temerariamente contra el efectivo PNP para atropellarlo, dándose a la fuga. A bordo de la unidad ${pnp1} se inició la persecución.`;
+    document.getElementById('agregar_intervencion_1').value = `--- El personal policial, en circunstancias que realizaba patrullaje en ${lugar} siendo las ${hora} hrs aprox., se percató de ${vehiculosText}, el cual circulaba con las luces apagadas infringiendo el RNT. Al indicarle que se detenga, los ocupantes desobedecieron la orden y aceleraron temerariamente contra el efectivo PNP para atropellarlo, dándose a la fuga. A bordo de la unidad ${pnp1} se inició la persecución.`;
 
     document.getElementById('titulo_sec_2').value = "II. CAPTURA Y DAÑOS A UNIDAD PNP:";
     document.getElementById('agregar_intervencion_2').value = `--- Durante la persecución, la unidad policial ${pnp1} logró interponerse para cerrar el paso, chocando el vehículo en fuga contra la motocicleta policial ocasionándole daños materiales. Se logró reducir e intervenir a ${intervenidosText}.`;
@@ -1208,7 +1287,7 @@
     document.getElementById('agregar_intervencion_3').value = `--- Que, siendo las ${(typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 15) : hora} hrs, se procedió al recojo de las partes dañadas de la unidad policial (soporte de placa) y posterior LACRADO en caja/sobre de seguridad con las firmas correspondientes.`;
 
     document.getElementById('titulo_sec_4').value = "IV. INCAUTACIÓN DE VEHÍCULO Y DETENCIÓN:";
-    document.getElementById('agregar_intervencion_4').value = `--- Se realizó la INCAUTACIÓN del vehículo de placa N° ${placa} y la DETENCIÓN de ${intervenidosText} por la presunta comisión del delito contra la Administración Pública - Resistencia o Desobediencia a la Autoridad.`;
+    document.getElementById('agregar_intervencion_4').value = `--- Se realizó la INCAUTACIÓN de los vehículos intervenidos y la DETENCIÓN de ${intervenidosText} por la presunta comisión del delito contra la Administración Pública - Resistencia o Desobediencia a la Autoridad.`;
 
     document.getElementById('titulo_sec_5').value = "V. COMUNICACIÓN AL RMP Y DISPOSICIÓN:";
     document.getElementById('agregar_intervencion_5').value = 
@@ -1224,13 +1303,10 @@
     construirSeccionesNarrativa();
 
     const intervenidosText = obtenerTextoIntervenidosNarrativa();
+    const vehiculosText = obtenerTextoVehiculosNarrativa();
     const listaInt = obtenerListaIntervenidos();
     const intPrincipal = listaInt[0] || { nombre: 'el conductor', dni: 'S/D', edad: 'S/E' };
 
-    const placa = getVal('placa_vehiculo', 'S/P');
-    const marca = getVal('marca_vehiculo', 'S/M');
-    const modelo = getVal('modelo_vehiculo', 'S/M');
-    const color = getVal('color_vehiculo', 'S/C');
     const lugar = getVal('lugar');
     const hora = getVal('hora_intervencion', '07:16');
     const pnp1 = getVal('placa_policial_1', 'unidad policial');
@@ -1242,15 +1318,15 @@
     const horaFin = (typeof sumarMinutosAHora === 'function') ? sumarMinutosAHora(hora, 45) : getVal('hora2', '08:01');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y MANIOBRAS TEMERARIAS:";
-    document.getElementById('agregar_intervencion_1').value = `--- El suscrito, en circunstancias que realizaba patrullaje motorizado a bordo de la UUMM de placa ${pnp1}, siendo las ${hora} hrs aprox., divisó al vehículo menor de placa de rodaje N° ${placa}, cuyo conductor realizaba maniobras temerarias por ${lugar}, por lo que se procedió a darle el alcance e intervención inmediata.`;
+    document.getElementById('agregar_intervencion_1').value = `--- El suscrito, en circunstancias que realizaba patrullaje motorizado a bordo de la UUMM de placa ${pnp1}, siendo las ${hora} hrs aprox., divisó a ${vehiculosText}, cuyo conductor realizaba maniobras temerarias por ${lugar}, por lo que se procedió a darle el alcance e intervención inmediata.`;
 
     document.getElementById('titulo_sec_2').value = "II. IDENTIFICACIÓN Y SIGNOS DE HALITOSIS ALCOHÓLICA:";
-    document.getElementById('agregar_intervencion_2').value = `--- Intervenido el vehículo de placa N° ${placa} (Marca: ${marca}, Modelo: ${modelo}, Color: ${color}), se identificó a los ocupantes resultando ser ${intervenidosText}. Al solicitarle la documentación al conductor ${intPrincipal.nombre}, se descubrió que presentaba signos evidentes de estar bajo la influencia de bebidas alcohólicas (halitosis alcohólica), motivo por el cual fueron trasladados a las instalaciones de la UTSEVI PNP con apoyo de la UUMM ${pnp2}.`;
+    document.getElementById('agregar_intervencion_2').value = `--- Intervenido el vehículo, se identificó a los ocupantes resultando ser ${intervenidosText}. Al solicitarle la documentación al conductor ${intPrincipal.nombre}, se descubrió que presentaba signos evidentes de estar bajo la influencia de bebidas alcohólicas (halitosis alcohólica), motivo por el cual fueron trasladados a las instalaciones de la UTSEVI PNP con apoyo de la UUMM ${pnp2}.`;
 
     document.getElementById('titulo_sec_3').value = "III. EJECUCIÓN DE PRUEBAS DE EQUILIBRIO Y COORDINACIÓN (RETRAN):";
     document.getElementById('agregar_intervencion_3').value = 
       `--- Al intervenido ${intPrincipal.nombre} luego de hacerle de conocimiento el motivo de la intervención policial, de conformidad a las normativas vigentes y al Art. 307.2 del Reglamento Nacional de Tránsito, se procedió a la ejecución de pruebas de equilibrio y coordinación (Test de Hogan y Romberg), con el siguiente detalle:\n\n` +
-      `a) En este estado a horas ${horaPrueba} se le exhorta al conductor mencionado que descienda del volante del vehículo automotor de placa de rodaje ${placa}, marca ${marca}, modelo ${modelo}, color ${color}.\n\n` +
+      `a) En este estado a horas ${horaPrueba} se le exhorta al conductor mencionado que descienda del volante de ${vehiculosText}.\n\n` +
       `b) Con relación al Acta de Intervención Policial, y en aplicación al Art. 307.4 del RETRAN, se procede a realizar las siguiente (s) prueba (s) de equilibrio y/o coordinación:\n\n` +
       `1. Andar con los ojos vendados o cerrados y los brazos en alto, poniendo un pie justo delante de otro, sobre una línea recta.\n` +
       `   PASÓ LA PRUEBA: [ ] SI   [X] NO\n\n` +
