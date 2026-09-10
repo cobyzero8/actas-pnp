@@ -39,14 +39,13 @@
       transition: all 0.2s ease;
     }
     
-    /* ESTILOS DEL PANEL LATERAL DE FICHAS RÁPIDAS (PASO 2) */
     .chip-btn {
       background: #ffffff;
       border: 1px solid #cbd5e1;
       border-left: 4px solid #0284c7;
-      padding: 8px 10px;
-      border-radius: 6px;
-      font-size: 12px;
+      padding: 6px 8px;
+      border-radius: 5px;
+      font-size: 11px;
       text-align: left;
       cursor: pointer;
       width: 100%;
@@ -61,12 +60,41 @@
     .chip-btn strong {
       color: #0369a1;
       display: block;
-      font-size: 11px;
+      font-size: 10px;
       text-transform: uppercase;
+    }
+
+    .preset-btn {
+      background: #3b82f6;
+      color: #fff;
+      border: none;
+      padding: 8px 10px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 5px;
+      text-align: left;
+    }
+    .preset-btn:hover {
+      background: #1d4ed8;
     }
   </style>
 </head>
 <body>
+
+<!-- LISTA DE TÍTULOS PREDETERMINADOS PARA AUTOCOMPLETAR -->
+<datalist id="titulos_pnp_list">
+  <option value="I. INTERVENCION POLICIAL:"></option>
+  <option value="II. RECOJO Y LACRADO DE EVIDENCIA:"></option>
+  <option value="III. INCAUTACIÓN DE VEHICULO:"></option>
+  <option value="IV. DETENCION:"></option>
+  <option value="V. REGISTRO VEHICULAR:"></option>
+  <option value="VI. INCAUTACION DE DROGAS / ESPECIES:"></option>
+  <option value="VII. LACRADO Y CADENA DE CUSTODIA:"></option>
+  <option value="VIII. COMUNICACIÓN AL RMP:"></option>
+</datalist>
 
 <!-- MODAL PARA REGISTRO DE HALLAZGO POSITIVO -->
 <div id="modalEspecie" class="modal-overlay">
@@ -132,7 +160,7 @@
   </div>
 </div>
 
-<div class="container" style="max-width: 1100px;">
+<div class="container" style="max-width: 1150px;">
   <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
       <a href="menu.html" style="text-decoration: none; color: var(--primary); font-weight: bold; font-size: 13px;">← Cambiar Delito / Actas</a>
@@ -420,7 +448,7 @@
           </button>
         </div>
 
-        <!-- LAYOUT DE 2 COLUMNAS (ÁREA DE REDACCIÓN Y PANEL DE FICHAS) -->
+        <!-- LAYOUT DE 2 COLUMNAS (ÁREA DE REDACCIÓN Y PANEL DE FICHAS COMPLETO) -->
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: start;">
           
           <!-- COLUMNA IZQUIERDA: BLOQUES DINÁMICOS DE NARRATIVA -->
@@ -437,17 +465,34 @@
             <div id="contenedor_parrafos_intervencion"></div>
           </div>
 
-          <!-- COLUMNA DERECHA: PANEL LATERAL DE FICHAS CON DATOS REALES INGRESADOS -->
-          <div style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; position: sticky; top: 15px;">
+          <!-- COLUMNA DERECHA: PANEL LATERAL Y MODELOS RÁPIDOS -->
+          <div style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; position: sticky; top: 15px; max-height: 85vh; overflow-y: auto;">
+            
             <h4 style="margin-top: 0; color: #003366; font-size: 13px; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px;">
-              📌 Fichas de Datos Rápida
+              ⚡ Plantillas / Modelos de Casos
+            </h4>
+            <p style="font-size: 11px; color: #64748b; margin-top: 0; margin-bottom: 8px;">
+              Selecciona un caso típico para autocompletar la narrativa con los datos ingresados:
+            </p>
+
+            <button type="button" class="preset-btn" onclick="cargarModeloPersecucionFuga()">
+              🏎️ Fuga / Persecución / Desobediencia
+            </button>
+            <button type="button" class="preset-btn" onclick="cargarModeloAlcoholemiaRNT()" style="background: #059669;">
+              🍺 Conducción Ebriedad / RNT
+            </button>
+
+            <hr style="margin: 12px 0;">
+
+            <h4 style="margin-top: 0; color: #003366; font-size: 13px; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px;">
+              📌 Todos los Datos Registrados (Haz Clic para Insertar)
             </h4>
             <p style="font-size: 11px; color: #64748b; margin-top: 0; margin-bottom: 10px;">
-              Haz clic sobre cualquier ficha para insertar su valor exacto dentro del cuadro de texto activo:
+              Haz clic sobre cualquier ficha para colocar su valor en la posición actual del cursor:
             </p>
 
             <div style="display: flex; flex-direction: column; gap: 6px;" id="panel_fichas_datos">
-              <!-- Generadas dinámicamente al pasar al paso 2 -->
+              <!-- Generadas dinámicamente con TODOS los campos del Paso 1 -->
             </div>
           </div>
 
@@ -463,7 +508,7 @@
 </div>
 
 <script src="js/auth.js"></script>
-<script src="js/word.js?v=7"></script>
+<script src="js/word.js?v=8"></script>
   
 <script>
   const detallesEspecies = { drogas: null, moneda: null, joyas: null, municion: null, otros: null };
@@ -477,8 +522,8 @@
     "III. INCAUTACIÓN DE VEHICULO:",
     "IV. DETENCION:",
     "V. REGISTRO VEHICULAR:",
-    "VI. INCAUTACION:",
-    "VII. LACRADO:",
+    "VI. INCAUTACION DE DROGAS / ESPECIES:",
+    "VII. LACRADO Y CADENA DE CUSTODIA:",
     "VIII. COMUNICACIÓN AL RMP:"
   ];
 
@@ -593,7 +638,7 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // CONSTRUIR EL PANEL DE FICHAS RÁPIDAS
+  // CONSTRUIR EL PANEL LATERAL DE FICHAS CON TODOS LOS DATOS INGRESADOS
   function construirFichasDatosPanel() {
     const cont = document.getElementById('panel_fichas_datos');
     cont.innerHTML = "";
@@ -602,14 +647,27 @@
       { titulo: "Intervenido", val: document.getElementById('intervenido_nombre').value },
       { titulo: "DNI", val: document.getElementById('intervenido_dni').value },
       { titulo: "Edad", val: document.getElementById('edad').value + " años" },
-      { titulo: "Lugar", val: document.getElementById('lugar').value },
+      { titulo: "Estado Civil", val: document.getElementById('estado_civil').value },
+      { titulo: "Natural de", val: document.getElementById('natural').value },
+      { titulo: "Celular", val: document.getElementById('celular1').value },
+      { titulo: "Padre", val: document.getElementById('papa').value },
+      { titulo: "Madre", val: document.getElementById('mama').value },
+      { titulo: "Ocupación", val: document.getElementById('ocupacion').value },
+      { titulo: "Domicilio", val: document.getElementById('domicilio').value },
+      { titulo: "Asistencia Confianza", val: document.getElementById('asistido_confianza').value },
+      { titulo: "Lugar Intervención", val: document.getElementById('lugar').value },
       { titulo: "Hora Intervención", val: document.getElementById('hora_intervencion').value + " hrs" },
-      { titulo: "Fiscal", val: document.getElementById('fiscal').value.trim() || "RMP NO ESPECIFICADO" },
+      { titulo: "Fiscal RMP", val: document.getElementById('fiscal').value.trim() || "RMP NO ESPECIFICADO" },
+      { titulo: "Actividad Realizada", val: document.getElementById('tipo_actividad').value === 'OPERATIVO POLICIAL' ? `el O/P ${document.getElementById('nombre_operativo').value}` : 'Patrullaje de Rutina' },
       { titulo: "Placa Vehículo", val: document.getElementById('placa_vehiculo').value || "NO REGISTRA" },
-      { titulo: "Efectivo PNP", val: `${document.getElementById('grado').value} ${document.getElementById('personal_interviniente').value}` }
+      { titulo: "Marca Vehículo", val: document.getElementById('marca_vehiculo').value || "NO REGISTRA" },
+      { titulo: "Modelo Vehículo", val: document.getElementById('modelo_vehiculo').value || "NO REGISTRA" },
+      { titulo: "Color / Estado", val: document.getElementById('color_vehiculo').value || "NO REGISTRA" },
+      { titulo: "Hallazgos Positivos", val: document.getElementById('narrar_positivo').value },
+      { titulo: "Efectivo PNP", val: `${document.getElementById('grado').value} ${document.getElementById('personal_interviniente').value}` },
+      { titulo: "CIP Efectivo", val: document.getElementById('cip').value }
     ];
 
-    // Agregar placas policiales
     const cantVeh = parseInt(document.getElementById('cant_vehiculos_pnp').value, 10) || 1;
     for (let i = 1; i <= cantVeh; i++) {
       const p = document.getElementById(`placa_policial_${i}`) ? document.getElementById(`placa_policial_${i}`).value : '';
@@ -617,9 +675,9 @@
     }
 
     datos.forEach(item => {
-      if (item.val) {
+      if (item.val && item.val !== 'S/N' && item.val !== 'S/D' && item.val !== 'NINGUNO') {
         cont.innerHTML += `
-          <button type="button" class="chip-btn" onclick="insertarTextoEnActivo('${item.val}')">
+          <button type="button" class="chip-btn" onclick="insertarTextoEnActivo('${item.val.replace(/'/g, "\\'")}')">
             <strong>${item.titulo}:</strong>
             <span>${item.val}</span>
           </button>
@@ -628,6 +686,7 @@
     });
   }
 
+  // CONSTRUCCIÓN DE SECCIONES CON TÍTULO INGRESABLE DIRECTAMENTE
   function construirSeccionesNarrativa() {
     const cant = parseInt(document.getElementById('cant_secciones').value, 10) || 1;
     const cont = document.getElementById('contenedor_parrafos_intervencion');
@@ -635,38 +694,18 @@
 
     for (let i = 1; i <= cant; i++) {
       const tituloSugerido = TITULOS_SECCIONES_PNP[i - 1] || `SECCIÓN ${i}:`;
-      let optionsHTML = TITULOS_SECCIONES_PNP.map(t => `<option value="${t}" ${t === tituloSugerido ? 'selected' : ''}>${t}</option>`).join('');
 
       cont.innerHTML += `
         <div style="background: #fff; border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
-          <label style="font-weight: bold; color: #003366; font-size: 13px;">Título de la Sección ${i}:</label>
-          <select id="titulo_sec_${i}" onchange="cambiarTituloSeccion(${i})" style="width: 100%; padding: 6px; margin-top: 4px; margin-bottom: 6px; font-weight: bold;">
-            ${optionsHTML}
-            <option value="CUSTOM">-- OTRO TÍTULO PERSONALIZADO --</option>
-          </select>
-          <input type="text" id="custom_titulo_sec_${i}" placeholder="Escriba el título personalizado aquí..." style="display:none; width: 100%; padding: 6px; margin-bottom: 6px; font-weight: bold; box-sizing: border-box;">
+          <label style="font-weight: bold; color: #003366; font-size: 13px; display: block; margin-bottom: 4px;">
+            Título de la Sección ${i} (Escriba o elija de la lista):
+          </label>
+          <input type="text" id="titulo_sec_${i}" list="titulos_pnp_list" value="${tituloSugerido}" placeholder="Ej: I. INTERVENCION POLICIAL:" style="width: 100%; padding: 8px; font-weight: bold; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; margin-bottom: 8px; color: #003366;">
 
           <label style="font-size: 12px; font-weight: bold; display: block; margin-top: 4px;">Contenido ({agregar_intervencion${i}}):</label>
           <textarea id="agregar_intervencion_${i}" rows="5" onfocus="textareaActivoId='agregar_intervencion_${i}'" placeholder="Redacte los hechos correspondientes a esta sección..." style="width: 100%; box-sizing: border-box; padding: 8px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 4px;"></textarea>
         </div>
       `;
-    }
-  }
-
-  function cambiarTituloSeccion(num) {
-    const sel = document.getElementById(`titulo_sec_${num}`).value;
-    const inputCustom = document.getElementById(`custom_titulo_sec_${num}`);
-    const txtArea = document.getElementById(`agregar_intervencion_${num}`);
-
-    if (sel === "CUSTOM") {
-      inputCustom.style.display = "block";
-    } else {
-      inputCustom.style.display = "none";
-    }
-
-    if (sel.includes("COMUNICACIÓN AL RMP")) {
-      const fiscalVal = document.getElementById('fiscal').value.trim() || "{fiscal}";
-      txtArea.value = `--- De los hechos se comunicó de manera inmediata y oportuna al RMP ${fiscalVal}, Fiscal adjunto de la fiscalía provincial penal corporativa de Huanta.`;
     }
   }
 
@@ -680,6 +719,55 @@
     const end = txt.selectionEnd;
     txt.value = txt.value.substring(0, start) + valor + txt.value.substring(end);
     txt.focus();
+  }
+
+  // PLANTILLA / MODELO 1: FUGA Y PERSECUCIÓN
+  function cargarModeloPersecucionFuga() {
+    document.getElementById('cant_secciones').value = 4;
+    construirSeccionesNarrativa();
+
+    const intervenido = document.getElementById('intervenido_nombre').value || "el intervenido";
+    const dni = document.getElementById('intervenido_dni').value || "S/D";
+    const edad = document.getElementById('edad').value || "";
+    const placa = document.getElementById('placa_vehiculo').value || "S/P";
+    const lugar = document.getElementById('lugar').value || "el lugar de la intervención";
+    const hora = document.getElementById('hora_intervencion').value || "00:00";
+    const pnp1 = document.getElementById('placa_policial_1') ? document.getElementById('placa_policial_1').value : "unidad policial";
+    const fiscal = document.getElementById('fiscal').value || "el RMP";
+
+    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
+    document.getElementById('agregar_intervencion_1').value = `--- En circunstancias que el personal policial realizaba patrullaje de rutina siendo las ${hora} hrs aprox., en ${lugar}, se percató de la circulación del vehículo de placa de rodaje N° ${placa}, haciendo maniobras temerarias. Se le hicieron las señales reglamentarias con la finalidad de que detenga su marcha; sin embargo, el conductor desobedeció la orden policial y aceleró dándose a la fuga.`;
+
+    document.getElementById('titulo_sec_2').value = "II. PERSECUCIÓN Y CAPTURA:";
+    document.getElementById('agregar_intervencion_2').value = `--- Ante ello, el personal PNP a bordo de la unidad ${pnp1} inició la persecución del vehículo en mención, logrando interponerse delante de la unidad a fin de evitar un accidente y logrando intervenir a ${intervenido} (${edad}), identificado con DNI N° ${dni}.`;
+
+    document.getElementById('titulo_sec_3').value = "III. DETENCION:";
+    document.getElementById('agregar_intervencion_3').value = `--- Siendo las ${hora} hrs se procedió a la detención del ciudadano ${intervenido} por la presunta comisión del delito contra la seguridad pública, notificándole sus derechos constitucionales.`;
+
+    document.getElementById('titulo_sec_4').value = "IV. COMUNICACIÓN AL RMP:";
+    document.getElementById('agregar_intervencion_4').value = `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, Fiscal Adjunto de la Fiscalía Provincial Penal Corporativa de Huanta.`;
+  }
+
+  // PLANTILLA / MODELO 2: ALCOHOLEMIA Y RNT
+  function cargarModeloAlcoholemiaRNT() {
+    document.getElementById('cant_secciones').value = 3;
+    construirSeccionesNarrativa();
+
+    const intervenido = document.getElementById('intervenido_nombre').value || "el intervenido";
+    const dni = document.getElementById('intervenido_dni').value || "S/D";
+    const placa = document.getElementById('placa_vehiculo').value || "S/P";
+    const lugar = document.getElementById('lugar').value || "el lugar de la intervención";
+    const hora = document.getElementById('hora_intervencion').value || "00:00";
+    const fiscal = document.getElementById('fiscal').value || "el RMP";
+
+    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
+    document.getElementById('agregar_intervencion_1').value = `--- Siendo las ${hora} hrs en ${lugar}, se intervino al vehículo de placa N° ${placa}, conducido por ${intervenido}, identificado con DNI N° ${dni}, quien presentaba visibles síntomas de ebriedad (aliento alcohólico).`;
+
+    document.getElementById('titulo_sec_2').value = "II. INCAUTACIÓN DE VEHICULO Y DETENCION:";
+    document.getElementById('agregar_intervencion_2').value = `--- Se procedió a la incautación del vehículo de placa N° ${placa} y a la detención del conductor ${intervenido} por la presunta comisión del delito de Conducción en Estado de Ebriedad (Peligro Común).`;
+
+    document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP:";
+    document.getElementById('agregar_intervencion_3').value = `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}, Fiscal Adjunto de la Fiscalía Provincial Penal Corporativa de Huanta.`;
   }
 </script>
 </body>
