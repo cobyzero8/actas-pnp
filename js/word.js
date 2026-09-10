@@ -218,6 +218,17 @@ function sumarMinutosAHora(horaStr, minutosASumar) {
   return `${h}:${m}`;
 }
 
+function obtenerTipoEmbalajeFinal() {
+  const selElem = document.getElementById('tipo_embalaje');
+  const sel = selElem ? selElem.value : '';
+  if (sel === 'OTRO') {
+    const manualElem = document.getElementById('tipo_embalaje_manual');
+    const manual = manualElem ? manualElem.value.trim() : '';
+    return manual !== '' ? manual : 'un embalaje no especificado';
+  }
+  return sel || 'una bolsa plástica transparente de seguridad';
+}
+
 function procesarDocumentosRNT() {
   let hallazgos = [];
 
@@ -333,17 +344,17 @@ function generarBloqueCierreYFirmas(horaFin, lista) {
   if (!lista || lista.length <= 1) {
     const int1 = (lista && lista[0]) ? lista[0] : { nombre: '{intervenido_nombre}', dni: '{intervenido_dni}' };
     textoCierre += 
-      `                                              __________________________________\n` +
-      `                                                        EL INTERVENIDO\n\n` +
-      `                                              Nombre: ${int1.nombre}\n` +
-      `                                              DNI N°: ${int1.dni}`;
+      `                                               __________________________________\n` +
+      `                                                         EL INTERVENIDO\n\n` +
+      `                                               Nombre: ${int1.nombre}\n` +
+      `                                               DNI N°: ${int1.dni}`;
   } else {
     lista.forEach((item, idx) => {
       textoCierre += 
-        `                                              __________________________________\n` +
-        `                                                    EL INTERVENIDO N° ${idx + 1}\n\n` +
-        `                                              Nombre: ${item.nombre}\n` +
-        `                                              DNI N°: ${item.dni}\n\n`;
+        `                                               __________________________________\n` +
+        `                                                     EL INTERVENIDO N° ${idx + 1}\n\n` +
+        `                                               Nombre: ${item.nombre}\n` +
+        `                                               DNI N°: ${item.dni}\n\n`;
     });
   }
 
@@ -441,6 +452,9 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     otros: document.getElementById('otros') ? document.getElementById('otros').value : "NEGATIVO",
     narrar_positivo: document.getElementById('narrar_positivo') ? document.getElementById('narrar_positivo').value : "NINGUNO",
     
+    tipo_embalaje: obtenerTipoEmbalajeFinal(),
+    forma_lacrado: (document.getElementById('forma_lacrado') && document.getElementById('forma_lacrado').value.trim() !== "") ? document.getElementById('forma_lacrado').value.trim() : "cinta adhesiva de seguridad y sellado térmico",
+
     detalle_hallazgo: (document.getElementById('detalle_hallazgo') && document.getElementById('detalle_hallazgo').value.trim() !== "") ? document.getElementById('detalle_hallazgo').value.trim() : "un (01) bien u objeto no especificado",
     circunstancia_hallazgo: (document.getElementById('circunstancia_hallazgo') && document.getElementById('circunstancia_hallazgo').value.trim() !== "") ? document.getElementById('circunstancia_hallazgo').value.trim() : "se procedió a la verificación del lugar de los hechos",
 
