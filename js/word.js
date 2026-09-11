@@ -1,130 +1,122 @@
 /**
- * CATALOGO MASTER DE ACTAS PNP (15 ACTAS OFICIALES + SOPORTE MANUAL Y MULTI-VEHÍCULO / MULTI-PNP)
+ * CATALOGO MASTER DE ACTAS PNP (ACTUALIZADO CON NOMBRES EXACTOS Y RUTA PLANTILLA)
  * Sistema de Gestión e Individualización de Expedientes Policiales
  */
 
 const CATALOGO_ACTAS = [
   { 
-    id: "intervencion", 
+    id: "acta_intervencion", 
     aliases: ["intervencion", "acta_intervencion", "01_ACTA_DE_INTERVENCION_POLICIAL"], 
     titulo: "01. Acta de Intervención Policial", 
-    archivo: "plantillas/acta_intervencion.docx", 
-    llevaHora: true, 
-    esIndividual: false // ÚNICA Y COLECTIVA PARA TODOS
-  },
-  { 
-    id: "reg_personal", 
-    aliases: ["reg_personal", "acta_registro_personal", "registro_personal", "ACTA_DE_REGISTRO_PERSONAL"], 
-    titulo: "02. Acta de Registro Personal e Incautación", 
-    archivo: "plantillas/acta_registro_personal.docx", 
-    llevaHora: true, 
-    esIndividual: true // INDIVIDUAL POR DETENIDO
-  },
-  { 
-    id: "lectura_derechos", 
-    aliases: ["lectura_derechos", "acta_lectura_derechos", "ACTA_DE_LECTURA_DE_DERECHOS"], 
-    titulo: "03. Acta de Lectura de Derechos", 
-    archivo: "plantillas/acta_lectura_derechos.docx", 
-    llevaHora: true, 
-    esIndividual: true // INDIVIDUAL POR DETENIDO
-  },
-  { 
-    id: "detencion", 
-    aliases: ["detencion", "acta_detencion", "ACTA_DE_DETENCION_POLICIAL"], 
-    titulo: "04. Acta de Detención Policial", 
-    archivo: "plantillas/acta_detencion.docx", 
-    llevaHora: true, 
-    esIndividual: true // INDIVIDUAL POR DETENIDO
-  },
-  { 
-    id: "buen_trato", 
-    aliases: ["buen_trato", "constancia_buen_trato", "buentrato", "acta_buen_trato", "CONSTANCIA_DE_BUEN_TRATO"], 
-    titulo: "05. Constancia de Buen Trato e Integridad Física", 
-    archivo: "plantillas/acta_buen_trato.docx", 
-    llevaHora: false, 
-    esIndividual: true // INDIVIDUAL POR DETENIDO
-  },
-  { 
-    id: "sit_vehicular", 
-    aliases: ["sit_vehicular", "acta_situacion_vehicular", "situacion_vehicular", "ACTA_DE_SITUACION_VEHICULAR"], 
-    titulo: "06. Acta de Situación Vehicular", 
-    archivo: "plantillas/acta_situacion_vehicular.docx", 
-    llevaHora: true, 
-    esIndividual: true,
-    esVehicular: true // INDIVIDUAL POR VEHÍCULO / PLACA
-  },
-  { 
-    id: "reg_vehicular", 
-    aliases: ["reg_vehicular", "acta_registro_vehicular", "registro_vehicular", "ACTA_DE_REGISTRO_VEHICULAR"], 
-    titulo: "07. Acta de Registro Vehicular", 
-    archivo: "plantillas/acta_registro_vehicular.docx", 
-    llevaHora: true, 
-    esIndividual: true,
-    esVehicular: true // INDIVIDUAL POR VEHÍCULO / PLACA
-  },
-  { 
-    id: "lacrado", 
-    aliases: ["lacrado", "acta_lacrado", "ACTA_DE_LACRADO_CADENA_CUSTODIA"], 
-    titulo: "08. Acta de Lacrado / Cadena de Custodia", 
-    archivo: "plantillas/acta_lacrado.docx", 
-    llevaHora: true, 
-    esIndividual: true 
-  },
-  { 
-    id: "comunicacion", 
-    aliases: ["comunicacion", "comunicacion_fiscal", "acta_comunicacion", "ACTA_DE_COMUNICACION_AL_RMP"], 
-    titulo: "09. Acta de Comunicación Telefónica al RMP", 
-    archivo: "plantillas/acta_comunicacion.docx", 
-    llevaHora: true, 
-    esIndividual: true 
-  },
-  { 
-    id: "notif_detencion", 
-    aliases: ["notif_detencion", "acta_notificacion_familiar", "ACTA_NOTIFICACION_DETENCION_FAMILIAR"], 
-    titulo: "10. Acta de Notificación de Detención a Familiar", 
-    archivo: "plantillas/acta_notificacion_familiar.docx", 
-    llevaHora: true, 
-    esIndividual: true 
-  },
-  { 
-    id: "dosaje_etilico", 
-    aliases: ["dosaje_etilico", "acta_dosaje_etilico", "ACTA_NOTIFICACION_DOSAJE_ETILICO"], 
-    titulo: "11. Notificación para Dosaje Etílico", 
-    archivo: "plantillas/acta_dosaje_etilico.docx", 
-    llevaHora: true, 
-    esIndividual: true 
-  },
-  { 
-    id: "control_identidad", 
-    aliases: ["control_identidad", "acta_control_identidad", "ACTA_DE_CONTROL_DE_IDENTIDAD"], 
-    titulo: "12. Acta de Control de Identidad Policial", 
-    archivo: "plantillas/acta_control_identidad.docx", 
-    llevaHora: true, 
-    esIndividual: true 
-  },
-  { 
-    id: "entrega_especies", 
-    aliases: ["entrega_especies", "acta_entrega_especies", "ACTA_ENTREGA_DEVOLUCION_ESPECIES"], 
-    titulo: "13. Acta de Entrega y Devolución de Especies", 
-    archivo: "plantillas/acta_entrega_especies.docx", 
-    llevaHora: true, 
-    esIndividual: true 
-  },
-  { 
-    id: "declaracion_intervenido", 
-    aliases: ["declaracion_intervenido", "acta_declaracion", "ACTA_DECLARACION_DEL_INTERVENIDO"], 
-    titulo: "14. Acta de Entrevista / Declaración del Intervenido", 
-    archivo: "plantillas/acta_declaracion.docx", 
-    llevaHora: true, 
-    esIndividual: true 
-  },
-  { 
-    id: "hallazgo_recojo", 
-    aliases: ["hallazgo_recojo", "acta_hallazgo", "ACTA_DE_HALLAZGO_Y_RECOJO"], 
-    titulo: "15. Acta de Hallazgo y Recojo", 
-    archivo: "plantillas/acta_hallazgo_recojo.docx", 
+    archivo: "plantilla/acta_intervencion.docx", 
     llevaHora: true, 
     esIndividual: false 
+  },
+  { 
+    id: "acta_registro_personal", 
+    aliases: ["reg_personal", "acta_registro_personal", "registro_personal", "ACTA_DE_REGISTRO_PERSONAL"], 
+    titulo: "02. Acta de Registro Personal", 
+    archivo: "plantilla/acta_registro_personal.docx", 
+    llevaHora: true, 
+    esIndividual: true 
+  },
+  { 
+    id: "acta_lectura_derechos", 
+    aliases: ["lectura_derechos", "acta_lectura_derechos", "ACTA_DE_LECTURA_DE_DERECHOS"], 
+    titulo: "03. Acta de Lectura de Derechos", 
+    archivo: "plantilla/acta_lectura_derechos.docx", 
+    llevaHora: true, 
+    esIndividual: true 
+  },
+  { 
+    id: "acta_detencion", 
+    aliases: ["detencion", "acta_detencion", "ACTA_DE_DETENCION_POLICIAL"], 
+    titulo: "04. Acta de Detención Policial", 
+    archivo: "plantilla/acta_detencion.docx", 
+    llevaHora: true, 
+    esIndividual: true 
+  },
+  { 
+    id: "acta_buen_trato", 
+    aliases: ["buen_trato", "constancia_buen_trato", "buentrato", "acta_buen_trato", "CONSTANCIA_DE_BUEN_TRATO"], 
+    titulo: "05. Constancia de Buen Trato e Integridad Física", 
+    archivo: "plantilla/acta_buen_trato.docx", 
+    llevaHora: false, 
+    esIndividual: true 
+  },
+  { 
+    id: "acta_registro_vehicular", 
+    aliases: ["reg_vehicular", "acta_registro_vehicular", "registro_vehicular", "ACTA_DE_REGISTRO_VEHICULAR"], 
+    titulo: "06. Acta de Registro Vehicular", 
+    archivo: "plantilla/acta_registro_vehicular.docx", 
+    llevaHora: true, 
+    esIndividual: true,
+    esVehicular: true 
+  },
+  { 
+    id: "acta_inmovilizacion", 
+    aliases: ["acta_inmovilizacion", "inmovilizacion"], 
+    titulo: "07. Acta de Inmovilización", 
+    archivo: "plantilla/acta_inmovilizacion.docx", 
+    llevaHora: true, 
+    esIndividual: true,
+    esVehicular: true 
+  },
+  { 
+    id: "acta_incautacion", 
+    aliases: ["acta_incautacion", "incautacion"], 
+    titulo: "08. Acta de Incautación", 
+    archivo: "plantilla/acta_incautacion.docx", 
+    llevaHora: true, 
+    esIndividual: true 
+  },
+  { 
+    id: "acta_lacrado_cadena_custodia", 
+    aliases: ["lacrado", "acta_lacrado_cadena_custodia", "ACTA_DE_LACRADO_CADENA_CUSTODIA"], 
+    titulo: "09. Acta de Lacrado y Cadena de Custodia", 
+    archivo: "plantilla/acta_lacrado_cadena_custodia.docx", 
+    llevaHora: true, 
+    esIndividual: true 
+  },
+  { 
+    id: "formato_A-6_rotulo_indicios_evidencias", 
+    aliases: ["formato_A-6_rotulo_indicios_evidencias", "rotulo", "indicios"], 
+    titulo: "10. Formato A-6 Rótulo de Indicios y Evidencias", 
+    archivo: "plantilla/formato_A-6_rotulo_indicios_evidencias.docx", 
+    llevaHora: true, 
+    esIndividual: true 
+  },
+  { 
+    id: "acta_hallazgo_recojo", 
+    aliases: ["hallazgo_recojo", "acta_hallazgo_recojo", "ACTA_DE_HALLAZGO_Y_RECOJO"], 
+    titulo: "11. Acta de Hallazgo y Recojo", 
+    archivo: "plantilla/acta_hallazgo_recojo.docx", 
+    llevaHora: true, 
+    esIndividual: false 
+  },
+  { 
+    id: "acta_ocurrencia", 
+    aliases: ["acta_ocurrencia", "ocurrencia"], 
+    titulo: "12. Acta de Ocurrencia", 
+    archivo: "plantilla/acta_ocurrencia.docx", 
+    llevaHora: true, 
+    esIndividual: false 
+  },
+  { 
+    id: "acta_intervencion_control_identidad", 
+    aliases: ["acta_intervencion_control_identidad", "control_identidad"], 
+    titulo: "13. Acta de Intervención y Control de Identidad", 
+    archivo: "plantilla/acta_intervencion_control_identidad.docx", 
+    llevaHora: true, 
+    esIndividual: true 
+  },
+  { 
+    id: "acta_constatacion", 
+    aliases: ["acta_constatacion", "constatacion"], 
+    titulo: "14. Acta de Constatación", 
+    archivo: "plantilla/acta_constatacion.docx", 
+    llevaHora: true, 
+    esIndividual: true 
   }
 ];
 
@@ -146,11 +138,12 @@ function registrarActaManual(nuevaActa) {
     return;
   }
 
+  const nombreArchivo = `${nuevaActa.id}.docx`;
   const estructuraCompleta = {
     id: nuevaActa.id,
     aliases: [nuevaActa.id, nuevaActa.id.toLowerCase()],
     titulo: nuevaActa.titulo,
-    archivo: nuevaActa.archivo || `plantillas/${nuevaActa.id}.docx`,
+    archivo: nuevaActa.archivo || `plantilla/${nombreArchivo}`,
     llevaHora: nuevaActa.llevaHora !== false,
     esIndividual: nuevaActa.esIndividual !== false,
     esVehicular: nuevaActa.esVehicular === true
@@ -408,17 +401,17 @@ function generarBloqueCierreYFirmas(horaFin, lista) {
   if (!lista || lista.length <= 1) {
     const int1 = (lista && lista[0]) ? lista[0] : { nombre: '{intervenido_nombre}', dni: '{intervenido_dni}' };
     textoCierre += 
-      `                                                __________________________________\n` +
-      `                                                          EL INTERVENIDO\n\n` +
-      `                                                Nombre: ${int1.nombre}\n` +
-      `                                                DNI N°: ${int1.dni}`;
+      `                                        __________________________________\n` +
+      `                                                    EL INTERVENIDO\n\n` +
+      `                                        Nombre: ${int1.nombre}\n` +
+      `                                        DNI N°: ${int1.dni}`;
   } else {
     lista.forEach((item, idx) => {
       textoCierre += 
-        `                                                __________________________________\n` +
-        `                                                      EL INTERVENIDO N° ${idx + 1}\n\n` +
-        `                                                Nombre: ${item.nombre}\n` +
-        `                                                DNI N°: ${item.dni}\n\n`;
+        `                                        __________________________________\n` +
+        `                                                    EL INTERVENIDO N° ${idx + 1}\n\n` +
+        `                                        Nombre: ${item.nombre}\n` +
+        `                                        DNI N°: ${item.dni}\n\n`;
     });
   }
 
@@ -431,7 +424,7 @@ function generarBloqueCierreYFirmas(horaFin, lista) {
 document.addEventListener('DOMContentLoaded', () => {
   delitoConfigurado = localStorage.getItem('pnp_delito_seleccionado') || "CONTROL DE IDENTIDAD POLICIAL";
   const actasJSON = localStorage.getItem('pnp_actas_seleccionadas');
-  idsActasConfiguradas = actasJSON ? JSON.parse(actasJSON) : ["reg_personal"];
+  idsActasConfiguradas = actasJSON ? JSON.parse(actasJSON) : ["acta_registro_personal"];
 
   const actasManualesGuardadas = localStorage.getItem('pnp_actas_manuales_custom');
   if (actasManualesGuardadas) {
@@ -468,11 +461,12 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     );
 
     if (!coincide) {
+      const nombreArchivo = `${idLimpio}.docx`;
       coincide = {
         id: idLimpio,
         aliases: [idLimpio],
         titulo: (typeof idSel === 'object' && idSel.titulo) ? idSel.titulo : `Acta de ${idLimpio}`,
-        archivo: (typeof idSel === 'object' && idSel.archivo) ? idSel.archivo : `plantillas/${idLimpio}.docx`,
+        archivo: `plantilla/${nombreArchivo}`,
         llevaHora: true,
         esIndividual: true,
         esVehicular: false
@@ -542,7 +536,7 @@ function avanzarAoSaltarAQuienLleveHora(horaSugeridaInicio) {
   while (indiceActaActual < actasAProcesarSecuencia.length) {
     const actaActual = actasAProcesarSecuencia[indiceActaActual];
     
-    if (actaActual.id === "buen_trato" || actaActual.llevaHora === false) {
+    if (actaActual.id === "acta_buen_trato" || actaActual.llevaHora === false) {
       horariosPorActa[actaActual.id] = { horaInicio: "", horaTermino: "" };
       indiceActaActual++;
     } else {
@@ -572,7 +566,7 @@ function mostrarModalHoraActa(index, horaSugeridaInicio) {
   document.getElementById('modalHoraTermino').value = horaTerminoSugerida;
 
   const btnSiguiente = document.getElementById('btnSiguienteHora');
-  const quedanMasConHora = actasAProcesarSecuencia.slice(index + 1).some(a => a.id !== "buen_trato" && a.llevaHora !== false);
+  const quedanMasConHora = actasAProcesarSecuencia.slice(index + 1).some(a => a.id !== "acta_buen_trato" && a.llevaHora !== false);
 
   if (!quedanMasConHora) {
     btnSiguiente.innerHTML = "📦 Generar Expediente";
@@ -629,9 +623,9 @@ async function ejecutarGeneracionFinalExpediente() {
   }
 
   try {
-    const regPersonal = horariosPorActa['reg_personal'] || { horaInicio: "08:00", horaTermino: "08:05" };
-    const lecturaDerechos = horariosPorActa['lectura_derechos'] || { horaInicio: "08:06", horaTermino: "08:11" };
-    const detencionHorario = horariosPorActa['detencion'] || { horaInicio: "08:12", horaTermino: "08:17" };
+    const regPersonal = horariosPorActa['acta_registro_personal'] || { horaInicio: "08:00", horaTermino: "08:05" };
+    const lecturaDerechos = horariosPorActa['acta_lectura_derechos'] || { horaInicio: "08:06", horaTermino: "08:11" };
+    const detencionHorario = horariosPorActa['acta_detencion'] || { horaInicio: "08:12", horaTermino: "08:17" };
 
     const hora5Val = detencionHorario.horaInicio || sumarMinutosAHora(lecturaDerechos.horaTermino, 1);
     const hora6Val = detencionHorario.horaTermino || sumarMinutosAHora(hora5Val, 5);
@@ -694,7 +688,7 @@ async function ejecutarGeneracionFinalExpediente() {
 
     const textoVehiculosColectivo = construirTextoVehiculosResumen(listaVehiculos);
     const filiacionCompleta = obtenerTextoFiliacionCompletaMultiples(listaIntervenidos);
-    const horaTerminoTotal = horariosPorActa['intervencion']?.horaTermino || datosFormularioBase.hora2 || "08:30";
+    const horaTerminoTotal = horariosPorActa['acta_intervencion']?.horaTermino || datosFormularioBase.hora2 || "08:30";
     const horaPruebaG = sumarMinutosAHora(horaIntVal, 15);
     const bloqueFirmasG = generarBloqueCierreYFirmas(horaTerminoTotal, listaIntervenidos);
 
@@ -758,8 +752,8 @@ async function ejecutarGeneracionFinalExpediente() {
     // GENERACIÓN DE DOCUMENTOS (COLECTIVOS vs INDIVIDUALES)
     for (let acta of actasAProcesarSecuencia) {
       const hor = horariosPorActa[acta.id] || { horaInicio: "", horaTermino: "" };
-      const esActaColectiva = (acta.esIndividual === false || acta.id === 'intervencion' || acta.id === 'hallazgo_recojo');
-      const esActaVehicular = (acta.esVehicular === true || acta.id === 'sit_vehicular' || acta.id === 'reg_vehicular');
+      const esActaColectiva = (acta.esIndividual === false || acta.id === 'acta_intervencion' || acta.id === 'acta_hallazgo_recojo' || acta.id === 'acta_ocurrencia');
+      const esActaVehicular = (acta.esVehicular === true || acta.id === 'acta_registro_vehicular' || acta.id === 'acta_inmovilizacion');
 
       if (esActaColectiva) {
         // CASO A: ACTA ÚNICA Y COLECTIVA
@@ -887,7 +881,7 @@ async function generarDocumentoWord(rutaPlantilla, datos) {
 
   const urlAntiCache = `${rutaPlantilla}?t=${new Date().getTime()}`;
   const response = await fetch(urlAntiCache);
-  if (!response.ok) throw new Error(`Plantilla no encontrada en GitHub: ${rutaPlantilla}`);
+  if (!response.ok) throw new Error(`Plantilla no encontrada en ruta: ${rutaPlantilla}`);
 
   const arrayBuffer = await response.arrayBuffer();
   const zip = new PizZipLib(arrayBuffer);
