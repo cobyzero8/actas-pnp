@@ -360,6 +360,11 @@
             </div>
 
             <div class="full">
+              <label>Agraviado / Víctima ({agraviado})</label>
+              <input type="text" id="agraviado" placeholder="Ej: EL ESTADO / LA SOCIEDAD / Juan PÉREZ" value="EL ESTADO">
+            </div>
+
+            <div class="full">
               <label>Actividad Realizada ({actividad_realizada})</label>
               <select id="tipo_actividad" onchange="evaluarTipoActividad()" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
                 <option value="PATRULLAJE DE RUTINA">Patrullaje de Rutina</option>
@@ -398,6 +403,52 @@
                 <option value="LUGAR_SIN_TESTIGO">2. Realizado en el lugar de la intervención (Transeúntes se negaron a firmar como testigos)</option>
                 <option value="NINGUNO">3. Constancia genérica de cumplimiento de ley</option>
               </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- BLOQUE 3.1: CONSULTA E-SINPOL Y REQUISITORIAS -->
+        <div class="section-block block-diligencia" style="background-color: #f8fafc; border-color: #cbd5e1;">
+          <div class="section-title" style="color: #475569;">🪪 Consulta E-SINPOL PNP / Requisitorias</div>
+          <div class="grid">
+            <div class="full">
+              <label style="font-weight: bold; color: #334155;">Resultado de la Consulta E-SINPOL:</label>
+              <select id="resultado_esinpol" onchange="evaluarEsinpol()" style="width: 100%; padding: 8px; border: 1.5px solid #cbd5e1; border-radius: 4px; font-weight: bold;">
+                <option value="NEGATIVO">NEGATIVO (Sin requisitorias vigentes)</option>
+                <option value="POSITIVO">POSITIVO (Con requisitoria vigente)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="bloque_esinpol_detalle" style="display: none; margin-top: 12px; padding: 12px; background: #fff5f5; border: 1.5px solid #fca5a5; border-radius: 6px;">
+            <div style="font-size: 12px; font-weight: bold; color: #991b1b; margin-bottom: 10px; border-bottom: 1px solid #fee2e2; padding-bottom: 4px;">
+              📋 Detalle de la Requisitoria Vigente:
+            </div>
+            <div class="grid">
+              <div>
+                <label style="font-size: 11px; font-weight: bold;">Tipo ({tipo_requisitoria})</label>
+                <input type="text" id="tipo_requisitoria" placeholder="Ej: REQUISITORIA / CAPTURA" value="REQUISITORIA VIGENTE">
+              </div>
+              <div>
+                <label style="font-size: 11px; font-weight: bold;">Motivo ({motivo_requisitoria})</label>
+                <input type="text" id="motivo_requisitoria" placeholder="Ej: OMISIÓN A LA ASISTENCIA FAMILIAR">
+              </div>
+              <div>
+                <label style="font-size: 11px; font-weight: bold;">Juzgado Solicitante ({juzgado_requisitoria})</label>
+                <input type="text" id="juzgado_requisitoria" placeholder="Ej: 1ER JUZGADO PENAL UNIPERSONAL DE HUANTA">
+              </div>
+              <div>
+                <label style="font-size: 11px; font-weight: bold;">Documento / Oficio N° ({documento_requisitoria})</label>
+                <input type="text" id="documento_requisitoria" placeholder="Ej: OFICIO N° 1234-2026-JPU">
+              </div>
+              <div>
+                <label style="font-size: 11px; font-weight: bold;">Fecha Requisitoria ({fecha_requisitoria})</label>
+                <input type="date" id="fecha_requisitoria">
+              </div>
+              <div>
+                <label style="font-size: 11px; font-weight: bold;">Situación ({situacion_requisitoria})</label>
+                <input type="text" id="situacion_requisitoria" value="VIGENTE / CAPTURA">
+              </div>
             </div>
           </div>
         </div>
@@ -645,7 +696,7 @@
 </div>
 
 <script src="js/auth.js"></script>
-<script src="js/word.js?v=17"></script>
+<script src="js/word.js?v=18"></script>
   
 <script>
   const detallesEspecies = { drogas: null, moneda: null, joyas: null, municion: null, otros: null };
@@ -691,6 +742,7 @@
     
     generarCamposVehiculosPNP();
     construirSeccionesNarrativa();
+    evaluarEsinpol();
     
     const horaIntInput = document.getElementById('hora_intervencion');
     if (horaIntInput && !horaIntInput.value) {
@@ -713,6 +765,14 @@
 
     adaptarFormularioPorActas(actasConfiguradas, delitoSel);
   });
+
+  function evaluarEsinpol() {
+    const res = document.getElementById('resultado_esinpol').value;
+    const box = document.getElementById('bloque_esinpol_detalle');
+    if (box) {
+      box.style.display = (res === 'POSITIVO') ? 'block' : 'none';
+    }
+  }
 
   function adaptarFormularioPorActas(actasConfiguradas, delitoTexto) {
     const requiereVehiculos = actasConfiguradas.some(id => 
@@ -1177,8 +1237,18 @@
     document.getElementById('unidad_policial').value = "UTSEVI PNP HUANTA";
     document.getElementById('unidad_disposicion').value = "SIAT-COM PNP HUANTA";
     document.getElementById('fiscal').value = "Abog. Marco Antonio PÉREZ PALOMINO, Fiscal Adjunto de la FPPC Huanta";
+    document.getElementById('agraviado').value = "EL ESTADO / LA SOCIEDAD";
     document.getElementById('tipo_actividad').value = "PATRULLAJE DE RUTINA";
     evaluarTipoActividad();
+
+    document.getElementById('resultado_esinpol').value = "POSITIVO";
+    evaluarEsinpol();
+    document.getElementById('tipo_requisitoria').value = "REQUISITORIA VIGENTE";
+    document.getElementById('motivo_requisitoria').value = "OMISIÓN A LA ASISTENCIA FAMILIAR";
+    document.getElementById('juzgado_requisitoria').value = "1ER JUZGADO PENAL UNIPERSONAL DE HUANTA";
+    document.getElementById('documento_requisitoria').value = "OFICIO N° 1234-2026-JPU";
+    document.getElementById('fecha_requisitoria').value = hoy;
+    document.getElementById('situacion_requisitoria').value = "VIGENTE / CAPTURA";
 
     if (document.getElementById('opcion_constancia_testigo')) {
       document.getElementById('opcion_constancia_testigo').value = "OFICINA";
@@ -1204,7 +1274,7 @@
     document.getElementById('detalle_hallazgo').value = "un (01) equipo telefónico móvil marca Samsung Galaxy A12, color negro, pantalla trizada";
     aplicarPresetHallazgo('A');
 
-    alert("⚡ ¡Datos de prueba cargados exitosamente (2 PNP + 2 Intervenidos + 2 Vehículos)!");
+    alert("⚡ ¡Datos de prueba cargados exitosamente (2 PNP + 2 Intervenidos + 2 Vehículos + Requisitoria E-SINPOL)! ");
   }
 
   function getVal(id, fallback = "S/D") {
@@ -1359,7 +1429,7 @@
       { id: "cat_intervenidos", titulo: "👥 Datos del Intervenido (Filiación e Identificación)", clase: "cat-intervenido", items: [] },
       { id: "cat_vehiculos", titulo: "🚘 Datos de Vehículos Involucrados", clase: "cat-vehiculo", items: [] },
       { id: "cat_lugar", titulo: "📍 Lugar, Tiempo y Motivo de Intervención", clase: "cat-lugar", items: [] },
-      { id: "cat_fiscal", titulo: "⚖️ Datos del Fiscal (RMP) y Dependencia", clase: "cat-fiscal", items: [] },
+      { id: "cat_fiscal", titulo: "⚖️ Datos del Fiscal (RMP), Agraviado y Requisitorias", clase: "cat-fiscal", items: [] },
       { id: "cat_pnp", titulo: "👮‍♂️ Personal Policial e Unidades PNP", clase: "cat-pnp", items: [] },
       { id: "cat_especies", titulo: "📦 Especies, Embalaje y Hallazgos", clase: "cat-especies", items: [] }
     ];
@@ -1424,8 +1494,20 @@
     categorias[3].items.push(
       { titulo: "Unidad Interviniente / Redactora", val: getVal('unidad_policial') },
       { titulo: "Unidad Puesta a Disposición", val: getVal('unidad_disposicion') },
-      { titulo: "Fiscal RMP Competente", val: getVal('fiscal', "RMP NO ESPECIFICADO") }
+      { titulo: "Fiscal RMP Competente", val: getVal('fiscal', "RMP NO ESPECIFICADO") },
+      { titulo: "Agraviado / Víctima", val: getVal('agraviado', "EL ESTADO") }
     );
+
+    const esinpolSt = getVal('resultado_esinpol');
+    if (esinpolSt === 'POSITIVO') {
+      categorias[3].items.push(
+        { titulo: "Requisitoria - Tipo", val: getVal('tipo_requisitoria') },
+        { titulo: "Requisitoria - Motivo/Delito", val: getVal('motivo_requisitoria') },
+        { titulo: "Requisitoria - Juzgado", val: getVal('juzgado_requisitoria') },
+        { titulo: "Requisitoria - Oficio/Doc", val: getVal('documento_requisitoria') },
+        { titulo: "Requisitoria - Fecha", val: getVal('fecha_requisitoria') }
+      );
+    }
 
     listaPNP.forEach((pnp, idx) => {
       const prefijo = listaPNP.length > 1 ? `PNP ${idx + 1} - ` : '';
@@ -1598,13 +1680,21 @@
     const lugar = getVal('lugar');
     const fiscal = getVal('fiscal', 'el RMP');
     const unidadDisp = getVal('unidad_disposicion', 'SIAT-COM PNP HUANTA');
+    const esinpolSt = getVal('resultado_esinpol');
+    const motivoReq = getVal('motivo_requisitoria', 'el delito investigado');
+    const juzg = getVal('juzgado_requisitoria', 'el Juzgado solicitante');
 
-    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
-    document.getElementById('agregar_intervencion_1').value = `--- En circunstancias que el personal policial realizaba patrullaje en ${lugar}, al amparo del Art. 205 del CPP, se procedió a solicitar la identificación plena de ${gInt.etiquetaSujeto} ${gInt.texto}, quien(es) indicó/indicaron no portar DNI físico en el momento.`;
+    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y SOLICITUD DE DOCUMENTO:";
+    document.getElementById('agregar_intervencion_1').value = `--- En circunstancias que el personal policial realizaba patrullaje a pie en ${lugar}, al amparo del Art. 205 del CPP, se procedió a solicitar la identificación plena de ${gInt.etiquetaSujeto} ${gInt.texto}, quien(es) indicó/indicaron no portar DNI físico en el momento.`;
 
-    document.getElementById('titulo_sec_2').value = "II. RETENCIÓN Y VERIFICACIÓN E-SINPOL:";
-    document.getElementById('agregar_intervencion_2').value = 
-      `--- Al no contar con documento de identidad, fue(ron) conducido(s) a la ${unidadDisp} para su identificación plena. La consulta en el sistema E-SINPOL PNP dio como resultado NEGATIVO para requisitorias vigentes. Se comunicó al RMP Abog. ${fiscal}, quedando en calidad de ${gInt.calidadRetenido}.`;
+    document.getElementById('titulo_sec_2').value = "II. VERIFICACIÓN E-SINPOL PNP Y MEDIDAS:";
+    if (esinpolSt === 'POSITIVO') {
+      document.getElementById('agregar_intervencion_2').value = 
+        `--- Consultados sus datos mediante el sistema E-SINPOL PNP, se obtuvo resultado POSITIVO para requisitoria vigente por el delito de ${motivoReq}, solicitado por ${juzg}. Se informó al RMP Abog. ${fiscal}, trasladándolo a la ${unidadDisp} en calidad de ${gInt.calidadRetenido} / CAPTURADO.`;
+    } else {
+      document.getElementById('agregar_intervencion_2').value = 
+        `--- Al no contar con documento de identidad, fue(ron) conducido(s) a la ${unidadDisp} para su identificación plena. La consulta en el sistema E-SINPOL PNP dio como resultado NEGATIVO para requisitorias vigentes. Se comunicó al RMP Abog. ${fiscal}, quedando libre tras su plena identificación.`;
+    }
 
     minimizarPlantillas();
   }
