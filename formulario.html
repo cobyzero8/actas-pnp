@@ -424,7 +424,7 @@
         </div>
 
         <!-- BLOQUE 5: VEHÍCULOS INVOLUCRADOS Y RETRAN -->
-        <div class="section-block block-vehiculo">
+        <div class="section-block block-vehiculo" id="bloqueVehiculos">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <div class="section-title" style="margin: 0;">🚘 5. Vehículos Involucrados en la Intervención</div>
             <button type="button" class="btn btn-primary" onclick="agregarVehiculoCard()" style="width: auto; padding: 4px 12px; font-size: 12px; background: #d97706; border-color: #d97706;">
@@ -460,7 +460,7 @@
         </div>
 
         <!-- BLOQUE 6: REGISTRO DE ESPECIES E INCAUTACIÓN -->
-        <div class="section-block block-especies">
+        <div class="section-block block-especies" id="bloqueEmbalaje">
           <div class="section-title">📦 6. Registro de Especies Incautadas / Halladas y Embalaje</div>
           <div class="grid">
             <div class="full" style="font-size: 11px; color: #64748b; margin-bottom: 5px;">
@@ -520,7 +520,7 @@
         </div>
 
         <!-- BLOQUE 7: DILIGENCIA DE HALLAZGO Y RECOJO -->
-        <div class="section-block block-especies" style="background-color: #f0f9ff; border-color: #bae6fd;">
+        <div class="section-block block-especies" id="bloqueHallazgo" style="background-color: #f0f9ff; border-color: #bae6fd;">
           <div class="section-title" style="color: #0369a1;">🔍 7. Datos Específicos para Acta de Hallazgo y Recojo</div>
           <div class="grid">
             <div class="full">
@@ -695,14 +695,78 @@
 
     const delitoSel = localStorage.getItem('pnp_delito_seleccionado') || 'NO ESPECIFICADO';
     const actasRaw = localStorage.getItem('pnp_actas_seleccionadas') || '[]';
+    let actasConfiguradas = [];
     let cantActas = 0;
-    try { cantActas = JSON.parse(actasRaw).length; } catch(e){}
+    try { 
+      actasConfiguradas = JSON.parse(actasRaw);
+      cantActas = actasConfiguradas.length; 
+    } catch(e){}
 
     const elDelito = document.getElementById('resumenDelito');
     const elCant = document.getElementById('resumenActasCant');
     if (elDelito) elDelito.innerText = delitoSel;
     if (elCant) elCant.innerText = `${cantActas} acta(s) seleccionada(s) para este expediente.`;
+
+    // Adaptar dinámicamente los campos y bloques según las actas elegidas
+    adaptarFormularioPorActas(actasConfiguradas, delitoSel);
   });
+
+  function adaptarFormularioPorActas(actasConfiguradas, delitoTexto) {
+    const requiereVehiculos = actasConfiguradas.some(id => 
+      ["sit_vehicular", "reg_vehicular", "dosaje_etilico"].includes(id)
+    ) || delitoTexto.toUpperCase().includes("EBRIEDAD") || delitoTexto.toUpperCase().includes("TRÁNSITO") || delitoTexto.toUpperCase().includes("CULPOSAS");
+
+    const requiereEvidencia = actasConfiguradas.some(id => 
+      ["lacrado", "entrega_especies", "reg_personal"].includes(id)
+    );
+
+    const requiereHallazgo = actasConfiguradas.includes("hallazgo_recojo");
+
+    const bloqueVehiculos = document.getElementById('bloqueVehiculos');
+    const bloqueEmbalaje = document.getElementById('bloqueEmbalaje');
+    const bloqueHallazgo = document.getElementById('bloqueHallazgo');
+
+    if (bloqueVehiculos) {
+      if (requiereVehiculos) {
+        bloqueVehiculos.style.display = 'block';
+      } else {
+        bloqueVehiculos.style.display = 'none';
+        limpiarCamposContenedor(bloqueVehiculos);
+      }
+    }
+
+    if (bloqueEmbalaje) {
+      if (requiereEvidencia) {
+        bloqueEmbalaje.style.display = 'block';
+      } else {
+        bloqueEmbalaje.style.display = 'none';
+        limpiarCamposContenedor(bloqueEmbalaje);
+      }
+    }
+
+    if (bloqueHallazgo) {
+      if (requiereHallazgo) {
+        bloqueHallazgo.style.display = 'block';
+      } else {
+        bloqueHallazgo.style.display = 'none';
+        limpiarCamposContenedor(bloqueHallazgo);
+      }
+    }
+  }
+
+  function limpiarCamposContenedor(contenedor) {
+    if (!contenedor) return;
+    const inputs = contenedor.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+      if (input.type === 'checkbox' || input.type === 'radio') {
+        input.checked = false;
+      } else if (input.tagName === 'SELECT') {
+        input.selectedIndex = 0;
+      } else if (!input.readOnly) {
+        input.value = "";
+      }
+    });
+  }
 
   /* ================= MANEJO DINÁMICO DE EFECTIVOS PNP ================= */
   function agregarEfectivoPNPCard(datos = null) {
@@ -1475,7 +1539,7 @@
     const hallazgos = getVal('narrar_positivo', 'especies variadas descritas en la diligencia');
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
-    document.getElementById('agregar_intervencion_1').value = `--- El personal policial perteneciente a la ${unidadPol}, en circunstancias que realizaba ${getVal('tipo_actividad') === 'OPERATIVO POLICIAL' ? 'el O/P ' + getVal('nombre_operativo') : 'patrullaje de rutina'} siendo las ${hora} hrs aprox., en ${lugar}; se intervino ${gVeh.etiquetaVehiculo} ${gVeh.texto}, donde ${gInt.verboEncontrar} ${gInt.sujeto} ${gInt.texto}, quien(es) circulaba(n) en actitud sospechosa. Asimismo, se tomó conocimiento que el vehículo estarı́a involucrado en una denuncia por el presunto delito de Extorsión.`;
+    document.getElementById('agregar_intervencion_1').value = `--- El personal policial perteneciente al ${unidadPol}, en circunstancias que realizaba ${getVal('tipo_actividad') === 'OPERATIVO POLICIAL' ? 'el O/P ' + getVal('nombre_operativo') : 'patrullaje de rutina'} siendo las ${hora} hrs aprox., en ${lugar}; se intervino ${gVeh.etiquetaVehiculo} ${gVeh.texto}, donde ${gInt.verboEncontrar} ${gInt.sujeto} ${gInt.texto}, quien(es) circulaba(n) en actitud sospechosa. Asimismo, se tomó conocimiento que el vehículo estarı́a involucrado en una denuncia por el presunto delito de Extorsión.`;
 
     document.getElementById('titulo_sec_2').value = "II. REGISTRO VEHICULAR:";
     document.getElementById('agregar_intervencion_2').value = `--- Que, se procede a realizar el respectivo registro vehicular en presencia de los participantes, hallándose los siguientes elementos:\n${hallazgos}`;
