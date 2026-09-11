@@ -270,7 +270,7 @@
       <a href="menu.html" style="text-decoration: none; color: var(--primary); font-weight: bold; font-size: 13px;">← Cambiar Delito / Actas</a>
       
       <button type="button" onclick="cargarDatosEjemplo()" class="btn btn-primary" style="width: auto; padding: 6px 14px; font-size: 12px; background: #0d9488; border-color: #0d9488;">
-        ⚡ Cargar Prueba (2 Efectivos PNP + 2 Intervenidos + 2 Vehículos)
+        ⚡ Cargar Prueba (1 Efectivo PNP + 1 Intervenido + 1 Vehículo)
       </button>
 
       <button type="button" onclick="cerrarSesion()" class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size: 11px;">Salir</button>
@@ -1184,24 +1184,18 @@
   function cargarDatosEjemplo() {
     const hoy = new Date().toISOString().split('T')[0];
     
+    // 1. Cargar SOLO 1 Efectivo Policial
     document.getElementById('contenedor_efectivos_pnp').innerHTML = "";
     contadorEfectivosPNP = 0;
-
     agregarEfectivoPNPCard({
       grado: "S3",
       nombre: "VIVANCO CURO, Armando",
       cip: "31425556"
     });
 
-    agregarEfectivoPNPCard({
-      grado: "SO3",
-      nombre: "PÉREZ GÓMEZ, Juan Carlos",
-      cip: "32145689"
-    });
-
+    // 2. Cargar SOLO 1 Persona Intervenida
     document.getElementById('contenedor_intervenidos').innerHTML = "";
     contadorIntervenidos = 0;
-
     agregarIntervenidoCard({
       nombre: "TORRES PALOMINO, Renzo Gabriel",
       dni: "75432189",
@@ -1217,24 +1211,9 @@
       asistido_registro: "no deseando ser asistido por ninguna persona"
     });
 
-    agregarIntervenidoCard({
-      nombre: "QUISPE MAMANI, Jhonathan Alex",
-      dni: "72109876",
-      edad: "26",
-      estado_civil: "soltero",
-      natural: "Huanta",
-      celular: "912304958",
-      papa: "Juan",
-      mama: "Carmen",
-      ocupacion: "mototaxista",
-      domicilio: "Barrio de Hospital S/N - Huanta",
-      asistido: "su esposa María QUISPE MEZA (Cel: 912304958)",
-      asistido_registro: "no deseando ser asistido por ninguna persona"
-    });
-
+    // 3. Cargar SOLO 1 Vehículo
     document.getElementById('contenedor_vehiculos').innerHTML = "";
     contadorVehiculos = 0;
-
     agregarVehiculoCard({
       placa: "4567-3Y",
       marca: "Ronco",
@@ -1242,13 +1221,7 @@
       color: "Negro"
     });
 
-    agregarVehiculoCard({
-      placa: "X1Y-234",
-      marca: "Toyota",
-      modelo: "Yaris",
-      color: "Gris Oscuro"
-    });
-
+    // Datos generales de lugar y tiempo
     document.getElementById('distrito').value = "Huanta";
     document.getElementById('provincia').value = "Huanta";
     document.getElementById('region').value = "Ayacucho";
@@ -1258,6 +1231,7 @@
     document.getElementById('hora2').value = "12:00";
     document.getElementById('lugar').value = "Jr. Gervasio Santillana Cdra. 2 (exteriores del Mercado Central de Huanta)";
 
+    // Unidades, fiscal y actividad
     document.getElementById('unidad_policial').value = "UTSEVI PNP HUANTA";
     document.getElementById('unidad_disposicion').value = "Comisaría Sectorial PNP Huanta";
     document.getElementById('fiscal').value = "Abog. Ernesto ARROYO MEDINA";
@@ -1265,9 +1239,17 @@
     document.getElementById('tipo_actividad').value = "PATRULLAJE DE RUTINA";
     evaluarTipoActividad();
 
-    document.getElementById('resultado_esinpol').value = "NEGATIVO";
+    // Requisitoria E-SINPOL PNP (Configurado por defecto en POSITIVO con datos de ejemplo)
+    document.getElementById('resultado_esinpol').value = "POSITIVO";
     evaluarEsinpol();
+    document.getElementById('tipo_requisitoria').value = "CAPTURA VIGENTE / REQUISITORIA";
+    document.getElementById('motivo_requisitoria').value = "DELITO CONTRA EL PATRIMONIO - HURTO AGRAVADO";
+    document.getElementById('juzgado_requisitoria').value = "2° JUZGADO PENAL UNIPERSONAL DE LIMA";
+    document.getElementById('documento_requisitoria').value = "OFICIO N° 1425-2025-2JPU-CSJL";
+    document.getElementById('fecha_requisitoria').value = hoy;
+    document.getElementById('situacion_requisitoria').value = "SOLICITADO / REQUISITORIADO";
 
+    // Unidad policial móvil
     document.getElementById('cant_vehiculos_pnp').value = 1;
     generarCamposVehiculosPNP();
     if (document.getElementById('placa_policial_1')) {
@@ -1277,7 +1259,7 @@
     document.getElementById('fec_soat').value = hoy;
     document.getElementById('fec_itv').value = hoy;
 
-    alert("⚡ ¡Datos de prueba cargados exitosamente!");
+    alert("⚡ ¡Datos de prueba cargados exitosamente (1 Efectivo PNP, 1 Intervenido, 1 Vehículo y Requisitoria Positiva)!");
   }
 
   function getVal(id, fallback = "S/D") {
@@ -2330,7 +2312,7 @@
         `DOCUMENTO: ${docReq}\n` +
         `FECHA: ${fecReqFormateada}\n` +
         `SITUACIÓN: ${sitReq}\n\n` +
-        `--- Se le informó expresamente que el motivo de su intervención es por encontrarse requisitoriado por el Delito de ${motivoReq}, en agravio de ${agraviado}, solicitado por el ${juzgReq}, mediante el ${docReq} de fecha ${fecReqFormateada}, a quién luego de hacerle de conocimiento el motivo de la intervención policial, sus derechos previstos en el Artículo 71 del Nuevo Código Procesal Penal, se le trasladó a la Comisaría para las diligencias correspondientes, dejando constancia que el intervenido ha recibido buen trato físico y psicológico, siendo tratado con dignidad y respeto; así también se precisa que las Actas (diligencias) que se adjuntan a la presente se realizaron en esta dependencia por medidas de seguridad del personal policial interviniente y del propio intervenido.`;
+        `--- Se le informó expresamente que el motivo de su intervención es por encontrarse requisitoriado por el Delito de ${motivoReq}, en agravio de ${agraviado}, solicitado por el ${juzgReq}, mediante el ${docReq} de fecha ${fecReqFormateada}, a quién luego de hacerle de conocimiento el motivo de la intervención policial, sus derechos previstos en el Artículo 71 del Nuevo Código Procesal Penal, se le trasladó a la Comisaría para las diligencias correspondientes, dejando constancia que el intervenido ha recibido buen trato físico y psicológico, siendo treatedo con dignidad y respeto; así también se precisa que las Actas (diligencias) que se adjuntan a la presente se realizaron en esta dependencia por medidas de seguridad del personal policial interviniente y del propio intervenido.`;
     } else {
       document.getElementById('agregar_intervencion_2').value = 
         `--- Que los datos brindados por la persona intervenida al ser consultados mediante el sistema virtual policial E-SINPOL PNP, su información básica personal dio como resultado “NEGATIVO” para requisitorias vigentes.\n\n` +
