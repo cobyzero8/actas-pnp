@@ -356,12 +356,12 @@
 
             <div class="full">
               <label>Fiscal de Turno / RMP ({fiscal})</label>
-              <input type="text" id="fiscal" placeholder="Ej: Abog. Juan Pérez, Fiscal Adjunto de la FPPC Huanta">
+              <input type="text" id="fiscal" placeholder="Ej: Abog. Ernesto ARROYO MEDINA, Fiscal Adjunto de la FPPC Huanta" value="Abog. Ernesto ARROYO MEDINA">
             </div>
 
             <div class="full">
               <label>Agraviado / Víctima ({agraviado})</label>
-              <input type="text" id="agraviado" placeholder="Ej: EL ESTADO / LA SOCIEDAD / Juan PÉREZ" value="EL ESTADO">
+              <input type="text" id="agraviado" placeholder="Ej: EL ESTADO / LA SOCIEDAD / María Elena BENÍTEZ ROJAS" value="EL ESTADO">
             </div>
 
             <div class="full">
@@ -427,19 +427,19 @@
             <div class="grid">
               <div>
                 <label style="font-size: 11px; font-weight: bold;">Tipo ({tipo_requisitoria})</label>
-                <input type="text" id="tipo_requisitoria" placeholder="Ej: REQUISITORIA / CAPTURA" value="REQUISITORIA VIGENTE">
+                <input type="text" id="tipo_requisitoria" placeholder="Ej: CAPTURA VIGENTE / REQUISITORIA" value="CAPTURA VIGENTE / REQUISITORIA">
               </div>
               <div>
                 <label style="font-size: 11px; font-weight: bold;">Motivo ({motivo_requisitoria})</label>
-                <input type="text" id="motivo_requisitoria" placeholder="Ej: OMISIÓN A LA ASISTENCIA FAMILIAR">
+                <input type="text" id="motivo_requisitoria" placeholder="Ej: DELITO CONTRA EL PATRIMONIO - HURTO AGRAVADO">
               </div>
               <div>
                 <label style="font-size: 11px; font-weight: bold;">Juzgado Solicitante ({juzgado_requisitoria})</label>
-                <input type="text" id="juzgado_requisitoria" placeholder="Ej: 1ER JUZGADO PENAL UNIPERSONAL DE HUANTA">
+                <input type="text" id="juzgado_requisitoria" placeholder="Ej: 2° JUZGADO PENAL UNIPERSONAL DE LIMA">
               </div>
               <div>
                 <label style="font-size: 11px; font-weight: bold;">Documento / Oficio N° ({documento_requisitoria})</label>
-                <input type="text" id="documento_requisitoria" placeholder="Ej: OFICIO N° 1234-2026-JPU">
+                <input type="text" id="documento_requisitoria" placeholder="Ej: OFICIO N° 1425-2025-2JPU-CSJL">
               </div>
               <div>
                 <label style="font-size: 11px; font-weight: bold;">Fecha Requisitoria ({fecha_requisitoria})</label>
@@ -447,7 +447,7 @@
               </div>
               <div>
                 <label style="font-size: 11px; font-weight: bold;">Situación ({situacion_requisitoria})</label>
-                <input type="text" id="situacion_requisitoria" value="VIGENTE / CAPTURA">
+                <input type="text" id="situacion_requisitoria" value="SOLICITADO / REQUISITORIADO">
               </div>
             </div>
           </div>
@@ -630,7 +630,7 @@
           <div>
             <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
               <label style="font-size: 13px; font-weight: bold;">Número de Secciones a Redactar:</label>
-              <input type="number" id="cant_secciones" value="2" min="1" max="8" style="width: 60px; text-align: center; font-weight: bold;">
+              <input type="number" id="cant_secciones" value="3" min="1" max="8" style="width: 60px; text-align: center; font-weight: bold;">
               <button type="button" class="btn btn-primary" onclick="construirSeccionesNarrativa()" style="width: auto; padding: 6px 14px; font-size: 12px;">
                 ⚙️ Generar Campos
               </button>
@@ -643,30 +643,54 @@
             
             <details id="details_plantillas" open style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 10px; border-radius: 8px; margin-bottom: 12px;">
               <summary style="font-weight: bold; color: #003366; font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px;">
-                <span>⚡ Plantillas Rápidas Oficiales</span>
+                <span>⚡ Plantillas Rápidas Oficiales (12 Modelos + Control Identidad)</span>
                 <span style="font-size: 11px; color: #0284c7; font-weight: normal;">[Plegar/Desplegar]</span>
               </summary>
               <p style="font-size: 11px; color: #64748b; margin-top: 8px; margin-bottom: 8px;">
-                Haz clic en el tipo de delito para autocompletar la narrativa con los datos del Paso 1:
+                Haz clic en cualquier modelo oficial para cargar su redacción completa:
               </p>
 
-              <button type="button" class="preset-btn" onclick="cargarModeloExtorsion()" style="background: #7c3aed;">
-                🔴 01. Extorsión (Reg. Vehicular, Incautación y Lacrado)
+              <button type="button" class="preset-btn" onclick="cargarModelo01HurtoAgravado()" style="background: #d97706;">
+                🎒 01. Hurto Agravado (Mercado Central / Lanza - Descuido)
               </button>
-              <button type="button" class="preset-btn" onclick="cargarModeloAccidenteTransito()" style="background: #2563eb;">
-                🚗 02. Accidente de Tránsito (Choque / Colisión Múltiple)
+              <button type="button" class="preset-btn" onclick="cargarModelo02RoboAgravado()" style="background: #dc2626;">
+                🔫 02. Robo Agravado (A Mano Armada / En Banda / Plan Cerco)
               </button>
+              <button type="button" class="preset-btn" onclick="cargarModelo03Receptacion()" style="background: #7c3aed;">
+                📱 03. Receptación Agravada (Verificación OSIPTEL / IMEI)
+              </button>
+              <button type="button" class="preset-btn" onclick="cargarModelo04Ebriedad()" style="background: #0284c7;">
+                🍺 04. Conducción en Ebriedad (Test Hogan - Romberg / RETRAN)
+              </button>
+              <button type="button" class="preset-btn" onclick="cargarModelo05TenenciaIlegalArmas()" style="background: #15803d;">
+                💣 05. Tenencia Ilegal de Armas y Municiones (SUCAMEC)
+              </button>
+              <button type="button" class="preset-btn" onclick="cargarModelo06TIDMicrocomercializacion()" style="background: #b45309;">
+                🌿 06. TID - Microcomercialización (Art. 298 CP / Ketes PBC)
+              </button>
+              <button type="button" class="preset-btn" onclick="cargarModelo07ViolenciaFamiliar()" style="background: #be123c;">
+                🏠 07. Agresiones Familiares (Ley N° 30364 / Art. 122-B CP)
+              </button>
+              <button type="button" class="preset-btn" onclick="cargarModelo08LesionesRina()" style="background: #4338ca;">
+                👊 08. Lesiones en Riña / Trifulca Vía Pública
+              </button>
+              <button type="button" class="preset-btn" onclick="cargarModelo09FalsificacionDocumentos()" style="background: #0f766e;">
+                📄 09. Falsificación de Documentos / Falsedad Genérica (TIV)
+              </button>
+              <button type="button" class="preset-btn" onclick="cargarModelo10ResistenciaAutoridad()" style="background: #991b1b;">
+                🚨 10. Violencia y Resistencia a la Autoridad (Agresión)
+              </button>
+              <button type="button" class="preset-btn" onclick="cargarModelo11AccidenteTransito()" style="background: #2563eb;">
+                🚗 11. Accidente de Tránsito (Choque / Daños y Lesiones)
+              </button>
+              <button type="button" class="preset-btn" onclick="cargarModelo12Extorsion()" style="background: #6b21a8;">
+                🔴 12. Extorsión (Cobro de Cupo / Nota Extorsiva)
+              </button>
+
+              <hr style="margin: 8px 0; border: 0; border-top: 1px dashed #cbd5e1;">
+
               <button type="button" class="preset-btn" onclick="cargarModeloControlIdentidad()" style="background: #475569;">
-                🪪 03. Control de Identidad (Retenido / E-SINPOL)
-              </button>
-              <button type="button" class="preset-btn" onclick="cargarModeloHurtoFlagrancia()" style="background: #d97706;">
-                🎒 04. Hurto en Flagrancia (Reconocimiento Agraviado)
-              </button>
-              <button type="button" class="preset-btn" onclick="cargarModeloResistenciaAutoridad()" style="background: #dc2626;">
-                🚨 05. Violencia o Resistencia a la Autoridad (Fuga / Choque)
-              </button>
-              <button type="button" class="preset-btn" onclick="cargarModeloEbriedadPruebas()" style="background: #0284c7;">
-                🍺 06. Conducción Ebriedad / Drogadicción (Test HOGAN / ROMBERG)
+                🪪 13. Control de Identidad (Retenido / E-SINPOL PNP)
               </button>
             </details>
 
@@ -1170,8 +1194,8 @@
     });
 
     agregarEfectivoPNPCard({
-      grado: "S2",
-      nombre: "GARCÍA TAYPE, Pedro",
+      grado: "SO3",
+      nombre: "PÉREZ GÓMEZ, Juan Carlos",
       cip: "32145689"
     });
 
@@ -1179,32 +1203,32 @@
     contadorIntervenidos = 0;
 
     agregarIntervenidoCard({
-      nombre: "QUISPE ROJAS, Carlos Alberto",
-      dni: "45892134",
-      edad: "28",
+      nombre: "TORRES PALOMINO, Renzo Gabriel",
+      dni: "75432189",
+      edad: "22",
       estado_civil: "soltero",
-      natural: "Huanta - Ayacucho",
-      celular: "966123456",
-      papa: "Juan Quispe Morales",
-      mama: "María Rojas Mendoza",
-      ocupacion: "Chofer",
-      domicilio: "Jr. Miguel Grau N° 245, Huanta",
-      asistido: "su hermano Juan PÉREZ ROJAS (Cel: 987654321)",
+      natural: "Ayacucho",
+      celular: "956789012",
+      papa: "Pedro",
+      mama: "Rosa",
+      ocupacion: "desempleado",
+      domicilio: "Jr. Ayacucho N° 140 - Huanta",
+      asistido: "su hermana María TORRES PALOMINO (Cel: 956789012)",
       asistido_registro: "no deseando ser asistido por ninguna persona"
     });
 
     agregarIntervenidoCard({
-      nombre: "LÓPEZ FLORES, Juan Carlos",
-      dni: "71234567",
-      edad: "31",
-      estado_civil: "conviviente",
-      natural: "Huanta - Ayacucho",
-      celular: "988776655",
-      papa: "Pedro López Solís",
-      mama: "Rosa Flores Castro",
-      ocupacion: "Comerciante",
-      domicilio: "Av. San Martín N° 102, Huanta",
-      asistido: "su esposa María LÓPEZ MEZA (Cel: 912345678)",
+      nombre: "QUISPE MAMANI, Jhonathan Alex",
+      dni: "72109876",
+      edad: "26",
+      estado_civil: "soltero",
+      natural: "Huanta",
+      celular: "912304958",
+      papa: "Juan",
+      mama: "Carmen",
+      ocupacion: "mototaxista",
+      domicilio: "Barrio de Hospital S/N - Huanta",
+      asistido: "su esposa María QUISPE MEZA (Cel: 912304958)",
       asistido_registro: "no deseando ser asistido por ninguna persona"
     });
 
@@ -1212,69 +1236,48 @@
     contadorVehiculos = 0;
 
     agregarVehiculoCard({
-      placa: "Y1B-452",
-      marca: "Honda",
-      modelo: "GL125",
-      color: "Rojo / Abolladura frontal"
+      placa: "4567-3Y",
+      marca: "Ronco",
+      modelo: "Pantera-B150",
+      color: "Negro"
     });
 
     agregarVehiculoCard({
-      placa: "B8W-210",
+      placa: "X1Y-234",
       marca: "Toyota",
       modelo: "Yaris",
-      color: "Negro / Faro izquierdo roto"
+      color: "Gris Oscuro"
     });
 
     document.getElementById('distrito').value = "Huanta";
     document.getElementById('provincia').value = "Huanta";
     document.getElementById('region').value = "Ayacucho";
-    document.getElementById('hora_intervencion').value = "07:15";
+    document.getElementById('hora_intervencion').value = "11:20";
     document.getElementById('fecha').value = hoy;
-    document.getElementById('hora1').value = "07:00";
-    document.getElementById('hora2').value = "08:30";
-    document.getElementById('lugar').value = "Av. San Martín Cdra. 3, Huanta";
+    document.getElementById('hora1').value = "11:20";
+    document.getElementById('hora2').value = "12:00";
+    document.getElementById('lugar').value = "Jr. Gervasio Santillana Cdra. 2 (exteriores del Mercado Central de Huanta)";
 
     document.getElementById('unidad_policial').value = "UTSEVI PNP HUANTA";
-    document.getElementById('unidad_disposicion').value = "SIAT-COM PNP HUANTA";
-    document.getElementById('fiscal').value = "Abog. Marco Antonio PÉREZ PALOMINO, Fiscal Adjunto de la FPPC Huanta";
-    document.getElementById('agraviado').value = "EL ESTADO / LA SOCIEDAD";
+    document.getElementById('unidad_disposicion').value = "Comisaría Sectorial PNP Huanta";
+    document.getElementById('fiscal').value = "Abog. Ernesto ARROYO MEDINA";
+    document.getElementById('agraviado').value = "María Elena BENÍTEZ ROJAS";
     document.getElementById('tipo_actividad').value = "PATRULLAJE DE RUTINA";
     evaluarTipoActividad();
 
-    document.getElementById('resultado_esinpol').value = "POSITIVO";
+    document.getElementById('resultado_esinpol').value = "NEGATIVO";
     evaluarEsinpol();
-    document.getElementById('tipo_requisitoria').value = "REQUISITORIA VIGENTE";
-    document.getElementById('motivo_requisitoria').value = "OMISIÓN A LA ASISTENCIA FAMILIAR";
-    document.getElementById('juzgado_requisitoria').value = "1ER JUZGADO PENAL UNIPERSONAL DE HUANTA";
-    document.getElementById('documento_requisitoria').value = "OFICIO N° 1234-2026-JPU";
-    document.getElementById('fecha_requisitoria').value = hoy;
-    document.getElementById('situacion_requisitoria').value = "VIGENTE / CAPTURA";
-
-    if (document.getElementById('opcion_constancia_testigo')) {
-      document.getElementById('opcion_constancia_testigo').value = "OFICINA";
-    }
 
     document.getElementById('cant_vehiculos_pnp').value = 1;
     generarCamposVehiculosPNP();
     if (document.getElementById('placa_policial_1')) {
-      document.getElementById('placa_policial_1').value = "EP-7978";
+      document.getElementById('placa_policial_1').value = "PL-14176";
     }
 
     document.getElementById('fec_soat').value = hoy;
     document.getElementById('fec_itv').value = hoy;
 
-    if (document.getElementById('tipo_embalaje')) {
-      document.getElementById('tipo_embalaje').value = "una bolsa plástica transparente de seguridad";
-      evaluarEmbalajeManual();
-    }
-    if (document.getElementById('forma_lacrado')) {
-      document.getElementById('forma_lacrado').value = "cinta adhesiva de seguridad y sellado térmico";
-    }
-
-    document.getElementById('detalle_hallazgo').value = "un (01) equipo telefónico móvil marca Samsung Galaxy A12, color negro, pantalla trizada";
-    aplicarPresetHallazgo('A');
-
-    alert("⚡ ¡Datos de prueba cargados exitosamente (2 PNP + 2 Intervenidos + 2 Vehículos + Requisitoria E-SINPOL)! ");
+    alert("⚡ ¡Datos de prueba cargados exitosamente!");
   }
 
   function getVal(id, fallback = "S/D") {
@@ -1361,7 +1364,7 @@
       cont.innerHTML += `
         <div>
           <label style="font-size: 11px; font-weight: bold;">Unidad PNP N° ${i} ({placa_policial${i}}):</label>
-          <input type="text" id="placa_policial_${i}" placeholder="Ej: EP-7978" style="padding: 6px; font-size: 12px; width: 100%; box-sizing: border-box;">
+          <input type="text" id="placa_policial_${i}" placeholder="Ej: PL-14176" style="padding: 6px; font-size: 12px; width: 100%; box-sizing: border-box;">
         </div>
       `;
     }
@@ -1613,65 +1616,656 @@
     txt.focus();
   }
 
-  function cargarModeloExtorsion() {
-    document.getElementById('cant_secciones').value = 6;
-    construirSeccionesNarrativa();
+  /* ==========================================================================
+     NUEVAS 12 PLANTILLAS RÁPIDAS OFICIALES + MODELO CONTROL DE IDENTIDAD
+     ========================================================================== */
 
-    const gInt = obtenerGramaticaIntervenidos();
-    const gVeh = obtenerGramaticaVehiculos();
-    const lugar = getVal('lugar');
-    const hora = getVal('hora_intervencion', '14:30');
-    const fiscal = getVal('fiscal', 'el RMP');
-    const unidadPol = getVal('unidad_policial', 'UTSEVI PNP HUANTA');
-    const unidadDisp = getVal('unidad_disposicion', 'SIAT-COM PNP HUANTA');
-    const hallazgos = getVal('narrar_positivo', 'especies variadas descritas en la diligencia');
-
-    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
-    document.getElementById('agregar_intervencion_1').value = `--- El personal policial perteneciente al ${unidadPol}, en circunstancias que realizaba ${getVal('tipo_actividad') === 'OPERATIVO POLICIAL' ? 'el O/P ' + getVal('nombre_operativo') : 'patrullaje de rutina'} siendo las ${hora} hrs aprox., en ${lugar}; se intervino ${gVeh.etiquetaVehiculo} ${gVeh.texto}, donde ${gInt.verboEncontrar} ${gInt.sujeto} ${gInt.texto}, quien(es) circulaba(n) en actitud sospechosa. Asimismo, se tomó conocimiento que el vehículo estarı́an involucrado en una denuncia por el presunto delito de Extorsión.`;
-
-    document.getElementById('titulo_sec_2').value = "II. REGISTRO VEHICULAR:";
-    document.getElementById('agregar_intervencion_2').value = `--- Que, se procede a realizar el respectivo registro vehicular en presencia de los participantes, hallándose los siguientes elementos:\n${hallazgos}`;
-
-    document.getElementById('titulo_sec_3').value = "III. INCAUTACION:";
-    document.getElementById('agregar_intervencion_3').value = `--- Se procede a realizar la INCAUTACIÓN de las especies y documentos hallados durante el registro vehicular.`;
-
-    document.getElementById('titulo_sec_4').value = "IV. LACRADO Y CADENA DE CUSTODIA:";
-    document.getElementById('agregar_intervencion_4').value = `--- Se procede al LACRADO de las especies incautadas en sobres/cajas de seguridad, debidamente firmados y rotulados.`;
-
-    document.getElementById('titulo_sec_5').value = "V. DETENCION:";
-    document.getElementById('agregar_intervencion_5').value = `--- Se procede a la DETENCIÓN de ${gInt.etiquetaSujeto} ${gInt.texto}, por encontrarse en flagrancia delictiva por el delito de Extorsión (Art. 259 del CPP).`;
-
-    document.getElementById('titulo_sec_6').value = "VI. COMUNICACIÓN AL RMP Y ADJUNTOS:";
-    document.getElementById('agregar_intervencion_6').value = 
-      `--- De los hechos se comunicó de manera inmediata al RMP Abog. ${fiscal}, asimismo, ${gInt.sujeto} ${gInt.verboEncontrar === 'se encontraba' ? 'fue puesto' : 'fueron puestos'} a disposición de la ${unidadDisp} en calidad de ${gInt.calidadDetenido}, con las actas correspondientes.`;
-
-    minimizarPlantillas();
-  }
-
-  function cargarModeloAccidenteTransito() {
+  // 01 PLANTILLA: HURTO AGRAVADO
+  function cargarModelo01HurtoAgravado() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
 
-    const gInt = obtenerGramaticaIntervenidos();
-    const gVeh = obtenerGramaticaVehiculos();
-    const lugar = getVal('lugar');
-    const pnp1 = getVal('placa_policial_1', 'unidad policial');
-    const fiscal = getVal('fiscal', 'el RMP');
-    const unidadDisp = getVal('unidad_disposicion', 'SIAT-COM PNP HUANTA');
+    const distrito = getVal('distrito', 'Huanta');
+    const provincia = getVal('provincia', 'Huanta');
+    const hora = getVal('hora_intervencion', '11:20');
+    const fechaRaw = getVal('fecha');
+    const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
+    const lugar = getVal('lugar', 'Jr. Gervasio Santillana Cdra. 2 (exteriores del Mercado Central de Huanta)');
+    const unidadPol = getVal('unidad_policial', 'Comisaría Sectorial PNP Huanta');
+    const unidadDisp = getVal('unidad_disposicion', 'Comisaría Sectorial PNP Huanta');
+    const fiscal = getVal('fiscal', 'Ernesto ARROYO MEDINA');
+    const agraviado = getVal('agraviado', 'María Elena BENÍTEZ ROJAS (34)');
+    const horaFin = getVal('hora2', '12:00');
+
+    const listaPNP = obtenerListaEfectivosPNP();
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const otrosPNPTexto = listaPNP.length > 1 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
+
+    const listaInt = obtenerListaIntervenidos();
+    const persona = listaInt[0] || {
+      nombre: "Renzo Gabriel TORRES PALOMINO",
+      edad: "22",
+      dni: "75432189",
+      natural: "Ayacucho",
+      estado_civil: "soltero",
+      ocupacion: "desempleado",
+      domicilio: "Jr. Ayacucho N° 140 - Huanta",
+      celular: "956789012"
+    };
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
-    document.getElementById('agregar_intervencion_1').value = `--- Constituídos en ${lugar}, a bordo de la UUMM ${pnp1}, por información de transeúntes que comunicaron un accidente de tránsito (colisión/choque) con daños materiales, se procedió a verificar la intervención de ${gVeh.sujetoVehiculo} participante(s).`;
+    document.getElementById('agregar_intervencion_1').value = 
+      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en el lugar ubicado en el ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, personal perteneciente a la ${unidadPol}, realizando patrullaje a pie preventivo por la zona comercial, procedió a la intervención de la persona de: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, celular N° ${persona.celular}, presunto autor de la comisión del Delito Contra el Patrimonio – HURTO AGRAVADO.`;
 
-    document.getElementById('titulo_sec_2').value = "II. FUNDAMENTOS DE LOS HECHOS FÁCTICOS:";
-    document.getElementById('agregar_intervencion_2').value = `--- Se encontró en el lugar de la intervención a ${gVeh.texto}, con la presencia de su(s) conductor(es) e identifiedo(s) como ${gInt.texto}, refiriendo que colisionaron entre sí sufriendo daños materiales. Se procedió a la formulación de las actas e inventario vehicular.`;
+    document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
+    document.getElementById('agregar_intervencion_2').value = 
+      `01. Circunstancias Precedentes: En circunstancias que el personal policial se encontraba realizando patrullaje a pie por el lugar acotado, se solicitó el auxilio de la ciudadana ${agraviado}, quien manifestó que minutos antes un sujeto le había sustraído del interior de su cartera un (01) equipo celular mediante la modalidad del "lanza / descuido", aprovechando la aglomeración de personas.\n\n` +
+      `02. Circunstancias Concomitantes: Ante la indicación de la víctima, el personal policial procedió a la búsqueda y persecución del sospechoso, logrando su interceptación a escasos metros del lugar. Al realizarle la solicitud de exhibición de bienes, se le halló en el bolsillo derecho de su casaca el teléfono celular marca Motorola, modelo G22, color azul, de propiedad de la agraviada.\n\n` +
+      `03. Circunstancias Posteriores: El intervenido y el bien recuperado fueron trasladados a la ${unidadDisp} para las diligencias de ley. En la dependencia policial se dio lectura a sus derechos previstos en el Art. 71 del CPP y se comunicó al Representante del Ministerio Público. Se deja constancia de la renuencia de los transeúntes a firmar en calidad de testigos por temor a comprometerse.`;
 
-    document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y MEDIDAS DE SEGURIDAD:";
+    document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
     document.getElementById('agregar_intervencion_3').value = 
-      `--- De los hechos se comunicó al RMP Abog. ${fiscal}, trasladando a los participantes a la ${unidadDisp} en calidad de ${gInt.calidadDetenido} para las investigaciones de ley.`;
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}.\n\n` +
+      `--- Siendo las ${horaFin} horas del mismo día se dio por concluida la presente diligencia.\n` +
+      `Se adjunta:`;
 
     minimizarPlantillas();
   }
 
+  // 02 PLANTILLA: ROBO AGRAVADO
+  function cargarModelo02RoboAgravado() {
+    document.getElementById('cant_secciones').value = 3;
+    construirSeccionesNarrativa();
+
+    const distrito = getVal('distrito', 'Huanta');
+    const provincia = getVal('provincia', 'Huanta');
+    const hora = getVal('hora_intervencion', '21:40');
+    const fechaRaw = getVal('fecha');
+    const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
+    const lugar = getVal('lugar', 'Av. Circunvalación N° 410');
+    const unidadPol = getVal('unidad_policial', 'DEPINCRI-Huanta');
+    const unidadDisp = getVal('unidad_disposicion', 'DEPINCRI-Huanta');
+    const fiscal = getVal('fiscal', 'Ernesto ARROYO MEDINA');
+    const agraviado = getVal('agraviado', 'Pedro Luis VÁSQUEZ CALDERÓN (29)');
+    const pnp1 = getVal('placa_policial_1', 'PL-14176');
+    const horaFin = getVal('hora2', '22:30');
+
+    const listaPNP = obtenerListaEfectivosPNP();
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const otrosPNPTexto = listaPNP.length > 1 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
+
+    const listaInt = obtenerListaIntervenidos();
+    const persona = listaInt[0] || {
+      nombre: "Jhonathan Alex QUISPE MAMANI",
+      edad: "26",
+      dni: "72109876",
+      natural: "Huanta",
+      estado_civil: "soltero",
+      ocupacion: "mototaxista",
+      domicilio: "Barrio de Hospital S/N - Huanta",
+      celular: "912304958"
+    };
+
+    const veh = obtenerListaVehiculos()[0] || { placa: "4567-3Y" };
+
+    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y ENCABEZADO:";
+    document.getElementById('agregar_intervencion_1').value = 
+      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en el lugar ubicado en la ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, a bordo de la unidad móvil ${pnp1}, procedieron a la intervención y detención en flagrancia de la persona de: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, celular N° ${persona.celular}, por la presunta comisión del Delito Contra el Patrimonio – ROBO AGRAVADO.`;
+
+    document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
+    document.getElementById('agregar_intervencion_2').value = 
+      `01. Circunstancias Precedentes: Alertados por la Central de Operaciones sobre un asalto y robo a mano armada perpetrado por dos sujetos a bordo de un mototaxi en agravio del ciudadano ${agraviado}, a quien encañonaron con un arma de fuego para despojarlo de su mochila y billetera con dinero en efectivo.\n\n` +
+      `02. Circunstancias Concomitantes: Se ejecutó el Plan Cerco por la vía, ubicando al vehículo menor mototaxi de placa ${veh.placa}. Al notar la presencia policial, el conductor aceleró la marcha, logrando cercarlo y neutralizarlo, reduciendo al conductor (intervenido), mientras que su copiloto se dio a la fuga por los matorrales de la zona.\n\n` +
+      `03. Circunstancias Posteriores: En el registro preliminar de seguridad del vehículo, se encontró sobre el asiento posterior una (01) mochila color negro perteneciente al agraviado y una (01) réplica de arma de fuego (pistola de metal color negro). Se trasladó al detenido a la ${unidadDisp} por medidas de seguridad ante la peligrosidad del sector y la falta de garantías.`;
+
+    document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
+    document.getElementById('agregar_intervencion_3').value = 
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}.\n\n` +
+      `--- Siendo las ${horaFin} horas del mismo día se dio por concluida la diligencia.\n` +
+      `Se adjunta:`;
+
+    minimizarPlantillas();
+  }
+
+  // 03 PLANTILLA: RECEPTACIÓN
+  function cargarModelo03Receptacion() {
+    document.getElementById('cant_secciones').value = 3;
+    construirSeccionesNarrativa();
+
+    const distrito = getVal('distrito', 'Huanta');
+    const provincia = getVal('provincia', 'Huanta');
+    const hora = getVal('hora_intervencion', '16:15');
+    const fechaRaw = getVal('fecha');
+    const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
+    const lugar = getVal('lugar', 'Jr. San Martín Cdra. 4 (frontis de una Galería Comercial)');
+    const unidadPol = getVal('unidad_policial', 'Comisaría PNP Huanta');
+    const unidadDisp = getVal('unidad_disposicion', 'Comisaría PNP Huanta');
+    const fiscal = getVal('fiscal', 'Ernesto ARROYO MEDINA');
+    const horaFin = getVal('hora2', '17:00');
+
+    const listaPNP = obtenerListaEfectivosPNP();
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const otrosPNPTexto = listaPNP.length > 1 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
+
+    const listaInt = obtenerListaIntervenidos();
+    const persona = listaInt[0] || {
+      nombre: "Efraín SOLÍS RAMOS",
+      edad: "35",
+      dni: "43215678",
+      natural: "Ayacucho",
+      estado_civil: "casado",
+      ocupacion: "técnico celular",
+      domicilio: "Jr. Razuhuillca N° 320 - Huanta"
+    };
+
+    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y ENCABEZADO:";
+    document.getElementById('agregar_intervencion_1').value = 
+      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en el ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, procedieron a la intervención de: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, por la presunta comisión del Delito Contra el Patrimonio – RECEPTACIÓN AGRAVADA.`;
+
+    document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
+    document.getElementById('agregar_intervencion_2').value = 
+      `01. Circunstancias Precedentes: En operativo de control e inspección de locales de venta y servicio técnico de equipos móviles, se procedió a la verificación de la procedencia legal de los dispositivos exhibidos.\n\n` +
+      `02. Circunstancias Concomitantes: Al solicitar al intervenido la exhibición y consulta de los equipos en su poder mediante la plataforma OSIPTEL, se constató que el equipo celular marca Xiaomi, modelo Redmi Note 11, IMEI N° 864532091234567, arrojó resultado "SUSTRAÍDO / REPORTADO POR ROBO".\n\n` +
+      `03. Circunstancias Posteriores: El intervenido no pudo acreditar la posesión legítima ni la procedencia del equipo celular, motivo por el cual se procedió a su incautación y al traslado del ciudadano a la ${unidadDisp} para las investigaciones de ley.`;
+
+    document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
+    document.getElementById('agregar_intervencion_3').value = 
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}.\n\n` +
+      `--- Siendo las ${horaFin} horas del mismo día se dio por concluida la diligencia.\n` +
+      `Se adjunta:`;
+
+    minimizarPlantillas();
+  }
+
+  // 04 PLANTILLA: CONDUCCIÓN EN EBRIEDAD
+  function cargarModelo04Ebriedad() {
+    document.getElementById('cant_secciones').value = 3;
+    construirSeccionesNarrativa();
+
+    const distrito = getVal('distrito', 'Huanta');
+    const provincia = getVal('provincia', 'Huanta');
+    const hora = getVal('hora_intervencion', '02:30');
+    const fechaRaw = getVal('fecha');
+    const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
+    const lugar = getVal('lugar', 'la intersección de la Av. San Martín con el Jr. Huanta');
+    const unidadPol = getVal('unidad_policial', 'UTSEVI PNP Huanta');
+    const unidadDisp = getVal('unidad_disposicion', 'SIAT-COM PNP HUANTA');
+    const fiscal = getVal('fiscal', 'Ernesto ARROYO MEDINA');
+    const pnp1 = getVal('placa_policial_1', 'PL-14176');
+    const horaFin = getVal('hora2', '03:15');
+
+    const listaPNP = obtenerListaEfectivosPNP();
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const otrosPNPTexto = listaPNP.length > 1 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
+
+    const listaInt = obtenerListaIntervenidos();
+    const persona = listaInt[0] || {
+      nombre: "William HUAMÁN AGUIRRE",
+      edad: "36",
+      dni: "46953399",
+      natural: "Huanta",
+      estado_civil: "soltero",
+      ocupacion: "administrador",
+      domicilio: "Jr. Máximo Velando S/N - Huanta"
+    };
+
+    const veh = obtenerListaVehiculos()[0] || { placa: "A1B-234", marca: "RONCO", modelo: "PANTERA-B150", color: "negro" };
+
+    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y CIRCUNSTANCIAS:";
+    document.getElementById('agregar_intervencion_1').value = 
+      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, en patrullaje motorizado a bordo de la unidad ${pnp1}, procedieron a la intervención de: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, conductor del vehículo de placa de rodaje ${veh.placa}.\n\n` +
+      `01. Circunstancias Precedentes: El personal policial advirtió que el vehículo antes mencionado realizaba maniobras temerarias y desplazamientos en zigzag, poniendo en peligro inminente la integridad de los peatones y conductores de la zona.\n\n` +
+      `02. Circunstancias Concomitantes: Al intervenir el vehículo y solicitar la documentación correspondiente al conductor, se percibió un fuerte aliento alcohólico, incoherencia al hablar y signos evidentes de ebriedad (ojo congestivo, desorientación).\n\n` +
+      `03. Circunstancias Posteriores: Al intervenido luego de hacerle de conocimiento el motivo de la intervención policial, de conformidad a las normativas vigentes y al Art. 307.2 del RETRAN, se procedió la Ejecución de pruebas de equilibrio y coordinación (Test de Hogan y Romberg).`;
+
+    document.getElementById('titulo_sec_2').value = "II. PRUEBAS DE COORDINACIÓN Y/O EQUILIBRIO (RETRAN):";
+    document.getElementById('agregar_intervencion_2').value = 
+      `--- Con relación al Acta de Intervención Policial, y en aplicación al Art. 307.4 del RETRAN, se procede a realizar las siguiente (s) prueba (s) de equilibrio y/o coordinación:\n\n` +
+      `1. Andar con los ojos vendados o cerrados y los brazos en alto, poniendo un pie justo delante de otro, sobre una línea recta: [ NO PASÓ (X) ]\n` +
+      `2. Juntar los dedos índices de cada mano, a la altura de la barbilla, estando los ojos cerrados y partiendo de los brazos extendidos hacia abajo: [ NO PASÓ (X) ]\n` +
+      `3. Juntar el dedo índice de una mano con la nariz, estando con los ojos cerrados y partiendo de los brazos extendidos hacia abajo: [ NO PASÓ (X) ]\n` +
+      `4. Situar el individuo de pie con los pies juntos, las manos extendidas hacia adelante y con los ojos cerrados (PRUEBA DE ROMBERG): [ NO PASÓ (X) ]\n\n` +
+      `--- Asimismo, le dio a conocer sus derechos previstos en el Artículo 71 del CPP, se procedió a su traslado a la oficina de la ${unidadPol} para las diligencias correspondientes, dejando constancia que el intervenido ha recibido buen trato físico y psicológico. Los datos consultados en E-SINPOL PNP dieron resultado “NEGATIVO” para requisitorias. La persona intervenida es puesta a disposición de la ${unidadDisp} en calidad de DETENIDO.`;
+
+    document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
+    document.getElementById('agregar_intervencion_3').value = 
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}.\n\n` +
+      `--- Siendo las ${horaFin} horas del mismo día se dio por concluida la diligencia.\n` +
+      `Se adjunta:`;
+
+    minimizarPlantillas();
+  }
+
+  // 05 PLANTILLA: TENENCIA ILEGAL DE ARMAS Y MUNICIONES
+  function cargarModelo05TenenciaIlegalArmas() {
+    document.getElementById('cant_secciones').value = 3;
+    construirSeccionesNarrativa();
+
+    const distrito = getVal('distrito', 'Huanta');
+    const provincia = getVal('provincia', 'Huanta');
+    const hora = getVal('hora_intervencion', '20:10');
+    const fechaRaw = getVal('fecha');
+    const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
+    const lugar = getVal('lugar', 'la Av. General Córdova Cdra. 5');
+    const unidadDisp = getVal('unidad_disposicion', 'Comisaría PNP Huanta');
+    const fiscal = getVal('fiscal', 'Ernesto ARROYO MEDINA');
+    const horaFin = getVal('hora2', '21:00');
+
+    const listaPNP = obtenerListaEfectivosPNP();
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const otrosPNPTexto = listaPNP.length > 1 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
+
+    const listaInt = obtenerListaIntervenidos();
+    const persona = listaInt[0] || {
+      nombre: "Marcos Antonio RÍOS CÁRDENAS",
+      edad: "31",
+      dni: "48765432",
+      natural: "Huanta",
+      ocupacion: "obrero",
+      domicilio: "Jr. Ayacucho N° 310 - Huanta"
+    };
+
+    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
+    document.getElementById('agregar_intervencion_1').value = 
+      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, intervino a: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, por el presunto Delito de TENENCIA ILEGAL DE ARMAS Y MUNICIONES.`;
+
+    document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
+    document.getElementById('agregar_intervencion_2').value = 
+      `01. Circunstancias Precedentes: Durante la ejecución del Operativo Policial "Impacto 2026" orientado al control de identidad y prevención de delitos, se observó a un sujeto en actitud sospechosa intentando evadir el control policial.\n\n` +
+      `02. Circunstancias Concomitantes: Al efectuarle el registro personal de seguridad, se le halló a la altura de la cintura (lado derecho) un (01) arma de fuego tipo revólver, marca Taurus, calibre .38 Special, abastecido con cuatro (04) cartuchos sin percutir, no contando con la autorización de SUCAMEC para su porte.\n\n` +
+      `03. Circunstancias Posteriores: Se procedió al incautamiento del arma y municiones mediante las medidas de seguridad criminalística y llenado de la Ficha de Cadena de Custodia, trasladando al intervenido a la ${unidadDisp}.`;
+
+    document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
+    document.getElementById('agregar_intervencion_3').value = 
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}.\n\n` +
+      `--- Siendo las ${horaFin} horas del mismo día se dio por concluida la diligencia.\n` +
+      `Se adjunta:`;
+
+    minimizarPlantillas();
+  }
+
+  // 06 PLANTILLA: TRÁFICO ILÍCITO DE DROGAS (MICROCOMERCIALIZACIÓN)
+  function cargarModelo06TIDMicrocomercializacion() {
+    document.getElementById('cant_secciones').value = 3;
+    construirSeccionesNarrativa();
+
+    const distrito = getVal('distrito', 'Huanta');
+    const provincia = getVal('provincia', 'Huanta');
+    const hora = getVal('hora_intervencion', '18:30');
+    const fechaRaw = getVal('fecha');
+    const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
+    const lugar = getVal('lugar', 'el Jr. Razuhuillca (pasaje Los Olivos S/N)');
+    const unidadDisp = getVal('unidad_disposicion', 'DEPINCRI-Huanta / AREANTRO');
+    const fiscal = getVal('fiscal', 'Ernesto ARROYO MEDINA');
+    const horaFin = getVal('hora2', '19:20');
+
+    const listaPNP = obtenerListaEfectivosPNP();
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const otrosPNPTexto = listaPNP.length > 1 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
+
+    const listaInt = obtenerListaIntervenidos();
+    const persona = listaInt[0] || {
+      nombre: "Kevin Jhair LÓPEZ MENDOZA",
+      edad: "23",
+      dni: "76543210",
+      natural: "Ayacucho",
+      estado_civil: "soltero",
+      domicilio: "Jr. Razuhuillca S/N - Huanta"
+    };
+
+    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
+    document.getElementById('agregar_intervencion_1').value = 
+      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, procedió a la intervención de: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, domiciliado en ${persona.domicilio}, presunto autor del Delito Contra la Salud Pública – TRÁFICO ILÍCITO DE DROGAS (MICROCOMERCIALIZACIÓN - ART. 298 CP).`;
+
+    document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
+    document.getElementById('agregar_intervencion_2').value = 
+      `01. Circunstancias Precedentes: En patrullaje a pie por un punto de alta incidencia delictiva, el personal policial observó un intercambio sospechoso mano a mano (pase de droga - "keteo") entre el intervenido y un sujeto que logró darse a la fuga al percatarse de la presencia policial.\n\n` +
+      `02. Circunstancias Concomitantes: Al intervenírsele y realizarle el registro personal, se le encontró en el bolsillo izquierdo del pantalón una bolsa plástica conteniendo veinticinco (25) envoltorios de papel periódico ("ketes") con una sustancia parduzca pulvurenta con características similares a Alcaloide de Cocaína (PBC), así como dinero en efectivo en billetes de baja denominación (S/ 45.00 soles).\n\n` +
+      `03. Circunstancias Posteriores: Se procedió al decomiso de la droga y del dinero, efectuándose el lacrado in situ y trasladando al intervenido a la unidad especializada (${unidadDisp}) para la prueba de descarte, pesaje e investigaciones.`;
+
+    document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
+    document.getElementById('agregar_intervencion_3').value = 
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}.\n\n` +
+      `--- Siendo las ${horaFin} horas del mismo día se dio por concluida la diligencia.\n` +
+      `Se adjunta:`;
+
+    minimizarPlantillas();
+  }
+
+  // 07 PLANTILLA: VIOLENCIA FAMILIAR
+  function cargarModelo07ViolenciaFamiliar() {
+    document.getElementById('cant_secciones').value = 3;
+    construirSeccionesNarrativa();
+
+    const distrito = getVal('distrito', 'Huanta');
+    const provincia = getVal('provincia', 'Huanta');
+    const hora = getVal('hora_intervencion', '22:10');
+    const fechaRaw = getVal('fecha');
+    const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
+    const lugar = getVal('lugar', 'el inmueble ubicado en el Jr. Ricardo Palma N° 240');
+    const unidadDisp = getVal('unidad_disposicion', 'Comisaría PNP Huanta');
+    const fiscal = getVal('fiscal', 'Ernesto ARROYO MEDINA');
+    const agraviado = getVal('agraviado', 'Ana María GUTIÉRREZ SILVA (35)');
+    const pnp1 = getVal('placa_policial_1', 'PL-14176');
+    const horaFin = getVal('hora2', '23:00');
+
+    const listaPNP = obtenerListaEfectivosPNP();
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const otrosPNPTexto = listaPNP.length > 1 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
+
+    const listaInt = obtenerListaIntervenidos();
+    const persona = listaInt[0] || {
+      nombre: "Raúl Fernando CASTRO RUIZ",
+      edad: "40",
+      dni: "40987654",
+      natural: "Huanta",
+      ocupacion: "comerciante",
+      domicilio: "Jr. Ricardo Palma N° 240 - Huanta"
+    };
+
+    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
+    document.getElementById('agregar_intervencion_1').value = 
+      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, constituidos en el lugar a bordo del patrullero ${pnp1}, procedieron a la intervención de: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, por el presunto delito de AGRESIONES CONTRA LAS MUJERES O INTEGRANTES DEL GRUPO FAMILIAR (LEY N° 30364 / ART. 122-B CP), en agravio de su conviviente ${agraviado}.`;
+
+    document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
+    document.getElementById('agregar_intervencion_2').value = 
+      `01. Circunstancias Precedentes: A solicitud del centro de emergencias por una llamada de auxilio de la víctima, quien manifestó estar siendo agredida física y verbalmente por su conviviente dentro de su domicilio.\n\n` +
+      `02. Circunstancias Concomitantes: Constituidos en la vivienda con la autorización de la agraviada, se constató que esta presentaba enrojecimiento y hematomas en el rostro (pómulo izquierdo) y contusiones en los brazos. El agresor se encontraba en el lugar en evidente estado de ebriedad y profiriendo insultos.\n\n` +
+      `03. Circunstancias Posteriores: Se procedió a la inmediata detención del agresor y al traslado de la víctima al centro médico / Medicina Legal para el reconocimiento médico de ley y la aplicación de la Ficha de Valoración de Riesgo, siendo conducido el detenido a la ${unidadDisp}.`;
+
+    document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
+    document.getElementById('agregar_intervencion_3').value = 
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}.\n\n` +
+      `--- Siendo las ${horaFin} horas del mismo día se dio por concluida la diligencia.\n` +
+      `Se adjunta:`;
+
+    minimizarPlantillas();
+  }
+
+  // 08 PLANTILLA: LESIONES EN RIÑA / TRIFULCA
+  function cargarModelo08LesionesRina() {
+    document.getElementById('cant_secciones').value = 3;
+    construirSeccionesNarrativa();
+
+    const distrito = getVal('distrito', 'Huanta');
+    const provincia = getVal('provincia', 'Huanta');
+    const hora = getVal('hora_intervencion', '01:45');
+    const fechaRaw = getVal('fecha');
+    const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
+    const lugar = getVal('lugar', 'los exteriores de un local nocturno ubicado en el Jr. San Martín Cdra. 1');
+    const unidadDisp = getVal('unidad_disposicion', 'Comisaría PNP Huanta');
+    const fiscal = getVal('fiscal', 'Ernesto ARROYO MEDINA');
+    const horaFin = getVal('hora2', '02:30');
+
+    const listaPNP = obtenerListaEfectivosPNP();
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const otrosPNPTexto = listaPNP.length > 1 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
+
+    const listaInt = obtenerListaIntervenidos();
+    const p1 = listaInt[0] || { nombre: "Miguel Ángel VARGAS HINOSTROZA", edad: "25", dni: "73456789" };
+    const p2 = listaInt[1] || { nombre: "Gabriel Omar MORENO CHÁVEZ", edad: "27", dni: "71987654" };
+
+    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
+    document.getElementById('agregar_intervencion_1').value = 
+      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, procedieron a la intervención de:\n` +
+      `1. ${p1.nombre} (${p1.edad}), DNI N° ${p1.dni}.\n` +
+      `2. ${p2.nombre} (${p2.edad}), DNI N° ${p2.dni}.`;
+
+    document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
+    document.getElementById('agregar_intervencion_2').value = 
+      `01. Circunstancias Precedentes: En patrullaje preventivo por el sector, se observó una pelea tumultuaria (trifulca) entre varios sujetos en la vía pública, lanzándose objetos contundentes (botellas de vidrio).\n\n` +
+      `02. Circunstancias Concomitantes: El personal policial intervino de inmediato para restablecer el orden público, logrando intervenir a los dos ciudadanos antes indicados, quienes se agredían mutuamente con puñetes y patadas. El intervenido ${p1.nombre} presentaba un corte sangrante en el cuero cabelludo producto de un botellazo.\n\n` +
+      `03. Circunstancias Posteriores: Se prestó el primer auxilio trasladando al herido al Hospital de Huanta para su atención médica con custodia policial, conduciendo al segundo intervenido a la ${unidadDisp} para las investigaciones por el delito de Lesiones Mutuas.`;
+
+    document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
+    document.getElementById('agregar_intervencion_3').value = 
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}.\n\n` +
+      `--- Siendo las ${horaFin} horas del mismo día se dio por concluida la diligencia.\n` +
+      `Se adjunta:`;
+
+    minimizarPlantillas();
+  }
+
+  // 09 PLANTILLA: FALSIFICACIÓN DE DOCUMENTOS
+  function cargarModelo09FalsificacionDocumentos() {
+    document.getElementById('cant_secciones').value = 3;
+    construirSeccionesNarrativa();
+
+    const distrito = getVal('distrito', 'Huanta');
+    const provincia = getVal('provincia', 'Huanta');
+    const hora = getVal('hora_intervencion', '10:40');
+    const fechaRaw = getVal('fecha');
+    const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
+    const lugar = getVal('lugar', 'la Av. San Martín N° 122');
+    const unidadPol = getVal('unidad_policial', 'UTSEVI');
+    const unidadDisp = getVal('unidad_disposicion', 'DEPINCRI-Huanta');
+    const fiscal = getVal('fiscal', 'Ernesto ARROYO MEDINA');
+    const horaFin = getVal('hora2', '11:30');
+
+    const listaPNP = obtenerListaEfectivosPNP();
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const otrosPNPTexto = listaPNP.length > 1 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
+
+    const listaInt = obtenerListaIntervenidos();
+    const persona = listaInt[0] || {
+      nombre: "Ralph Bryan RAMÍREZ RIVERA",
+      edad: "29",
+      dni: "48175779",
+      natural: "Sivia",
+      ocupacion: "mecánico",
+      domicilio: "Jr. Lampa S/N - Huanta"
+    };
+
+    const veh = obtenerListaVehiculos()[0] || { marca: "Honda", modelo: "XR-150L", placa: "SIN PLACA" };
+
+    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y CONTROL VEHICULAR:";
+    document.getElementById('agregar_intervencion_1').value = 
+      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, durante un Operativo de Control Vehicular de la ${unidadPol}, intervino a: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, conductor del vehículo menor motocicleta marca ${veh.marca}, modelo ${veh.modelo}, sin placa de rodaje.`;
+
+    document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN Y PERITAJE TIV:";
+    document.getElementById('agregar_intervencion_2').value = 
+      `01. Circunstancias Precedentes: Se le solicitó al conductor la documentación reglamentaria para su identificación y la del vehículo menor que conducía.\n\n` +
+      `02. Circunstancias Concomitantes: El conductor presentó una Tarjeta de Identificación Vehicular (TIV) física N° 0001134023. Al realizar la verificación del número de chasis (LTMKD0798F5108917) y motor en la estructura física de la moto y cotejarlo con el sistema SUNARP/PNP, se observó que la TIV presentada no correspondía a la numeración real del vehículo, presentando impresiones y Sellos adulterados (presunta TIV fraguada/falsa).\n\n` +
+      `03. Circunstancias Posteriores: Se incautó la documentación adulterada para el peritaje documentoscópico correspondiente, trasladando al intervenido y a la motocicleta a la ${unidadDisp}.`;
+
+    document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
+    document.getElementById('agregar_intervencion_3').value = 
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}.\n\n` +
+      `--- Siendo las ${horaFin} horas del mismo día se dio por concluida la diligencia.\n` +
+      `Se adjunta:`;
+
+    minimizarPlantillas();
+  }
+
+  // 10 PLANTILLA: VIOLENCIA Y RESISTENCIA A LA AUTORIDAD
+  function cargarModelo10ResistenciaAutoridad() {
+    document.getElementById('cant_secciones').value = 3;
+    construirSeccionesNarrativa();
+
+    const distrito = getVal('distrito', 'Huanta');
+    const provincia = getVal('provincia', 'Huanta');
+    const hora = getVal('hora_intervencion', '19:50');
+    const fechaRaw = getVal('fecha');
+    const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
+    const lugar = getVal('lugar', 'la intersección del Jr. Gervasio Santillana con el Jr. Ayacucho');
+    const unidadDisp = getVal('unidad_disposicion', 'Comisaría Sectorial PNP Huanta');
+    const fiscal = getVal('fiscal', 'Ernesto ARROYO MEDINA');
+    const horaFin = getVal('hora2', '20:40');
+
+    const listaPNP = obtenerListaEfectivosPNP();
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const otrosPNPTexto = listaPNP.length > 1 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
+
+    const listaInt = obtenerListaIntervenidos();
+    const persona = listaInt[0] || {
+      nombre: "Julio César MOROTE CISNEROS",
+      edad: "33",
+      dni: "45123789",
+      natural: "Huanta",
+      estado_civil: "soltero",
+      domicilio: "Jr. Comercio N° 150 - Huanta"
+    };
+
+    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y ENCABEZADO:";
+    document.getElementById('agregar_intervencion_1').value = 
+      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, procedió a la detención en flagrancia de: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, domiciliado en ${persona.domicilio}.`;
+
+    document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
+    document.getElementById('agregar_intervencion_2').value = 
+      `01. Circunstancias Precedentes: Durante la intervención a un vehículo mal estacionado que obstruía el tránsito, el intervenido (quien se encontraba en estado de ebriedad) salió de un establecimiento comercial de forma agresiva vociferando palabras soeces contra el personal policial.\n\n` +
+      `02. Circunstancias Concomitantes: Al solicitársele que se calme e identifique, el sujeto arremetió físicamente contra el ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre}, propinándole un empujón a la altura del pecho y rotura parcial del chaleco táctico policial, oponiendo tenaz resistencia física al cumplimiento de la función policial.\n\n` +
+      `03. Circunstancias Posteriores: Haciendo uso racional de la fuerza, se procedió a la reducción, inmovilización y colocación de grilletes de seguridad, trasladándolo a la ${unidadDisp} para las diligencias por Delito Contra la Administración Pública – VIOLENCIA Y RESISTENCIA A LA AUTORIDAD.`;
+
+    document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
+    document.getElementById('agregar_intervencion_3').value = 
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}.\n\n` +
+      `--- Siendo las ${horaFin} horas del mismo día se dio por concluida la diligencia.\n` +
+      `Se adjunta:`;
+
+    minimizarPlantillas();
+  }
+
+  // 11 PLANTILLA: ACCIDENTE DE TRÁNSITO (CHOQUE)
+  function cargarModelo11AccidenteTransito() {
+    document.getElementById('cant_secciones').value = 3;
+    construirSeccionesNarrativa();
+
+    const distrito = getVal('distrito', 'Huanta');
+    const provincia = getVal('provincia', 'Huanta');
+    const hora = getVal('hora_intervencion', '08:30');
+    const fechaRaw = getVal('fecha');
+    const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
+    const lugar = getVal('lugar', 'Av. San Martín Cdra. 3 (intersección con el Jr. Razuhuillca)');
+    const unidadPol = getVal('unidad_policial', 'UTSEVI PNP HUANTA');
+    const unidadDisp = getVal('unidad_disposicion', 'Comisaría Sectorial PNP Huanta');
+    const fiscal = getVal('fiscal', 'Ernesto ARROYO MEDINA');
+    const pnp1 = getVal('placa_policial_1', 'PL-14176');
+    const horaFin = getVal('hora2', '09:20');
+
+    const listaPNP = obtenerListaEfectivosPNP();
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const otrosPNPTexto = listaPNP.length > 1 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
+
+    const listaVeh = obtenerListaVehiculos();
+    const v1 = listaVeh[0] || { placa: "X1Y-234", marca: "Toyota", modelo: "Yaris", color: "Gris Oscuro" };
+    const v2 = listaVeh[1] || { placa: "9656-2Y", marca: "Honda", modelo: "XR-150L", color: "Rojo" };
+
+    const listaInt = obtenerListaIntervenidos();
+    const c1 = listaInt[0] || { nombre: "Roberto Carlos SUÁREZ FLORES", edad: "38", dni: "41234567", domicilio: "Jr. Córdova N° 230 – Huanta", celular: "965432109" };
+    const c2 = listaInt[1] || { nombre: "Luis Fernando GÓMEZ PALOMINO", edad: "24", dni: "74567890", domicilio: "Av. San Martín S/N – Huanta", celular: "912345678" };
+
+    document.getElementById('titulo_sec_1').value = "I. PARTICIPANTES Y VEHÍCULOS INVOLUCRADOS:";
+    document.getElementById('agregar_intervencion_1').value = 
+      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en el lugar ubicado en la ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, personal perteneciente a la ${unidadPol}, a bordo de la unidad móvil ${pnp1}, procedieron a levantar la presente ACTA DE INTERVENCIÓN POLICIAL POR ACCIDENTE DE TRÁNSITO - CHOQUE, conforme al siguiente detalle:\n\n` +
+      `VEHÍCULO N° 01 (UNIDAD "A"):\n` +
+      `* Placa de Rodaje: ${v1.placa} | Marca: ${v1.marca} | Modelo: ${v1.modelo} | Color: ${v1.color}.\n` +
+      `* Conductor: ${c1.nombre} (${c1.edad}), DNI N° ${c1.dni}, domiciliado en ${c1.domicilio}, Cel. N° ${c1.celular}, SOAT Vigente "La Positiva".\n\n` +
+      `VEHÍCULO N° 02 (UNIDAD "B"):\n` +
+      `* Placa de Rodaje: ${v2.placa} | Marca: ${v2.marca} | Modelo: ${v2.modelo} | Color: ${v2.color}.\n` +
+      `* Conductor: ${c2.nombre} (${c2.edad}), DNI N° ${c2.dni}, domiciliado en ${c2.domicilio}, Cel. N° ${c2.celular}, SOAT Vigente.`;
+
+    document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN Y CONSTATACIÓN FÁCTICA:";
+    document.getElementById('agregar_intervencion_2').value = 
+      `--- Que, encontrándose el personal policial acotado realizando patrullaje de rutina, se constató un accidente de tránsito (choque en intersección) entre la motocicleta de placa ${v2.placa} y el automóvil de placa ${v1.placa}.\n\n` +
+      `* Daños Materiales Visibles:\n` +
+      `  - Vehículo N° 01 (${v1.placa}): Presenta abolladura en el parachoques delantero lado izquierdo y rotura del faro neblinero.\n` +
+      `  - Vehículo N° 02 (${v2.placa}): Presenta raspaduras en la carena lateral derecha, manillar doblado y rotura de luz direccional delantera.\n\n` +
+      `* Estado de los Conductores / Lesiones:\n` +
+      `  El conductor del Vehículo N° 02 (${c2.nombre}) presentó escoriaciones leves en la rodilla derecha, manifestando encontrarse estable y negándose a ser trasladado al hospital por no revestir gravedad. El conductor del Vehículo N° 01 no presentó lesiones físicas aparentes.`;
+
+    document.getElementById('titulo_sec_3').value = "III. DILIGENCIAS ADOPTADAS Y COMUNICACIÓN AL RMP:";
+    document.getElementById('agregar_intervencion_3').value = 
+      `- Se procedió al aislamiento y señalización del lugar del choque para garantizar la fluidez vehicular.\n` +
+      `- Se verificaron documentos en e-SINPOL / SUNARP, dando resultado "NEGATIVO" para requisitorias o capturas.\n` +
+      `- Ambos conductores y unidades vehiculares fueron trasladados a la ${unidadDisp} para el Dosaje Etílico de ley e inspección técnico-policial de tránsito.\n\n` +
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}.\n\n` +
+      `--- Siendo las ${horaFin} horas del mismo día se dio por concluida la presente diligencia, firmando los intervinientes en señal de conformidad.\n` +
+      `Se adjunta:`;
+
+    minimizarPlantillas();
+  }
+
+  // 12 PLANTILLA: EXTORSIÓN
+  function cargarModelo12Extorsion() {
+    document.getElementById('cant_secciones').value = 3;
+    construirSeccionesNarrativa();
+
+    const distrito = getVal('distrito', 'Rímac');
+    const provincia = getVal('provincia', 'Lima');
+    const hora = getVal('hora_intervencion', '16:30');
+    const fechaRaw = getVal('fecha');
+    const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
+    const lugar = getVal('lugar', 'la Av. Francisco Pizarro N° 820 (frontis del establecimiento comercial "Bazar El Centro")');
+    const unidadPol = getVal('unidad_policial', 'DEPINCRI-Rímac');
+    const unidadDisp = getVal('unidad_disposicion', 'DEPINCRI');
+    const fiscal = getVal('fiscal', 'Ernesto ARROYO MEDINA');
+    const agraviado = getVal('agraviado', 'Víctor Hugo QUISPE ALCÁNTARA (45)');
+    const pnp1 = getVal('placa_policial_1', 'PL-14176');
+    const horaFin = getVal('hora2', '17:30');
+
+    const listaPNP = obtenerListaEfectivosPNP();
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const otrosPNPTexto = listaPNP.length > 1 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
+
+    const listaInt = obtenerListaIntervenidos();
+    const persona = listaInt[0] || {
+      nombre: "Carlos Eduardo MENDOZA GÓMEZ",
+      edad: "28",
+      dni: "71234567",
+      natural: "Lima",
+      estado_civil: "soltero",
+      ocupacion: "desempleado",
+      papa: "Carlos",
+      mama: "María",
+      celular: "987654321",
+      domicilio: "Jr. Huallaga N° 450 – Rímac"
+    };
+
+    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y ENCABEZADO:";
+    document.getElementById('agregar_intervencion_1').value = 
+      `--- En la ciudad de ${provincia}, distrito del ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en el lugar ubicado en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, personal perteneciente a la ${unidadPol}, los mismos que se encontraban realizando patrullaje motorizado preventivo a bordo de la unidad móvil ${pnp1} en cumplimiento al Plan de Operaciones de la Superioridad, procedieron a la intervención de la persona de: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, hijo de Don ${persona.papa || 'S/D'} y Doña ${persona.mama || 'S/D'}, N° celular ${persona.celular}, domiciliado en ${persona.domicilio}, presunto autor de la comisión del Delito Contra el Patrimonio – EXTORSIÓN.`;
+
+    document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
+    document.getElementById('agregar_intervencion_2').value = 
+      `01. Circunstancias Precedentes: Que, en circunstancias que el personal policial se encontraba patrullando por el sector acotado, se acercó el ciudadano comerciante ${agraviado}, manifestando que venía siendo víctima de extorsión y exigencia de dinero (cobro de cupo) por parte de un sujeto de contextura delgada, polo negro y gorra roja, quien minutos antes le había dejado una nota extorsiva exigiendo el pago de S/ 5,000.00 soles a cambio de no atentar contra su vida ni la de su familia.\n\n` +
+      `02. Circunstancias Concomitantes: Que, ante dicha alerta, el personal policial interviniente realizó un patrullaje intensivo por las inmediaciones, logrando avistar a escasos metros del lugar al sujeto con las características antes descritas, quien al notar la presencia del vehículo policial intentó darse a la fuga de manera presurosa. Siendo alcanzado e intervenido en el lugar, procediéndose a su plena identificación como ${persona.nombre}.\n\n` +
+      `03. Circunstancias Posteriores: Al realizarse el registro de seguridad preliminar en el lugar, se le halló en el bolsillo derecho de su pantalón un (01) equipo celular marca Xiaomi, color azul, el cual el agraviado reconoció como el número telefónico desde el cual recibía mensajes extorsivos vía WhatsApp. Por medidas de seguridad del personal policial interviniente y del propio intervenido debido a la aglomeración de transeúntes en la zona, la persona intervenida fue trasladada de inmediato a la ${unidadDisp} para las diligencias urgentes e inaplazables de ley.\n\n` +
+      `--- En el recinto policial se procedió a dar lectura a la persona intervenida de los derechos que le asisten en su condición de imputado conforme al Art. 71° del Código Procesal Penal, coordinándose e informándose de inmediato al Representante del Ministerio Público.`;
+
+    document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
+    document.getElementById('agregar_intervencion_3').value = 
+      `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}.\n\n` +
+      `--- Siendo las ${horaFin} horas del mismo día se dio por concluida la presente diligencia, firmando los intervinientes en señal de conformidad.\n` +
+      `Se adjunta:`;
+
+    minimizarPlantillas();
+  }
+
+  // 13 PLANTILLA: CONTROL DE IDENTIDAD E-SINPOL PNP (MODELO ANTERIOR CONSERVADO INTEGRAMENTE)
   function cargarModeloControlIdentidad() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
@@ -1749,97 +2343,6 @@
       `--- Que la persona intervenida es puesta a disposición de la ${unidadDisp}, con las actas instruidas, para posteriormente ser puesto a disposición de la autoridad competente.\n\n` +
       `--- Siendo las ${horaFin} horas del mismo día se dio por concluido la presente diligencia, firmando todos los participantes presentes en señal de conformidad.\n` +
       `Se adjunta:`;
-
-    minimizarPlantillas();
-  }
-
-  function cargarModeloHurtoFlagrancia() {
-    document.getElementById('cant_secciones').value = 4;
-    construirSeccionesNarrativa();
-
-    const gInt = obtenerGramaticaIntervenidos();
-    const lugar = getVal('lugar');
-    const fiscal = getVal('fiscal', 'el RMP');
-    const unidadDisp = getVal('unidad_disposicion', 'SIAT-COM PNP HUANTA');
-
-    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y FLAGRANCIA:";
-    document.getElementById('agregar_intervencion_1').value = `--- Realizando patrullaje por ${lugar}, a solicitud de la agraviada, se realizó la búsqueda de los autores del hurto, reconociendo plenamente a ${gInt.texto}, por lo que se procedió a su intervención inmediata.`;
-
-    document.getElementById('titulo_sec_2').value = "II. REGISTRO PERSONAL Y RECUPERACIÓN:";
-    document.getElementById('agregar_intervencion_2').value = `--- Sometido(s) al registro personal, se le(s) halló los bienes sustraídos descritos por la víctima.`;
-
-    document.getElementById('titulo_sec_3').value = "III. DETENCION Y LECTURA DE DERECHOS:";
-    document.getElementById('agregar_intervencion_3').value = `--- Se procedió a la DETENCIÓN de ${gInt.etiquetaSujeto} ${gInt.texto}, notificándole(s) sus derechos conforme al Art. 71 del CPP.`;
-
-    document.getElementById('titulo_sec_4').value = "IV. COMUNICACIÓN AL RMP Y DISPOSICIÓN:";
-    document.getElementById('agregar_intervencion_4').value = 
-      `--- De los hechos se comunicó al RMP Abog. ${fiscal}, poniéndolo(s) a disposición de la ${unidadDisp} en calidad de ${gInt.calidadDetenido}.`;
-
-    minimizarPlantillas();
-  }
-
-  function cargarModeloResistenciaAutoridad() {
-    document.getElementById('cant_secciones').value = 5;
-    construirSeccionesNarrativa();
-
-    const gInt = obtenerGramaticaIntervenidos();
-    const gVeh = obtenerGramaticaVehiculos();
-    const lugar = getVal('lugar');
-    const hora = getVal('hora_intervencion', '19:00');
-    const pnp1 = getVal('placa_policial_1', 'EP-1420');
-    const fiscal = getVal('fiscal', 'el RMP');
-    const unidadDisp = getVal('unidad_disposicion', 'SIAT-COM PNP HUANTA');
-
-    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y PERSECUCIÓN:";
-    document.getElementById('agregar_intervencion_1').value = `--- En patrullaje por ${lugar} a horas ${hora} aprox., se percató de ${gVeh.texto}, el cual circulaba en actitud sospechosa. Al darle la orden de detenerse, los ocupantes aceleraron dándose a la fuga, iniciándose la persecución a bordo de la UUMM ${pnp1}.`;
-
-    document.getElementById('titulo_sec_2').value = "II. CAPTURA Y DAÑOS A UNIDAD PNP:";
-    document.getElementById('agregar_intervencion_2').value = `--- La unidad policial logró cerrar el paso, logrando la reducción e intervención de ${gInt.texto}.`;
-
-    document.getElementById('titulo_sec_3').value = "III. RECOJO Y LACRADO DE EVIDENCIA:";
-    document.getElementById('agregar_intervencion_3').value = `--- Se procedió al recojo y posterior LACRADO de los elementos de prueba hallados en la escena.`;
-
-    document.getElementById('titulo_sec_4').value = "IV. INCAUTACIÓN DE VEHÍCULO Y DETENCIÓN:";
-    document.getElementById('agregar_intervencion_4').value = `--- Se realizó la INCAUTACIÓN de ${gVeh.sujetoVehiculo} y la DETENCIÓN de ${gInt.texto} por el delito de Resistencia o Desobediencia a la Autoridad.`;
-
-    document.getElementById('titulo_sec_5').value = "V. COMUNICACIÓN AL RMP Y DISPOSICIÓN:";
-    document.getElementById('agregar_intervencion_5').value = 
-      `--- De los hechos se comunicó al RMP Abog. ${fiscal}, poniéndolo(s) a disposición de la ${unidadDisp} en calidad de ${gInt.calidadDetenido}.`;
-
-    minimizarPlantillas();
-  }
-
-  function cargarModeloEbriedadPruebas() {
-    document.getElementById('cant_secciones').value = 5;
-    construirSeccionesNarrativa();
-
-    const gInt = obtenerGramaticaIntervenidos();
-    const gVeh = obtenerGramaticaVehiculos();
-    const listaInt = obtenerListaIntervenidos();
-    const intPrincipal = listaInt[0] || { nombre: 'el conductor', dni: 'S/D', edad: 'S/E' };
-
-    const lugar = getVal('lugar');
-    const hora = getVal('hora_intervencion', '07:16');
-    const pnp1 = getVal('placa_policial_1', 'unidad policial');
-    const fiscal = getVal('fiscal', 'el RMP');
-    const unidadDisp = getVal('unidad_disposicion', 'SIAT-COM PNP HUANTA');
-
-    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y MANIOBRAS TEMERARIAS:";
-    document.getElementById('agregar_intervencion_1').value = `--- A bordo de la UUMM ${pnp1}, siendo las ${hora} hrs aprox., se divisó a ${gVeh.texto}, cuyo conductor realizaba maniobras temerarias por ${lugar}, interveniéndolo de inmediato.`;
-
-    document.getElementById('titulo_sec_2').value = "II. IDENTIFICACIÓN Y SIGNOS DE HALITOSIS ALCOHÓLICA:";
-    document.getElementById('agregar_intervencion_2').value = `--- Intervenido el vehículo, se identificó a los ocupantes resultando ser ${gInt.texto}. Al solicitar la documentación al conductor ${intPrincipal.nombre}, presentaba evidentes signos de ebriedad (halitosis alcohólica).`;
-
-    document.getElementById('titulo_sec_3').value = "III. EJECUCIÓN DE PRUEBAS DE EQUILIBRIO Y COORDINACIÓN (RETRAN):";
-    document.getElementById('agregar_intervencion_3').value = 
-      `--- Al intervenido conductor ${intPrincipal.nombre}, en aplicación al Art. 307 del RETRAN, se le aplicó el Test de Hogan y Romberg resultando NO APTO / POSITIVO para inestabilidad motora e intoxicación alcohólica.`;
-
-    document.getElementById('titulo_sec_4').value = "IV. DERECHOS DEL IMPUTADO Y CONSULTA E-SINPOL:";
-    document.getElementById('agregar_intervencion_4').value = `--- Se le leyeron sus derechos (Art. 71 CPP), trasladándolo a la dependencia policial. La consulta E-SINPOL dio resultado NEGATIVO para requisitorias.`;
-
-    document.getElementById('titulo_sec_5').value = "V. DISPOSICIÓN Y COMUNICACIÓN AL RMP:";
-    document.getElementById('agregar_intervencion_5').value = 
-      `--- De los hechos se comunicó de manera inmediata al RMP Abog. ${fiscal}, siendo puesto(s) a disposición de la ${unidadDisp} en calidad de ${gInt.calidadDetenido}.`;
 
     minimizarPlantillas();
   }
