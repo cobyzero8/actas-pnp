@@ -1673,28 +1673,82 @@
   }
 
   function cargarModeloControlIdentidad() {
-    document.getElementById('cant_secciones').value = 2;
+    document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
 
     const gInt = obtenerGramaticaIntervenidos();
-    const lugar = getVal('lugar');
-    const fiscal = getVal('fiscal', 'el RMP');
-    const unidadDisp = getVal('unidad_disposicion', 'SIAT-COM PNP HUANTA');
-    const esinpolSt = getVal('resultado_esinpol');
-    const motivoReq = getVal('motivo_requisitoria', 'el delito investigado');
-    const juzg = getVal('juzgado_requisitoria', 'el Juzgado solicitante');
+    const listaInt = obtenerListaIntervenidos();
+    const persona = listaInt[0] || {
+      nombre: "Marco Antonio ROJAS VÁZQUEZ",
+      edad: "32",
+      natural: "Lima",
+      estado_civil: "soltero",
+      ocupacion: "comerciante",
+      papa: "Pedro",
+      mama: "Rosa",
+      celular: "912345678",
+      dni: "45678912",
+      domicilio: "Jr. Los Pinos N° 123 - Rímac"
+    };
 
-    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y SOLICITUD DE DOCUMENTO:";
-    document.getElementById('agregar_intervencion_1').value = `--- En circunstancias que el personal policial realizaba patrullaje a pie en ${lugar}, al amparo del Art. 205 del CPP, se procedió a solicitar la identificación plena de ${gInt.etiquetaSujeto} ${gInt.texto}, quien(es) indicó/indicaron no portar DNI físico en el momento.`;
+    const listaPNP = obtenerListaEfectivosPNP();
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const otrosPNPTexto = listaPNP.length > 1 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      : "en compañía del personal PNP de apoyo";
 
-    document.getElementById('titulo_sec_2').value = "II. VERIFICACIÓN E-SINPOL PNP Y MEDIDAS:";
+    const distrito = getVal('distrito', 'Rímac');
+    const provincia = getVal('provincia', 'Lima');
+    const hora = getVal('hora_intervencion', '10:15');
+    const fechaRaw = getVal('fecha');
+    const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
+    const lugar = getVal('lugar', 'Av. Túpac Amaru N° 450');
+    const unidadPol = getVal('unidad_policial', 'CIA PNP LA UNIFICADA');
+    const unidadDisp = getVal('unidad_disposicion', 'CIA PNP LA UNIFICADA');
+    const actividad = getVal('tipo_actividad') === 'OPERATIVO POLICIAL' 
+      ? `el O/P ${getVal('nombre_operativo')}` 
+      : 'patrullaje a pie en los puntos de índice delictivo dispuestos por la superioridad';
+
+    const esinpolSt = getVal('resultado_esinpol', 'POSITIVO');
+    const tipoReq = getVal('tipo_requisitoria', 'CAPTURA VIGENTE / REQUISITORIA');
+    const motivoReq = getVal('motivo_requisitoria', 'DELITO CONTRA EL PATRIMONIO - HURTO AGRAVADO');
+    const juzgReq = getVal('juzgado_requisitoria', '2° JUZGADO PENAL UNIPERSONAL DE LIMA');
+    const docReq = getVal('documento_requisitoria', 'OFICIO N° 1425-2025-2JPU-CSJL');
+    const fecReqRaw = getVal('fecha_requisitoria');
+    const fecReqFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fecReqRaw) : (fecReqRaw || '15MAY2025');
+    const sitReq = getVal('situacion_requisitoria', 'SOLICITADO / REQUISITORIADO');
+    const agraviado = getVal('agraviado', 'Comercializadora El Sol S.A.C.');
+    const horaFin = getVal('hora2', '11:00');
+
+    // SECCIÓN I: INTERVENCIÓN Y CONTROL DE IDENTIDAD
+    document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y CONTROL DE IDENTIDAD:";
+    document.getElementById('agregar_intervencion_1').value = 
+      `--- En la ciudad de ${provincia}, distrito del ${distrito}, siendo las ${hora} horas del ${fechaFormateada} en el lugar ubicado en la ${lugar}; el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} personal de apoyo a la ${unidadPol}, quien se encontraba ${otrosPNPTexto}; los mismos que se encontraban realizando ${actividad}, se intervino a la persona quien señaló llamarse: ${persona.nombre} de ${persona.edad} años, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, hijo de Don ${persona.papa || 'S/D'} y Doña ${persona.mama || 'S/D'}, con número de celular ${persona.celular || 'S/N'}, identificado con DNI N° ${persona.dni}, quien refiere domiciliar en ${persona.domicilio}; se solicitó el DNI con la finalidad de su plena identificación y posibles requisitorias vigentes.`;
+
+    // SECCIÓN II: CONSULTA E-SINPOL PNP Y REQUISITORIA VIGENTE
+    document.getElementById('titulo_sec_2').value = "II. CONSULTA E-SINPOL PNP Y RESULTADO DE REQUISITORIA:";
     if (esinpolSt === 'POSITIVO') {
       document.getElementById('agregar_intervencion_2').value = 
-        `--- Consultados sus datos mediante el sistema E-SINPOL PNP, se obtuvo resultado POSITIVO para requisitoria vigente por el delito de ${motivoReq}, solicitado por ${juzg}. Se informó al RMP Abog. ${fiscal}, trasladándolo a la ${unidadDisp} en calidad de ${gInt.calidadRetenido} / CAPTURADO.`;
+        `--- Que los datos brindados por la persona intervenida al ser consultados mediante el sistema virtual policial E-SINPOL PNP, su información básica personal dio como resultado “POSITIVO” para requisitorias vigentes:\n\n` +
+        `TIPO: ${tipoReq}\n` +
+        `MOTIVO: ${motivoReq}\n` +
+        `JUZGADO: ${juzgReq}\n` +
+        `DOCUMENTO: ${docReq}\n` +
+        `FECHA: ${fecReqFormateada}\n` +
+        `SITUACIÓN: ${sitReq}\n\n` +
+        `--- Se le informó expresamente que el motivo de su intervención es por encontrarse requisitoriado por el Delito de ${motivoReq}, en agravio de ${agraviado}, solicitado por el ${juzgReq}, mediante el ${docReq} de fecha ${fecReqFormateada}, a quién luego de hacerle de conocimiento el motivo de la intervención policial, sus derechos previstos en el Artículo 71 del Nuevo Código Procesal Penal, se le trasladó a la Comisaría para las diligencias correspondientes, dejando constancia que el intervenido ha recibido buen trato físico y psicológico, siendo tratado con dignidad y respeto; así también se precisa que las Actas (diligencias) que se adjuntan a la presente se realizaron en esta dependencia por medidas de seguridad del personal policial interviniente y del propio intervenido.`;
     } else {
       document.getElementById('agregar_intervencion_2').value = 
-        `--- Al no contar con documento de identidad, fue(ron) conducido(s) a la ${unidadDisp} para su identificación plena. La consulta en el sistema E-SINPOL PNP dio como resultado NEGATIVO para requisitorias vigentes. Se comunicó al RMP Abog. ${fiscal}, quedando libre tras su plena identificación.`;
+        `--- Que los datos brindados por la persona intervenida al ser consultados mediante el sistema virtual policial E-SINPOL PNP, su información básica personal dio como resultado “NEGATIVO” para requisitorias vigentes.\n\n` +
+        `--- Se procedió a su plena identificación conforme a ley, retornando a sus actividades habituales sin inconvenientes, habiendo recibido buen trato físico y psicológico durante la diligencia.`;
     }
+
+    // SECCIÓN III: PUESTA A DISPOSICIÓN Y CIERRE
+    document.getElementById('titulo_sec_3').value = "III. PUESTA A DISPOSICIÓN Y CIERRE DE DILIGENCIA:";
+    document.getElementById('agregar_intervencion_3').value = 
+      `--- Que la persona intervenida es puesta a disposición de la ${unidadDisp}, con las actas instruidas, para posteriormente ser puesto a disposición de la autoridad competente.\n\n` +
+      `--- Siendo las ${horaFin} horas del mismo día se dio por concluido la presente diligencia, firmando todos los participantes presentes en señal de conformidad.\n` +
+      `Se adjunta:`;
 
     minimizarPlantillas();
   }
