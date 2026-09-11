@@ -224,7 +224,7 @@
     </div>
 
     <p style="font-size: 11px; color: #64748b; font-style: italic; margin-bottom: 15px;">
-      * El sistema ha marcado estas actas automáticamente en tu menú. Las actas extra de campo (Ej. Constataciones) se deben formular manualmente si no están en catálogo.
+      * El sistema ha marcado estas actas automáticamente en tu menú. Las actas extra de campo se deben formular manualmente si no están en catálogo.
     </p>
 
     <div style="text-align: right;">
@@ -238,104 +238,101 @@
 <script src="js/auth.js"></script>
 <script>
   const MAPA_DELITOS_COMPLETOS = {
-    // ... [Tu listado original se mantiene intacto para no inflar la respuesta, cópialo de tu código base] ...
     "CONTROL DE IDENTIDAD POLICIAL / REQUISITORIA": "PROCEDIMIENTO POLICIAL - CONTROL DE IDENTIDAD POLICIAL / REQUISITORIA"
   };
 
   const CATALOGO_ACTAS = [
-    { id: "intervencion", titulo: "01. Acta de Intervención Policial", archivo: "plantilla/acta_intervencion.docx" },
-    { id: "reg_personal", titulo: "02. Acta de Registro Personal e Incautación", archivo: "plantilla/acta_registro_personal.docx" },
-    { id: "lectura_derechos", titulo: "03. Acta de Lectura de Derechos", archivo: "plantilla/acta_lectura_derechos.docx" },
-    { id: "detencion", titulo: "04. Acta de Detención Policial", archivo: "plantilla/acta_detencion.docx" },
-    { id: "buen_trato", titulo: "05. Constancia de Buen Trato e Integridad Física", archivo: "plantilla/acta_buen_trato.docx" },
-    { id: "sit_vehicular", titulo: "06. Acta de Situación Vehicular", archivo: "plantilla/acta_situacion_vehicular.docx" },
-    { id: "reg_vehicular", titulo: "07. Acta de Registro Vehicular", archivo: "plantilla/acta_registro_vehicular.docx" },
-    { id: "lacrado", titulo: "08. Acta de Lacrado / Cadena de Custodia", archivo: "plantilla/acta_lacrado.docx" },
-    { id: "comunicacion", titulo: "09. Acta de Comunicación Telefónica al RMP", archivo: "plantilla/acta_comunicacion.docx" },
-    { id: "notif_detencion", titulo: "10. Acta de Notificación de Detención a Familiar", archivo: "plantilla/acta_notificacion_familiar.docx" },
-    { id: "dosaje_etilico", titulo: "11. Notificación para Dosaje Etílico", archivo: "plantilla/acta_dosaje_etilico.docx" },
-    { id: "control_identidad", titulo: "12. Acta de Control de Identidad Policial", archivo: "plantilla/acta_control_identidad.docx" },
-    { id: "entrega_especies", titulo: "13. Acta de Entrega y Devolución de Especies", archivo: "plantilla/acta_entrega_especies.docx" },
-    { id: "declaracion_intervenido", titulo: "14. Acta de Entrevista / Declaración del Intervenido", archivo: "plantilla/acta_declaracion.docx" }
+    { id: "acta_intervencion", titulo: "01. Acta de Intervención Policial", archivo: "plantilla/acta_intervencion.docx" },
+    { id: "acta_registro_personal", titulo: "02. Acta de Registro Personal", archivo: "plantilla/acta_registro_personal.docx" },
+    { id: "acta_lectura_derechos", titulo: "03. Acta de Lectura de Derechos", archivo: "plantilla/acta_lectura_derechos.docx" },
+    { id: "acta_detencion", titulo: "04. Acta de Detención Policial", archivo: "plantilla/acta_detencion.docx" },
+    { id: "acta_buen_trato", titulo: "05. Constancia de Buen Trato e Integridad Física", archivo: "plantilla/acta_buen_trato.docx" },
+    { id: "acta_registro_vehicular", titulo: "06. Acta de Registro Vehicular", archivo: "plantilla/acta_registro_vehicular.docx" },
+    { id: "acta_inmovilizacion", titulo: "07. Acta de Inmovilización", archivo: "plantilla/acta_inmovilizacion.docx" },
+    { id: "acta_incautacion", titulo: "08. Acta de Incautación", archivo: "plantilla/acta_incautacion.docx" },
+    { id: "acta_lacrado_cadena_custodia", titulo: "09. Acta de Lacrado y Cadena de Custodia", archivo: "plantilla/acta_lacrado_cadena_custodia.docx" },
+    { id: "formato_A-6_rotulo_indicios_evidencias", titulo: "10. Formato A-6 Rótulo de Indicios y Evidencias", archivo: "plantilla/formato_A-6_rotulo_indicios_evidencias.docx" },
+    { id: "acta_hallazgo_recojo", titulo: "11. Acta de Hallazgo y Recojo", archivo: "plantilla/acta_hallazgo_recojo.docx" },
+    { id: "acta_ocurrencia", titulo: "12. Acta de Ocurrencia", archivo: "plantilla/acta_ocurrencia.docx" },
+    { id: "acta_intervencion_control_identidad", titulo: "13. Acta de Intervención y Control de Identidad", archivo: "plantilla/acta_intervencion_control_identidad.docx" },
+    { id: "acta_constatacion", titulo: "14. Acta de Constatación", archivo: "plantilla/acta_constatacion.docx" }
   ];
 
-  // 1. DICCIONARIO MAESTRO DE PROCEDIMIENTOS PNP
   const PROCEDIMIENTOS_PNP = {
     "EBRIEDAD": {
-      kit: ["intervencion", "reg_personal", "lectura_derechos", "detencion", "buen_trato"],
-      especiales: ["reg_vehicular", "sit_vehicular", "dosaje_etilico", "comunicacion"]
+      kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
+      especiales: ["acta_registro_vehicular", "acta_inmovilizacion"]
     },
     "ARMAS": {
-      kit: ["intervencion", "reg_personal", "lectura_derechos", "detencion", "buen_trato"],
-      especiales: ["lacrado", "comunicacion"]
+      kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
+      especiales: ["acta_lacrado_cadena_custodia", "formato_A-6_rotulo_indicios_evidencias", "acta_incautacion"]
     },
     "DROGAS": {
-      kit: ["intervencion", "reg_personal", "lectura_derechos", "detencion", "buen_trato"],
-      especiales: ["lacrado", "comunicacion"]
+      kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
+      especiales: ["acta_lacrado_cadena_custodia", "formato_A-6_rotulo_indicios_evidencias", "acta_incautacion"]
     },
     "HURTO_ROBO": {
-      kit: ["intervencion", "reg_personal", "lectura_derechos", "detencion", "buen_trato"],
-      especiales: ["lacrado", "entrega_especies", "comunicacion"]
+      kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
+      especiales: ["acta_lacrado_cadena_custodia", "formato_A-6_rotulo_indicios_evidencias", "acta_incautacion"]
     },
     "RECEPTACION": {
-      kit: ["intervencion", "reg_personal", "lectura_derechos", "detencion", "buen_trato"],
-      especiales: ["lacrado", "comunicacion"]
+      kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
+      especiales: ["acta_lacrado_cadena_custodia", "formato_A-6_rotulo_indicios_evidencias", "acta_incautacion"]
     },
     "USURPACION_DANOS": {
-      kit: ["intervencion", "reg_personal", "lectura_derechos", "detencion", "buen_trato"],
-      especiales: ["comunicacion"]
+      kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
+      especiales: ["acta_constatacion"]
     },
     "EXTORSION": {
-      kit: ["intervencion", "reg_personal", "lectura_derechos", "detencion", "buen_trato"],
-      especiales: ["lacrado", "comunicacion"]
+      kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
+      especiales: ["acta_registro_vehicular", "acta_lacrado_cadena_custodia", "formato_A-6_rotulo_indicios_evidencias", "acta_incautacion"]
     },
     "FALSIFICACION": {
-      kit: ["intervencion", "reg_personal", "lectura_derechos", "detencion", "buen_trato"],
-      especiales: ["lacrado", "comunicacion"]
+      kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
+      especiales: ["acta_lacrado_cadena_custodia", "formato_A-6_rotulo_indicios_evidencias"]
     },
     "MONEDA": {
-      kit: ["intervencion", "reg_personal", "lectura_derechos", "detencion", "buen_trato"],
-      especiales: ["lacrado", "comunicacion"]
+      kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
+      especiales: ["acta_lacrado_cadena_custodia", "formato_A-6_rotulo_indicios_evidencias", "acta_incautacion"]
     },
     "VIOLENCIA_MUJER": {
-      kit: ["intervencion", "reg_personal", "lectura_derechos", "detencion", "buen_trato"],
-      especiales: ["comunicacion"]
+      kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
+      especiales: []
     },
     "LESIONES_TRANSITO": {
-      kit: ["intervencion", "reg_personal", "lectura_derechos", "detencion", "buen_trato"],
-      especiales: ["sit_vehicular", "reg_vehicular", "dosaje_etilico", "comunicacion"]
+      kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
+      especiales: ["acta_registro_vehicular", "acta_inmovilizacion"]
     },
     "HOMICIDIO": {
-      kit: ["intervencion", "reg_personal", "lectura_derechos", "detencion", "buen_trato"],
-      especiales: ["lacrado", "comunicacion"]
+      kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
+      especiales: ["acta_lacrado_cadena_custodia", "formato_A-6_rotulo_indicios_evidencias", "acta_hallazgo_recojo"]
     },
     "VIOLACION": {
-      kit: ["intervencion", "reg_personal", "lectura_derechos", "detencion", "buen_trato"],
-      especiales: ["lacrado", "comunicacion"]
+      kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
+      especiales: ["acta_lacrado_cadena_custodia", "formato_A-6_rotulo_indicios_evidencias"]
     },
     "SECUESTRO": {
-      kit: ["intervencion", "reg_personal", "lectura_derechos", "detencion", "buen_trato"],
-      especiales: ["lacrado", "comunicacion"]
+      kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
+      especiales: ["acta_lacrado_cadena_custodia", "formato_A-6_rotulo_indicios_evidencias"]
     },
     "RESISTENCIA": {
-      kit: ["intervencion", "reg_personal", "lectura_derechos", "detencion", "buen_trato"],
-      especiales: ["lacrado", "comunicacion"]
+      kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
+      especiales: ["acta_registro_vehicular", "acta_inmovilizacion"]
     },
     "COHECHO": {
-      kit: ["intervencion", "reg_personal", "lectura_derechos", "detencion", "buen_trato"],
-      especiales: ["lacrado", "comunicacion"]
+      kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
+      especiales: ["acta_lacrado_cadena_custodia", "formato_A-6_rotulo_indicios_evidencias", "acta_incautacion"]
     },
     "REQUISITORIA": {
-      kit: ["control_identidad", "reg_personal", "lectura_derechos", "detencion", "buen_trato"],
-      especiales: ["comunicacion"]
+      kit: ["acta_intervencion_control_identidad", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
+      especiales: []
     },
     "DEFAULT": {
-      kit: ["intervencion", "reg_personal", "lectura_derechos", "detencion", "buen_trato"],
-      especiales: ["comunicacion"]
+      kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
+      especiales: []
     }
   };
 
-  // 2. FUNCIÓN DE CLASIFICACIÓN INTELIGENTE
   function clasificarDelito(delito) {
     const d = delito.toUpperCase();
     if (d.includes("EBRIEDAD")) return "EBRIEDAD";
@@ -359,10 +356,9 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    // Renderizado del Catálogo de Actas
     const contenedorUI = document.getElementById('checklistContenedor');
     contenedorUI.innerHTML = "";
-    CATALOGO_ACTAS.forEach((acta, idx) => {
+    CATALOGO_ACTAS.forEach((acta) => {
       contenedorUI.innerHTML += `
         <label style="display: flex; align-items: center; gap: 10px; font-weight: normal; cursor: pointer; background: #fff; padding: 8px 12px; border-radius: 5px; border: 1px solid #cbd5e1;">
           <input type="checkbox" id="chk_${acta.id}" value="${acta.id}" style="width: 18px; height: 18px;">
@@ -371,12 +367,10 @@
       `;
     });
 
-    // 3. ESCUCHADOR DE EVENTOS PARA EL INPUT DELITO
     document.getElementById('delito_input').addEventListener('change', function(e) {
       const delitoSeleccionado = e.target.value;
       if (!delitoSeleccionado) return;
 
-      // Verificar si es una opción válida del datalist para no disparar con escritura a medias
       const opciones = Array.from(document.querySelectorAll('#delitos_lista option')).map(opt => opt.value);
       if(opciones.includes(delitoSeleccionado)) {
         aplicarProtocoloPolicial(delitoSeleccionado);
@@ -384,13 +378,12 @@
     });
   });
 
-  // 4. LÓGICA DE APLICACIÓN Y RENDERIZADO DEL MODAL
   function aplicarProtocoloPolicial(textoDelito) {
     const categoria = clasificarDelito(textoDelito);
     const protocolo = PROCEDIMIENTOS_PNP[categoria];
     if (!protocolo) return;
 
-    marcarTodas(false); // Limpia selección previa
+    marcarTodas(false);
 
     document.getElementById('modalSugerenciaDelito').innerText = `Procedimiento: ${textoDelito}`;
     const ulKit = document.getElementById('listaKitBasico');
