@@ -1,6 +1,6 @@
 /**
- * CATALOGO MASTER DE ACTAS PNP (ACTUALIZADO CON NOMBRES EXACTOS Y RUTA PLANTILLA)
- * Sistema de Gestión e Individualización de Expedientes Policiales
+ * CATALOGO MASTER DE ACTAS PNP (SISTEMA DE GESTIÓN DE EXPEDIENTES POLICIALES)
+ * Archivo: js/word.js
  */
 
 const CATALOGO_ACTAS = [
@@ -402,14 +402,14 @@ function generarBloqueCierreYFirmas(horaFin, lista) {
     const int1 = (lista && lista[0]) ? lista[0] : { nombre: '{intervenido_nombre}', dni: '{intervenido_dni}' };
     textoCierre += 
       `                                        __________________________________\n` +
-      `                                                    EL INTERVENIDO\n\n` +
+      `                                                  EL INTERVENIDO\n\n` +
       `                                        Nombre: ${int1.nombre}\n` +
       `                                        DNI N°: ${int1.dni}`;
   } else {
     lista.forEach((item, idx) => {
       textoCierre += 
         `                                        __________________________________\n` +
-        `                                                    EL INTERVENIDO N° ${idx + 1}\n\n` +
+        `                                                  EL INTERVENIDO N° ${idx + 1}\n\n` +
         `                                        Nombre: ${item.nombre}\n` +
         `                                        DNI N°: ${item.dni}\n\n`;
     });
@@ -727,7 +727,7 @@ async function ejecutarGeneracionFinalExpediente() {
       hora_detencion: horaDetencionVal
     };
 
-    // GUARDA EL ESTADO REUTILIZABLE/CLONABLE EN SUPABASE
+    // GUARDA EL ESTADO REUTILIZABLE EN SUPABASE
     try {
       if (typeof supabaseClient !== 'undefined' && supabaseClient.from) {
         await supabaseClient.from('intervenciones').insert([{
@@ -902,7 +902,8 @@ async function generarDocumentoWord(rutaPlantilla, datos) {
 
 function limpiarPantalla() {
   if (confirm("¿Deseas limpiar la pantalla para registrar un nuevo expediente?")) {
-    document.getElementById('expedienteForm').reset();
+    const form = document.getElementById('expedienteForm');
+    if (form) form.reset();
     const fechaInput = document.getElementById('fecha');
     const hora1Input = document.getElementById('hora1');
     if (fechaInput) fechaInput.value = new Date().toISOString().split('T')[0];
