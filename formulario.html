@@ -657,16 +657,20 @@
   let contadorVehiculos = 0;
 
   const MAPA_TITULOS_ACTAS = {
-    "reg_personal": "acta de registro personal",
-    "lectura_derechos": "acta de lectura de derechos",
-    "detencion": "acta de detención policial",
-    "buen_trato": "constancia de buen trato",
-    "sit_vehicular": "acta de situación vehicular",
-    "reg_vehicular": "acta de registro vehicular",
-    "intervencion": "acta de intervención policial",
-    "lacrado": "acta de lacrado / cadena de custodia",
-    "comunicacion": "acta de comunicación telefónica",
-    "hallazgo_recojo": "acta de hallazgo y recojo"
+    "acta_ocurrencia": "acta de ocurrencia",
+    "acta_intervencion_control_identidad": "acta de intervención y control de identidad",
+    "acta_constatacion": "acta de constatación",
+    "formato_A-6_rotulo_indicios_evidencias": "formato a-6 rotulo de indicios y evidencias",
+    "acta_inmovilizacion": "acta de inmovilización",
+    "acta_intervencion": "acta de intervención policial",
+    "acta_incautacion": "acta de incautación",
+    "acta_lacrado_cadena_custodia": "acta de lacrado y cadena de custodia",
+    "acta_lectura_derechos": "acta de lectura de derechos",
+    "acta_detencion": "acta de detención policial",
+    "acta_hallazgo_recojo": "acta de hallazgo y recojo",
+    "acta_registro_vehicular": "acta de registro vehicular",
+    "acta_registro_personal": "acta de registro personal",
+    "acta_buen_trato": "constancia de buen trato"
   };
 
   const TITULOS_SECCIONES_PNP = [
@@ -707,20 +711,19 @@
     if (elDelito) elDelito.innerText = delitoSel;
     if (elCant) elCant.innerText = `${cantActas} acta(s) seleccionada(s) para este expediente.`;
 
-    // Adaptar dinámicamente los campos y bloques según las actas elegidas
     adaptarFormularioPorActas(actasConfiguradas, delitoSel);
   });
 
   function adaptarFormularioPorActas(actasConfiguradas, delitoTexto) {
     const requiereVehiculos = actasConfiguradas.some(id => 
-      ["sit_vehicular", "reg_vehicular", "dosaje_etilico"].includes(id)
+      ["acta_registro_vehicular", "acta_inmovilizacion"].includes(id)
     ) || delitoTexto.toUpperCase().includes("EBRIEDAD") || delitoTexto.toUpperCase().includes("TRÁNSITO") || delitoTexto.toUpperCase().includes("CULPOSAS");
 
     const requiereEvidencia = actasConfiguradas.some(id => 
-      ["lacrado", "entrega_especies", "reg_personal"].includes(id)
+      ["acta_lacrado_cadena_custodia", "formato_A-6_rotulo_indicios_evidencias", "acta_registro_personal", "acta_incautacion"].includes(id)
     );
 
-    const requiereHallazgo = actasConfiguradas.includes("hallazgo_recojo");
+    const requiereHallazgo = actasConfiguradas.includes("acta_hallazgo_recojo");
 
     const bloqueVehiculos = document.getElementById('bloqueVehiculos');
     const bloqueEmbalaje = document.getElementById('bloqueEmbalaje');
@@ -768,7 +771,6 @@
     });
   }
 
-  /* ================= MANEJO DINÁMICO DE EFECTIVOS PNP ================= */
   function agregarEfectivoPNPCard(datos = null) {
     contadorEfectivosPNP++;
     const id = contadorEfectivosPNP;
@@ -1098,7 +1100,6 @@
   function cargarDatosEjemplo() {
     const hoy = new Date().toISOString().split('T')[0];
     
-    // 1. CARGA EFECTIVOS PNP DE PRUEBA
     document.getElementById('contenedor_efectivos_pnp').innerHTML = "";
     contadorEfectivosPNP = 0;
 
@@ -1114,7 +1115,6 @@
       cip: "32145689"
     });
 
-    // 2. CARGA INTERVENIDOS DE PRUEBA
     document.getElementById('contenedor_intervenidos').innerHTML = "";
     contadorIntervenidos = 0;
 
@@ -1148,7 +1148,6 @@
       asistido_registro: "no deseando ser asistido por ninguna persona"
     });
 
-    // 3. CARGA VEHÍCULOS DE PRUEBA
     document.getElementById('contenedor_vehiculos').innerHTML = "";
     contadorVehiculos = 0;
 
