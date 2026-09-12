@@ -2,287 +2,550 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Acta de Situación Vehicular - PNP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prototipo - Acta de Situación Vehicular PNP</title>
   <style>
-    .vehiculo-container {
-      font-family: Arial, sans-serif;
-      max-width: 900px;
-      margin: 20px auto;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 16px;
-      background: #f8fafc;
+    :root {
+      --pnp-blue: #003366;
+      --pnp-dark: #0f172a;
+      --st-bueno: #16a34a;
+      --st-malo: #d97706;
+      --st-faltante: #dc2626;
     }
-    .selector-grid {
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f1f5f9;
+      margin: 0;
+      padding: 15px;
+      color: #334155;
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--pnp-blue);
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+
+    .header-bar h2 {
+      margin: 0;
+      color: var(--pnp-blue);
+      font-size: 18px;
+    }
+
+    .grid-selectores {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
-      margin-bottom: 16px;
+      margin-bottom: 15px;
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
     }
-    .selector-box label {
-      font-weight: bold;
+
+    .select-box label {
       font-size: 12px;
-      color: #0f172a;
+      font-weight: bold;
+      color: var(--pnp-dark);
       display: block;
       margin-bottom: 4px;
     }
-    .selector-box select {
+
+    .select-box select {
       width: 100%;
       padding: 8px;
       border: 1.5px solid #0284c7;
       border-radius: 6px;
       font-size: 13px;
+      font-weight: 500;
     }
-    .esquema-wrapper {
+
+    .vistas-tabs {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-tab {
+      background: #e2e8f0;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #475569;
+      transition: all 0.2s ease;
+    }
+
+    .btn-tab.active {
+      background: var(--pnp-blue);
+      color: #ffffff;
+      box-shadow: 0 2px 5px rgba(0,51,102,0.3);
+    }
+
+    .inspection-layout {
       display: grid;
-      grid-template-columns: 320px 1fr;
+      grid-template-columns: 360px 1fr;
       gap: 16px;
-      background: #ffffff;
-      padding: 14px;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
+      align-items: start;
     }
-    /* Estilo del lienzo/esquema interactivo */
-    .canvas-vehiculo {
+
+    @media (max-width: 768px) {
+      .inspection-layout { grid-template-columns: 1fr; }
+    }
+
+    .viewscreen-box {
       position: relative;
-      width: 300px;
-      height: 220px;
-      background: #f1f5f9;
-      border: 2px dashed #94a3b8;
+      width: 100%;
+      height: 280px;
+      background: #000;
       border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid #cbd5e1;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
     }
+
+    .viewscreen-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
     .hotspot {
       position: absolute;
-      width: 24px;
-      height: 24px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
-      background: #0284c7;
-      color: white;
+      color: #ffffff;
       font-size: 11px;
       font-weight: bold;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      transition: transform 0.15s, background 0.15s;
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.9), 0 2px 6px rgba(0,0,0,0.4);
+      transform: translate(-50%, -50%);
+      transition: transform 0.15s ease, background 0.2s ease;
+      user-select: none;
     }
-    .hotspot:hover { transform: scale(1.15); }
-    .hotspot.estado-bueno { background: #16a34a; }
-    .hotspot.estado-malo { background: #d97706; }
-    .hotspot.estado-faltante { background: #dc2626; }
-    
-    .partes-lista {
-      max-height: 220px;
+
+    .hotspot:hover { transform: translate(-50%, -50%) scale(1.2); }
+    .hotspot.BUENO { background: var(--st-bueno); }
+    .hotspot.MALO { background: var(--st-malo); }
+    .hotspot.FALTANTE { background: var(--st-faltante); }
+
+    .checklist-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px;
+      max-height: 380px;
       overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
     }
-    .item-parte {
+
+    .item-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 6px 10px;
-      background: #f8fafc;
+      padding: 8px 10px;
+      background: #ffffff;
       border: 1px solid #e2e8f0;
-      border-radius: 5px;
+      border-radius: 6px;
+      margin-bottom: 6px;
       font-size: 12px;
     }
-    .btn-estado {
-      padding: 3px 8px;
-      font-size: 10px;
-      border: none;
+
+    .badge-btn {
+      padding: 4px 10px;
       border-radius: 4px;
-      cursor: pointer;
+      border: none;
+      color: #ffffff;
+      font-size: 11px;
       font-weight: bold;
+      cursor: pointer;
     }
-    .resumen-acta {
-      margin-top: 16px;
-      background: #0f172a;
-      color: #38bdf8;
+
+    .badge-btn.BUENO { background: var(--st-bueno); }
+    .badge-btn.MALO { background: var(--st-malo); }
+    .badge-btn.FALTANTE { background: var(--st-faltante); }
+
+    .ia-section {
+      margin-top: 15px;
+      background: #eff6ff;
+      border: 1.5px dashed #3b82f6;
+      border-radius: 8px;
       padding: 12px;
-      border-radius: 6px;
+    }
+
+    .output-box {
+      margin-top: 15px;
+      background: var(--pnp-dark);
+      color: #38bdf8;
+      padding: 14px;
+      border-radius: 8px;
       font-family: monospace;
       font-size: 12px;
       white-space: pre-wrap;
+      line-height: 1.5;
+    }
+
+    .btn-action {
+      background: var(--st-bueno);
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 13px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 12px;
     }
   </style>
 </head>
 <body>
 
-<div class="vehiculo-container">
-  <div class="selector-grid">
-    <div class="selector-box">
+<div class="container">
+  <div class="header-bar">
+    <h2>🚔 Inspección y Situación Vehicular Interactiva</h2>
+    <span style="font-size: 11px; color: #64748b; font-weight: bold;">Módulo PNP Independiente</span>
+  </div>
+
+  <div class="grid-selectores">
+    <div class="select-box">
       <label>1. Categoría de Vehículo:</label>
-      <select id="sel_categoria" onchange="actualizarTiposVehiculo()">
-        <option value="menor">Vehículo Menor</option>
-        <option value="mayor">Vehículo Mayor</option>
+      <select id="sel_categoria" onchange="cambiarCategoria()">
+        <option value="menor">Vehículo Menor (Mototaxi / Moto Lineal / Trimovil)</option>
+        <option value="mayor">Vehículo Mayor (Auto / Camioneta / Combi)</option>
       </select>
     </div>
-    <div class="selector-box">
-      <label>2. Clase / Tipo Específico:</label>
-      <select id="sel_clase" onchange="cargarEsquemaVehiculo()"></select>
+    <div class="select-box">
+      <label>2. Modelo / Tipo Específico:</label>
+      <select id="sel_modelo" onchange="cargarVehiculoModelo()"></select>
     </div>
   </div>
 
-  <div class="esquema-wrapper">
+  <div class="vistas-tabs" id="contenedor_tabs">
+    <button type="button" class="btn-tab active" onclick="cambiarVista('frente')">📸 1. Frente</button>
+    <button type="button" class="btn-tab" onclick="cambiarVista('perfil_izq')">📸 2. Lado Izquierdo</button>
+    <button type="button" class="btn-tab" onclick="cambiarVista('perfil_der')">📸 3. Lado Derecho</button>
+    <button type="button" class="btn-tab" onclick="cambiarVista('posterior')">📸 4. Posterior</button>
+  </div>
+
+  <div class="inspection-layout">
     <div>
-      <div style="font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 6px; text-align: center;">
-        📌 Haz clic en los puntos interactivos:
+      <div class="viewscreen-box" id="viewscreen">
+        <img id="img_vehiculo" src="" alt="Vista Vehicular">
+        <div id="hotspots_layer"></div>
       </div>
-      <div class="canvas-vehiculo" id="canvas_vehiculo"></div>
+      <div style="font-size: 11px; color: #64748b; text-align: center; margin-top: 6px;">
+        💡 Haz clic en los puntos numéricos sobre la foto para alternar: 
+        <strong style="color:var(--st-bueno);">BUENO</strong> ➔ 
+        <strong style="color:var(--st-malo);">MALO</strong> ➔ 
+        <strong style="color:var(--st-faltante);">FALTANTE</strong>
+      </div>
     </div>
 
-    <div>
-      <div style="font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 6px;">
-        ⚙️ Estado de Accesorios y Componentes:
+    <div class="checklist-box">
+      <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px; color: var(--pnp-dark);">
+        📋 Estado de Partes (Vista Activa):
       </div>
-      <div class="partes-lista" id="lista_partes"></div>
+      <div id="lista_componentes"></div>
     </div>
   </div>
 
-  <div class="resumen-acta" id="salida_narrativa">Generando texto de situación vehicular...</div>
+  <div class="ia-section">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <strong style="font-size: 13px; color: #1e40af;">🧠 Análisis Visual por IA (Gemini Vision)</strong>
+        <p style="font-size: 11px; margin: 2px 0 0 0; color: #3b82f6;">Sube las 4 fotos tomadas en el lugar de la intervención para auto-completar el diagnóstico.</p>
+      </div>
+      <button type="button" onclick="simularAnalisisIA()" style="background:#2563eb; color:white; border:none; padding:6px 12px; border-radius:5px; font-size:11px; font-weight:bold; cursor:pointer;">
+        📷 Escanear con IA
+      </button>
+    </div>
+  </div>
+
+  <div class="output-box" id="salida_narrativa">Generando texto de situación vehicular...</div>
+
+  <button type="button" class="btn-action" onclick="guardarYRetornar()">
+    💾 Guardar Situación Vehicular y Transferir al Formulario Principal
+  </button>
 </div>
 
 <script>
-  // BANCO DE DATOS DE VEHÍCULOS Y SUS PARTES ESPECÍFICAS
-  const CATALOGO_VEHICULOS = {
+  // BANCO DE CONFIGURACIONES VEHICULARES CON FOTOGRAFÍAS REALES Y PUNTOS INTERACTIVOS (COORDENADAS %)
+  const BASE_VEHICULOS = {
     menor: [
+      {
+        id: "mototaxi_bajaj",
+        nombre: "Mototaxi Bajaj / Trimovil RE",
+        vistas: {
+          frente: {
+            img: "https://images.unsplash.com/photo-1596705648834-3f338d975a22?w=600&auto=format&fit=crop&q=80",
+            partes: [
+              { id: "p1", nombre: "Parabrisas y Limpiaparabrisas", x: 50, y: 32, estado: "BUENO" },
+              { id: "p2", nombre: "Faro Principal Delantero", x: 38, y: 55, estado: "BUENO" },
+              { id: "p3", nombre: "Espejo Retrovisor Izquierdo", x: 25, y: 24, estado: "BUENO" },
+              { id: "p4", nombre: "Espejo Retrovisor Derecho", x: 75, y: 24, estado: "BUENO" },
+              { id: "p5", nombre: "Neumático Delantero", x: 50, y: 85, estado: "BUENO" }
+            ]
+          },
+          perfil_izq: {
+            img: "https://images.unsplash.com/photo-1596705648834-3f338d975a22?w=600&auto=format&fit=crop&q=80",
+            partes: [
+              { id: "p6", nombre: "Carpa / Toldo Lateral", x: 45, y: 35, estado: "BUENO" },
+              { id: "p7", nombre: "Puerta / Lona de Ingreso", x: 40, y: 55, estado: "BUENO" },
+              { id: "p8", nombre: "Neumático Posterior Izquierdo", x: 75, y: 78, estado: "BUENO" }
+            ]
+          },
+          perfil_der: {
+            img: "https://images.unsplash.com/photo-1596705648834-3f338d975a22?w=600&auto=format&fit=crop&q=80",
+            partes: [
+              { id: "p9", nombre: "Llanta de Repuesto Exterior", x: 50, y: 50, estado: "FALTANTE" },
+              { id: "p10", nombre: "Neumático Posterior Derecho", x: 75, y: 78, estado: "BUENO" }
+            ]
+          },
+          posterior: {
+            img: "https://images.unsplash.com/photo-1596705648834-3f338d975a22?w=600&auto=format&fit=crop&q=80",
+            partes: [
+              { id: "p11", nombre: "Faros Posteriores y Frenos", x: 30, y: 65, estado: "BUENO" },
+              { id: "p12", nombre: "Placa de Rodaje Posterior", x: 50, y: 70, estado: "BUENO" },
+              { id: "p13", nombre: "Tubo de Escape", x: 70, y: 82, estado: "BUENO" }
+            ]
+          }
+        }
+      },
       {
         id: "moto_lineal",
         nombre: "Motocicleta Lineal",
-        svg: `<svg width="180" height="120" viewBox="0 0 100 60"><circle cx="20" cy="45" r="10" fill="none" stroke="#334155" stroke-width="3"/><circle cx="80" cy="45" r="10" fill="none" stroke="#334155" stroke-width="3"/><path d="M20 45 L40 25 L65 25 L80 45 M40 25 L35 15 L25 15 M50 25 L50 45" fill="none" stroke="#0284c7" stroke-width="3"/></svg>`,
-        partes: [
-          { id: "faro_del", nombre: "Faro Delantero", x: 78, y: 20, estado: "BUENO" },
-          { id: "espejos", nombre: "Espejos Retrovisores (x2)", x: 30, y: 12, estado: "BUENO" },
-          { id: "tablero", nombre: "Tablero de Instrumentos / Velocímetro", x: 40, y: 18, estado: "BUENO" },
-          { id: "tanque", nombre: "Tanque de Combustible", x: 50, y: 25, estado: "BUENO" },
-          { id: "asiento", nombre: "Asiento / Montura", x: 62, y: 24, estado: "BUENO" },
-          { id: "neumatico_del", nombre: "Neumático Delantero", x: 80, y: 45, estado: "BUENO" },
-          { id: "neumatico_post", nombre: "Neumático Posterior", x: 20, y: 45, estado: "BUENO" },
-          { id: "escape", nombre: "Tubo de Escape / Silenciador", x: 35, y: 48, estado: "BUENO" }
-        ]
-      },
-      {
-        id: "mototaxi",
-        nombre: "Trimovil / Mototaxi",
-        svg: `<svg width="180" height="120" viewBox="0 0 100 60"><circle cx="20" cy="45" r="8" fill="none" stroke="#334155" stroke-width="3"/><circle cx="45" cy="45" r="8" fill="none" stroke="#334155" stroke-width="3"/><circle cx="80" cy="45" r="8" fill="none" stroke="#334155" stroke-width="3"/><rect x="15" y="15" width="45" height="25" fill="none" stroke="#0284c7" stroke-width="2"/><path d="M60 40 L80 45 L75 25 Z" fill="none" stroke="#0284c7" stroke-width="2"/></svg>`,
-        partes: [
-          { id: "faro_del", nombre: "Faro Principal Delantero", x: 80, y: 30, estado: "BUENO" },
-          { id: "carpa", nombre: "Carpa / Toldo Protector", x: 35, y: 15, estado: "BUENO" },
-          { id: "parabrisas", nombre: "Parabrisas Delantero y Micas", x: 72, y: 22, estado: "BUENO" },
-          { id: "llanta_rep", nombre: "Llanta de Repuesto", x: 15, y: 25, estado: "FALTANTE" },
-          { id: "asiento_pas", nombre: "Asiento Posterior de Pasajeros", x: 35, y: 30, estado: "BUENO" }
-        ]
+        vistas: {
+          frente: {
+            img: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=600&auto=format&fit=crop&q=80",
+            partes: [
+              { id: "m1", nombre: "Faro Delantero y Direccionales", x: 50, y: 35, estado: "BUENO" },
+              { id: "m2", nombre: "Manillar y Manijas de Freno", x: 35, y: 25, estado: "BUENO" },
+              { id: "m3", nombre: "Tablero de Instrumentos", x: 50, y: 22, estado: "BUENO" },
+              { id: "m4", nombre: "Neumático Delantero", x: 50, y: 75, estado: "BUENO" }
+            ]
+          },
+          perfil_izq: {
+            img: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=600&auto=format&fit=crop&q=80",
+            partes: [
+              { id: "m5", nombre: "Tanque de Gasolina", x: 45, y: 38, estado: "BUENO" },
+              { id: "m6", nombre: "Asiento / Cojín", x: 65, y: 38, estado: "BUENO" },
+              { id: "m7", nombre: "Cadena y Transmisión", x: 70, y: 72, estado: "BUENO" }
+            ]
+          },
+          perfil_der: {
+            img: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=600&auto=format&fit=crop&q=80",
+            partes: [
+              { id: "m8", nombre: "Tubo de Escape / Silenciador", x: 70, y: 68, estado: "BUENO" },
+              { id: "m9", nombre: "Pedal de Freno Posterior", x: 50, y: 65, estado: "BUENO" }
+            ]
+          },
+          posterior: {
+            img: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=600&auto=format&fit=crop&q=80",
+            partes: [
+              { id: "m10", nombre: "Faro Posterior Rojo de Freno", x: 50, y: 40, estado: "BUENO" },
+              { id: "m11", nombre: "Neumático Posterior", x: 50, y: 78, estado: "BUENO" }
+            ]
+          }
+        }
       }
     ],
     mayor: [
       {
-        id: "automovil",
+        id: "auto_sedan",
         nombre: "Automóvil / Sedan",
-        svg: `<svg width="200" height="100" viewBox="0 0 100 50"><path d="M10 35 L20 20 L40 15 L70 15 L85 25 L95 35 Z" fill="none" stroke="#0284c7" stroke-width="3"/><circle cx="25" cy="35" r="7" fill="none" stroke="#334155" stroke-width="3"/><circle cx="75" cy="35" r="7" fill="none" stroke="#334155" stroke-width="3"/></svg>`,
-        partes: [
-          { id: "faro_del", nombre: "Faros Delanteros (Izq/Der)", x: 88, y: 30, estado: "BUENO" },
-          { id: "parabrisas_del", nombre: "Parabrisas Delantero", x: 65, y: 18, estado: "BUENO" },
-          { id: "capot", nombre: "Capot y Motor", x: 80, y: 24, estado: "BUENO" },
-          { id: "radio", nombre: "Autoradio / Pantalla Multimedios", x: 50, y: 24, estado: "BUENO" },
-          { id: "bateria", nombre: "Batería de Vehículo", x: 75, y: 12, estado: "BUENO" },
-          { id: "faros_post", nombre: "Faros Posteriores", x: 12, y: 28, estado: "BUENO" },
-          { id: "neumaticos", nombre: "Neumáticos (4 Unidades)", x: 25, y: 35, estado: "BUENO" },
-          { id: "llanta_rep", nombre: "Llanta de Repuesto", x: 18, y: 15, estado: "BUENO" }
-        ]
+        vistas: {
+          frente: {
+            img: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80",
+            partes: [
+              { id: "a1", nombre: "Parabrisas Delantero", x: 50, y: 30, estado: "BUENO" },
+              { id: "a2", nombre: "Capot y Motor", x: 50, y: 55, estado: "BUENO" },
+              { id: "a3", nombre: "Faros Principales (Par)", x: 25, y: 58, estado: "BUENO" },
+              { id: "a4", nombre: "Parachoque Delantero", x: 50, y: 75, estado: "BUENO" }
+            ]
+          },
+          perfil_izq: {
+            img: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80",
+            partes: [
+              { id: "a5", nombre: "Espejo Lateral Izquierdo", x: 30, y: 40, estado: "BUENO" },
+              { id: "a6", nombre: "Ventanas Laterales Left", x: 50, y: 35, estado: "BUENO" },
+              { id: "a7", nombre: "Neumático Delantero Izq", x: 25, y: 70, estado: "BUENO" },
+              { id: "a8", nombre: "Neumático Posterior Izq", x: 75, y: 70, estado: "BUENO" }
+            ]
+          },
+          perfil_der: {
+            img: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80",
+            partes: [
+              { id: "a9", nombre: "Espejo Lateral Derecho", x: 30, y: 40, estado: "BUENO" },
+              { id: "a10", nombre: "Tapa de Tanque de Combustible", x: 80, y: 50, estado: "BUENO" }
+            ]
+          },
+          posterior: {
+            img: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80",
+            partes: [
+              { id: "a11", nombre: "Malotero / Cuelga", x: 50, y: 45, estado: "BUENO" },
+              { id: "a12", nombre: "Faros Posteriores", x: 25, y: 50, estado: "BUENO" },
+              { id: "a13", nombre: "Placa de Rodaje", x: 50, y: 65, estado: "BUENO" }
+            ]
+          }
+        }
       }
     ]
   };
 
-  let vehiculoActual = null;
+  let estadoActualVehiculo = null;
+  let vistaActiva = 'frente';
 
-  function actualizarTiposVehiculo() {
+  function cambiarCategoria() {
     const cat = document.getElementById('sel_categoria').value;
-    const selClase = document.getElementById('sel_clase');
-    selClase.innerHTML = "";
+    const selModelo = document.getElementById('sel_modelo');
+    selModelo.innerHTML = "";
     
-    CATALOGO_VEHICULOS[cat].forEach(v => {
-      selClase.innerHTML += `<option value="${v.id}">${v.nombre}</option>`;
+    BASE_VEHICULOS[cat].forEach(item => {
+      selModelo.innerHTML += `<option value="${item.id}">${item.nombre}</option>`;
     });
-    cargarEsquemaVehiculo();
+
+    cargarVehiculoModelo();
   }
 
-  function cargarEsquemaVehiculo() {
+  function cargarVehiculoModelo() {
     const cat = document.getElementById('sel_categoria').value;
-    const claseId = document.getElementById('sel_clase').value;
-    const datos = CATALOGO_VEHICULOS[cat].find(v => v.id === claseId);
-    
-    // Clonar objeto para manipulación local
-    vehiculoActual = JSON.parse(JSON.stringify(datos));
-    renderizarUI();
+    const modeloId = document.getElementById('sel_modelo').value;
+    const modeloBase = BASE_VEHICULOS[cat].find(m => m.id === modeloId);
+
+    // Deep clone para mantener estados de la sesión
+    estadoActualVehiculo = JSON.parse(JSON.stringify(modeloBase));
+    vistaActiva = 'frente';
+    renderizarVistasTabs();
+    renderizarPantalla();
   }
 
-  function renderizarUI() {
-    const canvas = document.getElementById('canvas_vehiculo');
-    const lista = document.getElementById('lista_partes');
+  function renderizarVistasTabs() {
+    const btns = document.querySelectorAll('.btn-tab');
+    btns.forEach(btn => btn.classList.remove('active'));
     
-    canvas.innerHTML = vehiculoActual.svg;
+    const mapaIndices = { frente: 0, perfil_izq: 1, perfil_der: 2, posterior: 3 };
+    if (btns[mapaIndices[vistaActiva]]) {
+      btns[mapaIndices[vistaActiva]].classList.add('active');
+    }
+  }
+
+  function cambiarVista(nombreVista) {
+    vistaActiva = nombreVista;
+    renderizarVistasTabs();
+    renderizarPantalla();
+  }
+
+  function renderizarPantalla() {
+    const datosVista = estadoActualVehiculo.vistas[vistaActiva];
+    document.getElementById('img_vehiculo').src = datosVista.img;
+
+    const layer = document.getElementById('hotspots_layer');
+    const lista = document.getElementById('lista_componentes');
+    layer.innerHTML = "";
     lista.innerHTML = "";
 
-    vehiculoActual.partes.forEach((parte, index) => {
-      // 1. Dibujar Hotspot sobre el Canvas 2D
-      const btnSt = parte.estado.toLowerCase();
-      canvas.innerHTML += `
-        <div class="hotspot estado-${btnSt}" 
-             style="left: ${parte.x}%; top: ${parte.y}%;" 
-             title="${parte.nombre}: ${parte.estado}"
-             onclick="rotarEstado('${parte.id}')">
-          ${index + 1}
-        </div>
-      `;
+    datosVista.partes.forEach((parte, index) => {
+      // 1. Render Hotspot sobre la foto
+      const hs = document.createElement('div');
+      hs.className = `hotspot ${parte.estado}`;
+      hs.style.left = `${parte.x}%`;
+      hs.style.top = `${parte.y}%`;
+      hs.innerText = index + 1;
+      hs.title = `${parte.nombre}: ${parte.estado}`;
+      hs.onclick = () => rotarEstadoParte(parte.id);
+      layer.appendChild(hs);
 
-      // 2. Renderizar fila en la lista lateral
+      // 2. Render Fila en Lista Lateral
       lista.innerHTML += `
-        <div class="item-parte">
+        <div class="item-row">
           <span><strong>${index + 1}.</strong> ${parte.nombre}</span>
-          <button type="button" class="btn-estado estado-${btnSt}" onclick="rotarEstado('${parte.id}')">
+          <button type="button" class="badge-btn ${parte.estado}" onclick="rotarEstadoParte('${parte.id}')">
             ${parte.estado}
           </button>
         </div>
       `;
     });
 
-    generarNarrativaActa();
+    actualizarNarrativaTexto();
   }
 
-  function rotarEstado(parteId) {
-    const parte = vehiculoActual.partes.find(p => p.id === parteId);
+  function rotarEstadoParte(parteId) {
+    const datosVista = estadoActualVehiculo.vistas[vistaActiva];
+    const parte = datosVista.partes.find(p => p.id === parteId);
     if (!parte) return;
 
     if (parte.estado === "BUENO") parte.estado = "MALO";
     else if (parte.estado === "MALO") parte.estado = "FALTANTE";
     else parte.estado = "BUENO";
 
-    renderizarUI();
+    renderizarPantalla();
   }
 
-  function generarNarrativaActa() {
-    const faltantes = vehiculoActual.partes.filter(p => p.estado === "FALTANTE").map(p => p.nombre);
-    const malos = vehiculoActual.partes.filter(p => p.estado === "MALO").map(p => p.nombre);
-    const buenos = vehiculoActual.partes.filter(p => p.estado === "BUENO").map(p => p.nombre);
+  function obtenerTodasLasPartes() {
+    let acumulador = [];
+    for (let key in estadoActualVehiculo.vistas) {
+      acumulador = acumulador.concat(estadoActualVehiculo.vistas[key].partes);
+    }
+    return acumulador;
+  }
 
-    let texto = `ACTA DE SITUACIÓN VEHICULAR (${vehiculoActual.nombre.toUpperCase()})\n`;
-    texto += `--------------------------------------------------------\n`;
-    texto += `1. ACCESORIOS EN BUEN ESTADO: ${buenos.join(', ') || 'NINGUNO'}.\n`;
-    texto += `2. ACCESORIOS EN MAL ESTADO / DETERIORADOS: ${malos.join(', ') || 'NINGUNO'}.\n`;
-    texto += `3. ACCESORIOS FALTANTES / INEXISTENTES: ${faltantes.join(', ') || 'NINGUNO'}.\n`;
+  function actualizarNarrativaTexto() {
+    const todas = obtenerTodasLasPartes();
+    const buenos = todas.filter(p => p.estado === "BUENO").map(p => p.nombre);
+    const malos = todas.filter(p => p.estado === "MALO").map(p => p.nombre);
+    const faltantes = todas.filter(p => p.estado === "FALTANTE").map(p => p.nombre);
+
+    let texto = `ACTA DE SITUACIÓN VEHICULAR DE ${estadoActualVehiculo.nombre.toUpperCase()}\n`;
+    texto += `========================================================================\n`;
+    texto += `1. ESTADO DE CONSERVACIÓN / ACCESORIOS EN BUEN ESTADO:\n   ${buenos.join(', ') || 'NINGUNO'}.\n\n`;
+    texto += `2. ACCESORIOS CON DAÑOS / DETERIORADOS / REGULAR ESTADO:\n   ${malos.join(', ') || 'NINGUNO'}.\n\n`;
+    texto += `3. ACCESORIOS FALTANTES / INEXISTENTES:\n   ${faltantes.join(', ') || 'NINGUNO'}.`;
 
     document.getElementById('salida_narrativa').innerText = texto;
   }
 
-  // Inicializar al cargar
-  actualizarTiposVehiculo();
+  function simularAnalisisIA() {
+    alert("🤖 Gemini Vision API: Analizando imágenes cargadas...");
+    // Simular detección automática de daños en una parte
+    const datosVista = estadoActualVehiculo.vistas.frente;
+    if (datosVista.partes[1]) datosVista.partes[1].estado = "MALO";
+    if (datosVista.partes[3]) datosVista.partes[3].estado = "FALTANTE";
+    
+    renderizarPantalla();
+    alert("✅ ¡Análisis completado! Se detectaron 01 componente deteriorado y 01 faltante.");
+  }
+
+  function guardarYRetornar() {
+    const narrativa = document.getElementById('salida_narrativa').innerText;
+    localStorage.setItem('pnp_acta_situacion_vehicular_resultado', narrativa);
+    alert("💾 ¡Situación vehicular guardada correctamente en el sistema!");
+  }
+
+  // Inicialización
+  cambiarCategoria();
 </script>
 
 </body>
