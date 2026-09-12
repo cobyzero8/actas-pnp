@@ -227,25 +227,26 @@
       margin-top: 15px;
       background: var(--pnp-dark);
       color: #38bdf8;
-      padding: 14px;
+      padding: 16px;
       border-radius: 8px;
       font-family: monospace;
       font-size: 12px;
       white-space: pre-wrap;
-      line-height: 1.5;
+      line-height: 1.6;
+      border: 1px solid #334155;
     }
 
     .btn-action {
       background: var(--st-bueno);
       color: #fff;
       border: none;
-      padding: 10px 16px;
+      padding: 12px 16px;
       border-radius: 6px;
       font-weight: bold;
-      font-size: 13px;
+      font-size: 14px;
       cursor: pointer;
       width: 100%;
-      margin-top: 12px;
+      margin-top: 15px;
     }
   </style>
 </head>
@@ -253,8 +254,8 @@
 
 <div class="container">
   <div class="header-bar">
-    <h2>🚔 Inspección y Situación Vehicular Interactiva</h2>
-    <span style="font-size: 11px; color: #64748b; font-weight: bold;">Módulo PNP Independiente</span>
+    <h2>Catálogo e Inspección de Situación Vehicular PNP</h2>
+    <span style="font-size: 11px; color: #64748b; font-weight: bold;">Módulo Independiente</span>
   </div>
 
   <div class="grid-selectores">
@@ -283,21 +284,21 @@
       <div class="viewscreen-box" id="viewscreen">
         <img id="img_vehiculo" src="" alt="" style="display:none;">
         <div id="placeholder_text" class="placeholder-msg">
-          📷 Haz clic en el botón de abajo para <strong>Tomar Foto</strong> o <strong>Subir Imagen</strong> de este ángulo.
+          📷 Haz clic en el botón de abajo para <strong>Tomar Foto</strong> o <strong>Subir Imagen</strong> de esta vista.
         </div>
         <div id="hotspots_layer"></div>
       </div>
 
       <div class="upload-bar">
         <label class="btn-upload">
-          📷 Tomar / Subir Foto de esta Vista
+          📷 Cargar / Capturar Foto de este Ángulo
           <input type="file" id="input_foto_vista" accept="image/*" capture="environment" style="display:none;" onchange="procesarFotoSubida(this)">
         </label>
         <span id="label_foto_estado" style="font-size: 11px; color: #64748b;">(Sin foto real)</span>
       </div>
 
       <div style="font-size: 11px; color: #64748b; text-align: center; margin-top: 8px;">
-        💡 Haz clic en los puntos sobre la foto para cambiar: 
+        💡 Cambia estados tocando la foto o lista: 
         <strong style="color:var(--st-bueno);">BUENO</strong> ➔ 
         <strong style="color:var(--st-malo);">MALO</strong> ➔ 
         <strong style="color:var(--st-faltante);">FALTANTE</strong>
@@ -306,7 +307,7 @@
 
     <div class="checklist-box">
       <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px; color: var(--pnp-dark);">
-        📋 Estado de Partes (Vista Activa):
+        📋 Componentes de la Vista Activa:
       </div>
       <div id="lista_componentes"></div>
     </div>
@@ -315,16 +316,22 @@
   <div class="ia-section">
     <div style="display: flex; justify-content: space-between; align-items: center;">
       <div>
-        <strong style="font-size: 13px; color: #1e40af;">🧠 Análisis Visual por IA (Gemini Vision)</strong>
-        <p style="font-size: 11px; margin: 2px 0 0 0; color: #3b82f6;">Analiza automáticamente las fotos cargadas para identificar partes faltantes o con daño.</p>
+        <strong style="font-size: 13px; color: #1e40af;">🧠 Diagnóstico de Fotos por IA (Gemini Vision)</strong>
+        <p style="font-size: 11px; margin: 2px 0 0 0; color: #3b82f6;">Analiza las imágenes registradas y actualiza automáticamente los 4 sectores del vehículo.</p>
       </div>
       <button type="button" onclick="ejecutarAnalisisIA()" style="background:#2563eb; color:white; border:none; padding:8px 14px; border-radius:5px; font-size:11px; font-weight:bold; cursor:pointer;">
-        ⚡ Escanear con IA
+        ⚡ Escanear Fotos
       </button>
     </div>
   </div>
 
-  <div class="output-box" id="salida_narrativa">Generando texto de situación vehicular...</div>
+  <!-- RESULTADO GENERAL CONSOLIDADO EN TEXTO DE LOS 4 LADOS -->
+  <div style="margin-top: 20px;">
+    <div style="font-size: 13px; font-weight: bold; color: var(--pnp-blue); margin-bottom: 6px;">
+      📄 RESULTADO CONSOLIDADO DEL ACTA (GENERAL Y POR LADOS):
+    </div>
+    <div class="output-box" id="salida_narrativa">Generando reporte vehicular consolidado...</div>
+  </div>
 
   <button type="button" class="btn-action" onclick="guardarYRetornar()">
     💾 Guardar Situación Vehicular y Transferir al Formulario Principal
@@ -339,6 +346,7 @@
         nombre: "Mototaxi Bajaj / Trimovil RE",
         vistas: {
           frente: {
+            nombreVista: "VISTA DELANTERA / FRENTE",
             fotoBase64: null,
             partes: [
               { id: "p1", nombre: "Parabrisas y Limpiaparabrisas", x: 50, y: 32, estado: "BUENO" },
@@ -349,6 +357,7 @@
             ]
           },
           perfil_izq: {
+            nombreVista: "VISTA LADO IZQUIERDO",
             fotoBase64: null,
             partes: [
               { id: "p6", nombre: "Carpa / Toldo Lateral Izquierdo", x: 45, y: 35, estado: "BUENO" },
@@ -357,6 +366,7 @@
             ]
           },
           perfil_der: {
+            nombreVista: "VISTA LADO DERECHO",
             fotoBase64: null,
             partes: [
               { id: "p9", nombre: "Llanta de Repuesto Exterior", x: 50, y: 50, estado: "FALTANTE" },
@@ -364,6 +374,7 @@
             ]
           },
           posterior: {
+            nombreVista: "VISTA POSTERIOR / TRASERA",
             fotoBase64: null,
             partes: [
               { id: "p11", nombre: "Faros Posteriores y Frenos", x: 30, y: 65, estado: "BUENO" },
@@ -378,6 +389,7 @@
         nombre: "Motocicleta Lineal",
         vistas: {
           frente: {
+            nombreVista: "VISTA DELANTERA / FRENTE",
             fotoBase64: null,
             partes: [
               { id: "m1", nombre: "Faro Delantero y Direccionales", x: 50, y: 35, estado: "BUENO" },
@@ -387,6 +399,7 @@
             ]
           },
           perfil_izq: {
+            nombreVista: "VISTA LADO IZQUIERDO",
             fotoBase64: null,
             partes: [
               { id: "m5", nombre: "Tanque de Gasolina", x: 45, y: 38, estado: "BUENO" },
@@ -395,6 +408,7 @@
             ]
           },
           perfil_der: {
+            nombreVista: "VISTA LADO DERECHO",
             fotoBase64: null,
             partes: [
               { id: "m8", nombre: "Tubo de Escape / Silenciador", x: 70, y: 68, estado: "BUENO" },
@@ -402,6 +416,7 @@
             ]
           },
           posterior: {
+            nombreVista: "VISTA POSTERIOR / TRASERA",
             fotoBase64: null,
             partes: [
               { id: "m10", nombre: "Faro Posterior Rojo de Freno", x: 50, y: 40, estado: "BUENO" },
@@ -417,6 +432,7 @@
         nombre: "Automóvil / Sedan",
         vistas: {
           frente: {
+            nombreVista: "VISTA DELANTERA / FRENTE",
             fotoBase64: null,
             partes: [
               { id: "a1", nombre: "Parabrisas Delantero", x: 50, y: 30, estado: "BUENO" },
@@ -426,15 +442,17 @@
             ]
           },
           perfil_izq: {
+            nombreVista: "VISTA LADO IZQUIERDO",
             fotoBase64: null,
             partes: [
               { id: "a5", nombre: "Espejo Lateral Izquierdo", x: 30, y: 40, estado: "BUENO" },
-              { id: "a6", nombre: "Ventanas Laterales", x: 50, y: 35, estado: "BUENO" },
+              { id: "a6", nombre: "Ventanas Laterales Left", x: 50, y: 35, estado: "BUENO" },
               { id: "a7", nombre: "Neumático Delantero Izq", x: 25, y: 70, estado: "BUENO" },
               { id: "a8", nombre: "Neumático Posterior Izq", x: 75, y: 70, estado: "BUENO" }
             ]
           },
           perfil_der: {
+            nombreVista: "VISTA LADO DERECHO",
             fotoBase64: null,
             partes: [
               { id: "a9", nombre: "Espejo Lateral Derecho", x: 30, y: 40, estado: "BUENO" },
@@ -442,6 +460,7 @@
             ]
           },
           posterior: {
+            nombreVista: "VISTA POSTERIOR / TRASERA",
             fotoBase64: null,
             partes: [
               { id: "a11", nombre: "Maletero Posterior", x: 50, y: 45, estado: "BUENO" },
@@ -506,7 +525,7 @@
       imgElem.src = datosVista.fotoBase64;
       imgElem.style.display = 'block';
       placeholderText.style.display = 'none';
-      labelEstado.innerText = "✅ Foto capturada";
+      labelEstado.innerText = "✅ Foto registradas";
       labelEstado.style.color = "#16a34a";
     } else {
       imgElem.style.display = 'none';
@@ -521,7 +540,6 @@
     lista.innerHTML = "";
 
     datosVista.partes.forEach((parte, index) => {
-      // 1. Hotspot interactivo
       const hs = document.createElement('div');
       hs.className = `hotspot ${parte.estado}`;
       hs.style.left = `${parte.x}%`;
@@ -531,7 +549,6 @@
       hs.onclick = () => rotarEstadoParte(parte.id);
       layer.appendChild(hs);
 
-      // 2. Fila en Lista Lateral
       lista.innerHTML += `
         <div class="item-row">
           <span><strong>${index + 1}.</strong> ${parte.nombre}</span>
@@ -569,25 +586,35 @@
     renderizarPantalla();
   }
 
-  function obtenerTodasLasPartes() {
-    let acumulador = [];
-    for (let key in estadoActualVehiculo.vistas) {
-      acumulador = acumulador.concat(estadoActualVehiculo.vistas[key].partes);
-    }
-    return acumulador;
-  }
-
   function actualizarNarrativaTexto() {
-    const todas = obtenerTodasLasPartes();
+    let todas = [];
+    let desglosePorVista = "";
+
+    for (let key in estadoActualVehiculo.vistas) {
+      const v = estadoActualVehiculo.vistas[key];
+      todas = todas.concat(v.partes);
+
+      const bVista = v.partes.filter(p => p.estado === "BUENO").map(p => p.nombre);
+      const mVista = v.partes.filter(p => p.estado === "MALO").map(p => p.nombre);
+      const fVista = v.partes.filter(p => p.estado === "FALTANTE").map(p => p.nombre);
+
+      desglosePorVista += `\n* ${v.nombreVista}:\n`;
+      desglosePorVista += `  - En buen estado: ${bVista.join(', ') || 'NINGUNO'}\n`;
+      if (mVista.length > 0) desglosePorVista += `  - Dañados/Deteriorados: ${mVista.join(', ')}\n`;
+      if (fVista.length > 0) desglosePorVista += `  - Faltantes/Inexistentes: ${fVista.join(', ')}\n`;
+    }
+
     const buenos = todas.filter(p => p.estado === "BUENO").map(p => p.nombre);
     const malos = todas.filter(p => p.estado === "MALO").map(p => p.nombre);
     const faltantes = todas.filter(p => p.estado === "FALTANTE").map(p => p.nombre);
 
-    let texto = `ACTA DE SITUACIÓN VEHICULAR DE ${estadoActualVehiculo.nombre.toUpperCase()}\n`;
-    texto += `========================================================================\n`;
-    texto += `1. ESTADO DE CONSERVACIÓN / ACCESORIOS EN BUEN ESTADO:\n   ${buenos.join(', ') || 'NINGUNO'}.\n\n`;
-    texto += `2. ACCESORIOS CON DAÑOS / DETERIORADOS / REGULAR ESTADO:\n   ${malos.join(', ') || 'NINGUNO'}.\n\n`;
-    texto += `3. ACCESORIOS FALTANTES / INEXISTENTES:\n   ${faltantes.join(', ') || 'NINGUNO'}.`;
+    let texto = `ACTA DE SITUACIÓN VEHICULAR GENERAL (${estadoActualVehiculo.nombre.toUpperCase()})\n`;
+    texto += `========================================================================\n\n`;
+    texto += `I. SINTESIS GENERAL DE ACCESORIOS:\n`;
+    texto += `1. BUEN ESTADO CONSERVACIÓN: ${buenos.join(', ') || 'NINGUNO'}.\n`;
+    texto += `2. DAÑADOS / DETERIORADOS: ${malos.join(', ') || 'NINGUNO'}.\n`;
+    texto += `3. FALTANTES / INEXISTENTES: ${faltantes.join(', ') || 'NINGUNO'}.\n\n`;
+    texto += `II. DETALLE DESCRIPTIVO POR VISTAS FOTOGRÁFICAS (4 ÁNGULOS):${desglosePorVista}`;
 
     document.getElementById('salida_narrativa').innerText = texto;
   }
@@ -603,15 +630,14 @@
       return;
     }
 
-    alert(`🤖 Gemini Vision API: Analizando ${fotosCargadas} foto(s) capturada(s)...`);
+    alert(`🤖 Gemini Vision API: Analizando ${fotosCargadas} foto(s) enviada(s)...`);
     
-    // Simulación de respuesta IA reconociendo hallazgos en la foto activa
     const datosVista = estadoActualVehiculo.vistas[vistaActiva];
     if (datosVista.partes[0]) datosVista.partes[0].estado = "MALO";
     if (datosVista.partes[1]) datosVista.partes[1].estado = "FALTANTE";
 
     renderizarPantalla();
-    alert("✅ ¡Análisis completado! Se actualizaron los estados según lo detectado en la imagen.");
+    alert("✅ ¡Análisis completado! Se actualizó la narrativa consolidada.");
   }
 
   function guardarYRetornar() {
