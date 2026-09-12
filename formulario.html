@@ -234,36 +234,6 @@
   </div>
 </div>
 
-<!-- MODAL DE HORARIOS POR ACTA -->
-<div id="modalHoras" class="modal-overlay">
-  <div class="modal-content">
-    <h3 id="modalHorasTitulo" style="margin-top: 0; color: #003366; font-size: 16px;">
-      ⏰ Horario de la Diligencia
-    </h3>
-    <p id="modalHorasSubtitulo" style="font-size: 12px; color: #64748b; margin-bottom: 15px;"></p>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-      <div>
-        <label style="font-size: 11px; font-weight: bold; color: #333; display: block; margin-bottom: 4px;">Hora Inicio:</label>
-        <input type="time" id="modalHoraInicio" style="width: 100%; box-sizing: border-box; padding: 8px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; font-weight: bold;">
-      </div>
-      <div>
-        <label style="font-size: 11px; font-weight: bold; color: #333; display: block; margin-bottom: 4px;">Hora Término:</label>
-        <input type="time" id="modalHoraTermino" style="width: 100%; box-sizing: border-box; padding: 8px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; font-weight: bold;">
-      </div>
-    </div>
-
-    <div style="display: flex; gap: 8px; justify-content: flex-end;">
-      <button type="button" class="btn btn-secondary" onclick="cancelarProcesoHoras()" style="width: auto; padding: 8px 12px; font-size: 12px;">
-        ❌ Cancelar
-      </button>
-      <button type="button" id="btnSiguienteHora" class="btn btn-primary" onclick="confirmarHoraActaActual()" style="width: auto; padding: 8px 14px; font-size: 12px;">
-        Siguiente ➡️
-      </button>
-    </div>
-  </div>
-</div>
-
 <div class="container" style="max-width: 1150px;">
   <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -759,6 +729,29 @@
     "VIII. COMUNICACIÓN AL RMP:"
   ];
 
+  // FUNCIÓN AUXILIAR PARA FORMATEAR NOMBRES EN FORMATO "Nombres, APELLIDOS"
+  function formatearNombreInvertido(nombre) {
+    if (!nombre) return "S/N";
+    nombre = nombre.trim();
+    if (nombre.includes(',')) {
+      const partes = nombre.split(',').map(p => p.trim());
+      if (partes.length >= 2) {
+        return `${partes[1]}, ${partes[0]}`;
+      }
+    }
+    return nombre;
+  }
+
+  // FUNCIÓN AUXILIAR PARA FORMATEAR DETALLES DE VEHÍCULOS CON COMAS
+  function formatearDetalleVehiculo(veh) {
+    if (!veh) return "placa de rodaje NO REGISTRA, marca NO REGISTRA, modelo NO REGISTRA, color NO REGISTRA";
+    const placa = veh.placa || 'NO REGISTRA';
+    const marca = veh.marca || 'NO REGISTRA';
+    const modelo = veh.modelo || 'NO REGISTRA';
+    const color = veh.color || 'NO REGISTRA';
+    return `placa de rodaje ${placa}, marca ${marca}, modelo ${modelo}, color ${color}`;
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     agregarEfectivoPNPCard();
     agregarIntervenidoCard();
@@ -1069,9 +1062,10 @@
     const lista = obtenerListaIntervenidos();
     if (lista.length === 0) return "el intervenido";
     if (lista.length === 1) {
-      return `${lista[0].nombre} (${lista[0].edad} años), identificado con DNI N° ${lista[0].dni}`;
+      const nomInv = formatearNombreInvertido(lista[0].nombre);
+      return `${nomInv} (${lista[0].edad} años), identificado con DNI N° ${lista[0].dni}`;
     }
-    const textos = lista.map(item => `${item.nombre} (${item.edad} años), DNI N° ${item.dni}`);
+    const textos = lista.map(item => `${formatearNombreInvertido(item.nombre)} (${item.edad} años), DNI N° ${item.dni}`);
     const ultimo = textos.pop();
     return `${textos.join(', ')} y ${ultimo}`;
   }
@@ -1163,9 +1157,9 @@
     const lista = obtenerListaVehiculos();
     if (lista.length === 0) return "el vehículo intervenido";
     if (lista.length === 1) {
-      return `el vehículo de placa N° ${lista[0].placa} (Marca: ${lista[0].marca}, Modelo: ${lista[0].modelo}, Color/Estado: ${lista[0].color})`;
+      return `el vehículo de ${formatearDetalleVehiculo(lista[0])}`;
     }
-    const textos = lista.map(v => `el vehículo de placa N° ${v.placa} (Marca: ${v.marca}, Modelo: ${v.modelo}, Color/Estado: ${v.color})`);
+    const textos = lista.map(v => `el vehículo de ${formatearDetalleVehiculo(v)}`);
     const ultimo = textos.pop();
     return `${textos.join(', ')} y ${ultimo}`;
   }
@@ -1189,7 +1183,7 @@
     contadorEfectivosPNP = 0;
     agregarEfectivoPNPCard({
       grado: "S3",
-      nombre: "VIVANCO CURO, Armando",
+      nombre: "TORRES PALOMINO, Renzo Gabriel",
       cip: "31425556"
     });
 
@@ -1425,11 +1419,12 @@
 
     listaInt.forEach((item, idx) => {
       const prefijo = listaInt.length > 1 ? `Int. ${idx + 1} - ` : '';
-      const filiacionCompleta = `${item.nombre}, con ${item.edad} años de edad, natural de ${item.natural}, de ocupación ${item.ocupacion}, identificado con DNI N° ${item.dni}, quien refiere domiciliar en ${item.domicilio}, celular N° ${item.celular || 'S/N'}, estado civil ${item.estado_civil}, hijo de don ${item.papa || 'S/D'} y doña ${item.mama || 'S/D'}`;
+      const nomInvertido = formatearNombreInvertido(item.nombre);
+      const filiacionCompleta = `${nomInvertido}, con ${item.edad} años de edad, natural de ${item.natural}, de ocupación ${item.ocupacion}, identificado con DNI N° ${item.dni}, quien refiere domiciliar en ${item.domicilio}, celular N° ${item.celular || 'S/N'}, estado civil ${item.estado_civil}, hijo de don ${item.papa || 'S/D'} y doña ${item.mama || 'S/D'}`;
 
       categorias[0].items.push(
-        { titulo: `📋 Filiación Completa (${prefijo}${item.nombre})`, val: filiacionCompleta },
-        { titulo: `${prefijo}Nombre Completo`, val: item.nombre },
+        { titulo: `📋 Filiación Completa (${prefijo}${nomInvertido})`, val: filiacionCompleta },
+        { titulo: `${prefijo}Nombre Completo`, val: nomInvertido },
         { titulo: `${prefijo}DNI`, val: item.dni },
         { titulo: `${prefijo}Edad`, val: `${item.edad} años` },
         { titulo: `${prefijo}Domicilio`, val: item.domicilio },
@@ -1454,10 +1449,12 @@
 
     listaVeh.forEach((veh, idx) => {
       const prefijo = listaVeh.length > 1 ? `Veh. ${idx + 1} - ` : '';
+      const detalleVehCompleto = formatearDetalleVehiculo(veh);
       categorias[1].items.push(
-        { titulo: `${prefijo}Placa`, val: veh.placa },
-        { titulo: `${prefijo}Marca / Modelo`, val: `${veh.marca} ${veh.modelo}` },
-        { titulo: `${prefijo}Color / Estado`, val: veh.color }
+        { titulo: `${prefijo}Datos Completos del Vehículo`, val: detalleVehCompleto },
+        { titulo: `${prefijo}Placa`, val: `placa de rodaje ${veh.placa}` },
+        { titulo: `${prefijo}Marca / Modelo`, val: `marca ${veh.marca}, modelo ${veh.modelo}` },
+        { titulo: `${prefijo}Color / Estado`, val: `color ${veh.color}` }
       );
     });
 
@@ -1496,8 +1493,9 @@
 
     listaPNP.forEach((pnp, idx) => {
       const prefijo = listaPNP.length > 1 ? `PNP ${idx + 1} - ` : '';
+      const pnpNomInv = formatearNombreInvertido(pnp.nombre);
       categorias[4].items.push(
-        { titulo: `${prefijo}Efectivo Interviniente`, val: `${pnp.grado} PNP ${pnp.nombre}` },
+        { titulo: `${prefijo}Efectivo Interviniente`, val: `${pnp.grado} PNP ${pnpNomInv}` },
         { titulo: `${prefijo}CIP`, val: pnp.cip }
       );
     });
@@ -1592,14 +1590,22 @@
       return;
     }
     const txt = document.getElementById(textareaActivoId);
+    if (!txt) return;
+
     const start = txt.selectionStart;
     const end = txt.selectionEnd;
-    txt.value = txt.value.substring(0, start) + valor + txt.value.substring(end);
+    const nuevoTexto = txt.value.substring(0, start) + valor + txt.value.substring(end);
+    txt.value = nuevoTexto;
+
+    // Posicionar el cursor inmediatamente después del texto insertado y darle foco
+    const nuevaPosicion = start + valor.length;
+    txt.selectionStart = nuevaPosicion;
+    txt.selectionEnd = nuevaPosicion;
     txt.focus();
   }
 
   /* ==========================================================================
-     NUEVAS 12 PLANTILLAS RÁPIDAS OFICIALES + MODELO CONTROL DE IDENTIDAD
+     PLANTILLAS RÁPIDAS OFICIALES CON INICIO DIRECTO EN "Siendo las..."
      ========================================================================== */
 
   // 01 PLANTILLA: HURTO AGRAVADO
@@ -1607,8 +1613,6 @@
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
 
-    const distrito = getVal('distrito', 'Huanta');
-    const provincia = getVal('provincia', 'Huanta');
     const hora = getVal('hora_intervencion', '11:20');
     const fechaRaw = getVal('fecha');
     const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
@@ -1620,14 +1624,16 @@
     const horaFin = getVal('hora2', '12:00');
 
     const listaPNP = obtenerListaEfectivosPNP();
-    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "TORRES PALOMINO, Renzo Gabriel", cip: "31425556" };
+    const pnpNomInv = formatearNombreInvertido(pnpPrincipal.nombre);
+    
     const otrosPNPTexto = listaPNP.length > 1 
-      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${formatearNombreInvertido(p.nombre)}`).join(', ')}` 
       : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
 
     const listaInt = obtenerListaIntervenidos();
     const persona = listaInt[0] || {
-      nombre: "Renzo Gabriel TORRES PALOMINO",
+      nombre: "TORRES PALOMINO, Renzo Gabriel",
       edad: "22",
       dni: "75432189",
       natural: "Ayacucho",
@@ -1636,10 +1642,11 @@
       domicilio: "Jr. Ayacucho N° 140 - Huanta",
       celular: "956789012"
     };
+    const personaNomInv = formatearNombreInvertido(persona.nombre);
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
     document.getElementById('agregar_intervencion_1').value = 
-      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en el lugar ubicado en el ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, personal perteneciente a la ${unidadPol}, realizando patrullaje a pie preventivo por la zona comercial, procedió a la intervención de la persona de: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, celular N° ${persona.celular}, presunto autor de la comisión del Delito Contra el Patrimonio – HURTO AGRAVADO.`;
+      `--- Siendo las ${hora} horas del ${fechaFormateada}, en el lugar ubicado en el ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv} ${otrosPNPTexto}, personal perteneciente a la ${unidadPol}, realizando patrullaje a pie preventivo por la zona comercial, procedió a la intervención de la persona de: ${personaNomInv} (${persona.edad} años), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, celular N° ${persona.celular}, presunto autor de la comisión del Delito Contra el Patrimonio – HURTO AGRAVADO.`;
 
     document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
     document.getElementById('agregar_intervencion_2').value = 
@@ -1661,12 +1668,10 @@
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
 
-    const distrito = getVal('distrito', 'Huanta');
-    const provincia = getVal('provincia', 'Huanta');
     const hora = getVal('hora_intervencion', '21:40');
     const fechaRaw = getVal('fecha');
     const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
-    const lugar = getVal('lugar', 'Av. Circunvalación N° 410');
+    const lugar = getVal('lugar', 'la Av. Circunvalación N° 410');
     const unidadPol = getVal('unidad_policial', 'DEPINCRI-Huanta');
     const unidadDisp = getVal('unidad_disposicion', 'DEPINCRI-Huanta');
     const fiscal = getVal('fiscal', 'Ernesto ARROYO MEDINA');
@@ -1675,14 +1680,16 @@
     const horaFin = getVal('hora2', '22:30');
 
     const listaPNP = obtenerListaEfectivosPNP();
-    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "TORRES PALOMINO, Renzo Gabriel", cip: "31425556" };
+    const pnpNomInv = formatearNombreInvertido(pnpPrincipal.nombre);
+
     const otrosPNPTexto = listaPNP.length > 1 
-      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${formatearNombreInvertido(p.nombre)}`).join(', ')}` 
       : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
 
     const listaInt = obtenerListaIntervenidos();
     const persona = listaInt[0] || {
-      nombre: "Jhonathan Alex QUISPE MAMANI",
+      nombre: "QUISPE MAMANI, Jhonathan Alex",
       edad: "26",
       dni: "72109876",
       natural: "Huanta",
@@ -1691,17 +1698,18 @@
       domicilio: "Barrio de Hospital S/N - Huanta",
       celular: "912304958"
     };
-
-    const veh = obtenerListaVehiculos()[0] || { placa: "4567-3Y" };
+    const personaNomInv = formatearNombreInvertido(persona.nombre);
+    const veh = obtenerListaVehiculos()[0] || { placa: "4567-3Y", marca: "Ronco", modelo: "Pantera-B150", color: "Negro" };
+    const detalleVeh = formatearDetalleVehiculo(veh);
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y ENCABEZADO:";
     document.getElementById('agregar_intervencion_1').value = 
-      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en el lugar ubicado en la ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, a bordo de la unidad móvil ${pnp1}, procedieron a la intervención y detención en flagrancia de la persona de: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, celular N° ${persona.celular}, por la presunta comisión del Delito Contra el Patrimonio – ROBO AGRAVADO.`;
+      `--- Siendo las ${hora} horas del ${fechaFormateada}, en el lugar ubicado en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv} ${otrosPNPTexto}, a bordo de la unidad móvil ${pnp1}, procedieron a la intervención y detención en flagrancia de la persona de: ${personaNomInv} (${persona.edad} años), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, celular N° ${persona.celular}, por la presunta comisión del Delito Contra el Patrimonio – ROBO AGRAVADO.`;
 
     document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
     document.getElementById('agregar_intervencion_2').value = 
       `01. Circunstancias Precedentes: Alertados por la Central de Operaciones sobre un asalto y robo a mano armada perpetrado por dos sujetos a bordo de un mototaxi en agravio del ciudadano ${agraviado}, a quien encañonaron con un arma de fuego para despojarlo de su mochila y billetera con dinero en efectivo.\n\n` +
-      `02. Circunstancias Concomitantes: Se ejecutó el Plan Cerco por la vía, ubicando al vehículo menor mototaxi de placa ${veh.placa}. Al notar la presencia policial, el conductor aceleró la marcha, logrando cercarlo y neutralizarlo, reduciendo al conductor (intervenido), mientras que su copiloto se dio a la fuga por los matorrales de la zona.\n\n` +
+      `02. Circunstancias Concomitantes: Se ejecutó el Plan Cerco por la vía, ubicando al vehículo de ${detalleVeh}. Al notar la presencia policial, el conductor aceleró la marcha, logrando cercarlo y neutralizarlo, reduciendo al conductor (intervenido), mientras que su copiloto se dio a la fuga por los matorrales de la zona.\n\n` +
       `03. Circunstancias Posteriores: En el registro preliminar de seguridad del vehículo, se encontró sobre el asiento posterior una (01) mochila color negro perteneciente al agraviado y una (01) réplica de arma de fuego (pistola de metal color negro). Se trasladó al detenido a la ${unidadDisp} por medidas de seguridad ante la peligrosidad del sector y la falta de garantías.`;
 
     document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
@@ -1718,8 +1726,6 @@
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
 
-    const distrito = getVal('distrito', 'Huanta');
-    const provincia = getVal('provincia', 'Huanta');
     const hora = getVal('hora_intervencion', '16:15');
     const fechaRaw = getVal('fecha');
     const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
@@ -1730,14 +1736,16 @@
     const horaFin = getVal('hora2', '17:00');
 
     const listaPNP = obtenerListaEfectivosPNP();
-    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "TORRES PALOMINO, Renzo Gabriel", cip: "31425556" };
+    const pnpNomInv = formatearNombreInvertido(pnpPrincipal.nombre);
+
     const otrosPNPTexto = listaPNP.length > 1 
-      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${formatearNombreInvertido(p.nombre)}`).join(', ')}` 
       : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
 
     const listaInt = obtenerListaIntervenidos();
     const persona = listaInt[0] || {
-      nombre: "Efraín SOLÍS RAMOS",
+      nombre: "SOLÍS RAMOS, Efraín",
       edad: "35",
       dni: "43215678",
       natural: "Ayacucho",
@@ -1745,10 +1753,11 @@
       ocupacion: "técnico celular",
       domicilio: "Jr. Razuhuillca N° 320 - Huanta"
     };
+    const personaNomInv = formatearNombreInvertido(persona.nombre);
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y ENCABEZADO:";
     document.getElementById('agregar_intervencion_1').value = 
-      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en el ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, procedieron a la intervención de: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, por la presunta comisión del Delito Contra el Patrimonio – RECEPTACIÓN AGRAVADA.`;
+      `--- Siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv} ${otrosPNPTexto}, procedieron a la intervención de: ${personaNomInv} (${persona.edad} años), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, por la presunta comisión del Delito Contra el Patrimonio – RECEPTACIÓN AGRAVADA.`;
 
     document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
     document.getElementById('agregar_intervencion_2').value = 
@@ -1770,8 +1779,6 @@
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
 
-    const distrito = getVal('distrito', 'Huanta');
-    const provincia = getVal('provincia', 'Huanta');
     const hora = getVal('hora_intervencion', '02:30');
     const fechaRaw = getVal('fecha');
     const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
@@ -1783,14 +1790,16 @@
     const horaFin = getVal('hora2', '03:15');
 
     const listaPNP = obtenerListaEfectivosPNP();
-    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "TORRES PALOMINO, Renzo Gabriel", cip: "31425556" };
+    const pnpNomInv = formatearNombreInvertido(pnpPrincipal.nombre);
+
     const otrosPNPTexto = listaPNP.length > 1 
-      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${formatearNombreInvertido(p.nombre)}`).join(', ')}` 
       : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
 
     const listaInt = obtenerListaIntervenidos();
     const persona = listaInt[0] || {
-      nombre: "William HUAMÁN AGUIRRE",
+      nombre: "HUAMÁN AGUIRRE, William",
       edad: "36",
       dni: "46953399",
       natural: "Huanta",
@@ -1798,12 +1807,14 @@
       ocupacion: "administrador",
       domicilio: "Jr. Máximo Velando S/N - Huanta"
     };
+    const personaNomInv = formatearNombreInvertido(persona.nombre);
 
-    const veh = obtenerListaVehiculos()[0] || { placa: "A1B-234", marca: "RONCO", modelo: "PANTERA-B150", color: "negro" };
+    const veh = obtenerListaVehiculos()[0] || { placa: "4567-3Y", marca: "Ronco", modelo: "Pantera-B150", color: "Negro" };
+    const detalleVeh = formatearDetalleVehiculo(veh);
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y CIRCUNSTANCIAS:";
     document.getElementById('agregar_intervencion_1').value = 
-      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, en patrullaje motorizado a bordo de la unidad ${pnp1}, procedieron a la intervención de: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, conductor del vehículo de placa de rodaje ${veh.placa}.\n\n` +
+      `--- Siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv} ${otrosPNPTexto}, en patrullaje motorizado a bordo de la unidad ${pnp1}, procedieron a la intervención de: ${personaNomInv} (${persona.edad} años), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, conductor del vehículo de ${detalleVeh}.\n\n` +
       `01. Circunstancias Precedentes: El personal policial advirtió que el vehículo antes mencionado realizaba maniobras temerarias y desplazamientos en zigzag, poniendo en peligro inminente la integridad de los peatones y conductores de la zona.\n\n` +
       `02. Circunstancias Concomitantes: Al intervenir el vehículo y solicitar la documentación correspondiente al conductor, se percibió un fuerte aliento alcohólico, incoherencia al hablar y signos evidentes de ebriedad (ojo congestivo, desorientación).\n\n` +
       `03. Circunstancias Posteriores: Al intervenido luego de hacerle de conocimiento el motivo de la intervención policial, de conformidad a las normativas vigentes y al Art. 307.2 del RETRAN, se procedió la Ejecución de pruebas de equilibrio y coordinación (Test de Hogan y Romberg).`;
@@ -1831,8 +1842,6 @@
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
 
-    const distrito = getVal('distrito', 'Huanta');
-    const provincia = getVal('provincia', 'Huanta');
     const hora = getVal('hora_intervencion', '20:10');
     const fechaRaw = getVal('fecha');
     const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
@@ -1842,24 +1851,27 @@
     const horaFin = getVal('hora2', '21:00');
 
     const listaPNP = obtenerListaEfectivosPNP();
-    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "TORRES PALOMINO, Renzo Gabriel", cip: "31425556" };
+    const pnpNomInv = formatearNombreInvertido(pnpPrincipal.nombre);
+
     const otrosPNPTexto = listaPNP.length > 1 
-      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${formatearNombreInvertido(p.nombre)}`).join(', ')}` 
       : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
 
     const listaInt = obtenerListaIntervenidos();
     const persona = listaInt[0] || {
-      nombre: "Marcos Antonio RÍOS CÁRDENAS",
+      nombre: "RÍOS CÁRDENAS, Marcos Antonio",
       edad: "31",
       dni: "48765432",
       natural: "Huanta",
       ocupacion: "obrero",
       domicilio: "Jr. Ayacucho N° 310 - Huanta"
     };
+    const personaNomInv = formatearNombreInvertido(persona.nombre);
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
     document.getElementById('agregar_intervencion_1').value = 
-      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, intervino a: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, por el presunto Delito de TENENCIA ILEGAL DE ARMAS Y MUNICIONES.`;
+      `--- Siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv} ${otrosPNPTexto}, intervino a: ${personaNomInv} (${persona.edad} años), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, por el presunto Delito de TENENCIA ILEGAL DE ARMAS Y MUNICIONES.`;
 
     document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
     document.getElementById('agregar_intervencion_2').value = 
@@ -1881,8 +1893,6 @@
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
 
-    const distrito = getVal('distrito', 'Huanta');
-    const provincia = getVal('provincia', 'Huanta');
     const hora = getVal('hora_intervencion', '18:30');
     const fechaRaw = getVal('fecha');
     const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
@@ -1892,24 +1902,27 @@
     const horaFin = getVal('hora2', '19:20');
 
     const listaPNP = obtenerListaEfectivosPNP();
-    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "TORRES PALOMINO, Renzo Gabriel", cip: "31425556" };
+    const pnpNomInv = formatearNombreInvertido(pnpPrincipal.nombre);
+
     const otrosPNPTexto = listaPNP.length > 1 
-      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${formatearNombreInvertido(p.nombre)}`).join(', ')}` 
       : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
 
     const listaInt = obtenerListaIntervenidos();
     const persona = listaInt[0] || {
-      nombre: "Kevin Jhair LÓPEZ MENDOZA",
+      nombre: "LÓPEZ MENDOZA, Kevin Jhair",
       edad: "23",
       dni: "76543210",
       natural: "Ayacucho",
       estado_civil: "soltero",
       domicilio: "Jr. Razuhuillca S/N - Huanta"
     };
+    const personaNomInv = formatearNombreInvertido(persona.nombre);
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
     document.getElementById('agregar_intervencion_1').value = 
-      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, procedió a la intervención de: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, domiciliado en ${persona.domicilio}, presunto autor del Delito Contra la Salud Pública – TRÁFICO ILÍCITO DE DROGAS (MICROCOMERCIALIZACIÓN - ART. 298 CP).`;
+      `--- Siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv} ${otrosPNPTexto}, procedió a la intervención de: ${personaNomInv} (${persona.edad} años), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, domiciliado en ${persona.domicilio}, presunto autor del Delito Contra la Salud Pública – TRÁFICO ILÍCITO DE DROGAS (MICROCOMERCIALIZACIÓN - ART. 298 CP).`;
 
     document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
     document.getElementById('agregar_intervencion_2').value = 
@@ -1931,8 +1944,6 @@
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
 
-    const distrito = getVal('distrito', 'Huanta');
-    const provincia = getVal('provincia', 'Huanta');
     const hora = getVal('hora_intervencion', '22:10');
     const fechaRaw = getVal('fecha');
     const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
@@ -1944,24 +1955,27 @@
     const horaFin = getVal('hora2', '23:00');
 
     const listaPNP = obtenerListaEfectivosPNP();
-    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "TORRES PALOMINO, Renzo Gabriel", cip: "31425556" };
+    const pnpNomInv = formatearNombreInvertido(pnpPrincipal.nombre);
+
     const otrosPNPTexto = listaPNP.length > 1 
-      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${formatearNombreInvertido(p.nombre)}`).join(', ')}` 
       : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
 
     const listaInt = obtenerListaIntervenidos();
     const persona = listaInt[0] || {
-      nombre: "Raúl Fernando CASTRO RUIZ",
+      nombre: "CASTRO RUIZ, Raúl Fernando",
       edad: "40",
       dni: "40987654",
       natural: "Huanta",
       ocupacion: "comerciante",
       domicilio: "Jr. Ricardo Palma N° 240 - Huanta"
     };
+    const personaNomInv = formatearNombreInvertido(persona.nombre);
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
     document.getElementById('agregar_intervencion_1').value = 
-      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, constituidos en el lugar a bordo del patrullero ${pnp1}, procedieron a la intervención de: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, por el presunto delito de AGRESIONES CONTRA LAS MUJERES O INTEGRANTES DEL GRUPO FAMILIAR (LEY N° 30364 / ART. 122-B CP), en agravio de su conviviente ${agraviado}.`;
+      `--- Siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv} ${otrosPNPTexto}, constituidos en el lugar a bordo del patrullero ${pnp1}, procedieron a la intervención de: ${personaNomInv} (${persona.edad} años), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, por el presunto delito de AGRESIONES CONTRA LAS MUJERES O INTEGRANTES DEL GRUPO FAMILIAR (LEY N° 30364 / ART. 122-B CP), en agravio de su conviviente ${agraviado}.`;
 
     document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
     document.getElementById('agregar_intervencion_2').value = 
@@ -1983,8 +1997,6 @@
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
 
-    const distrito = getVal('distrito', 'Huanta');
-    const provincia = getVal('provincia', 'Huanta');
     const hora = getVal('hora_intervencion', '01:45');
     const fechaRaw = getVal('fecha');
     const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
@@ -1994,25 +2006,30 @@
     const horaFin = getVal('hora2', '02:30');
 
     const listaPNP = obtenerListaEfectivosPNP();
-    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "TORRES PALOMINO, Renzo Gabriel", cip: "31425556" };
+    const pnpNomInv = formatearNombreInvertido(pnpPrincipal.nombre);
+
     const otrosPNPTexto = listaPNP.length > 1 
-      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${formatearNombreInvertido(p.nombre)}`).join(', ')}` 
       : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
 
     const listaInt = obtenerListaIntervenidos();
-    const p1 = listaInt[0] || { nombre: "Miguel Ángel VARGAS HINOSTROZA", edad: "25", dni: "73456789" };
-    const p2 = listaInt[1] || { nombre: "Gabriel Omar MORENO CHÁVEZ", edad: "27", dni: "71987654" };
+    const p1 = listaInt[0] || { nombre: "VARGAS HINOSTROZA, Miguel Ángel", edad: "25", dni: "73456789" };
+    const p2 = listaInt[1] || { nombre: "MORENO CHÁVEZ, Gabriel Omar", edad: "27", dni: "71987654" };
+
+    const p1NomInv = formatearNombreInvertido(p1.nombre);
+    const p2NomInv = formatearNombreInvertido(p2.nombre);
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL:";
     document.getElementById('agregar_intervencion_1').value = 
-      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, procedieron a la intervención de:\n` +
-      `1. ${p1.nombre} (${p1.edad}), DNI N° ${p1.dni}.\n` +
-      `2. ${p2.nombre} (${p2.edad}), DNI N° ${p2.dni}.`;
+      `--- Siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv} ${otrosPNPTexto}, procedieron a la intervención de:\n` +
+      `1. ${p1NomInv} (${p1.edad} años), DNI N° ${p1.dni}.\n` +
+      `2. ${p2NomInv} (${p2.edad} años), DNI N° ${p2.dni}.`;
 
     document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
     document.getElementById('agregar_intervencion_2').value = 
       `01. Circunstancias Precedentes: En patrullaje preventivo por el sector, se observó una pelea tumultuaria (trifulca) entre varios sujetos en la vía pública, lanzándose objetos contundentes (botellas de vidrio).\n\n` +
-      `02. Circunstancias Concomitantes: El personal policial intervino de inmediato para restablecer el orden público, logrando intervenir a los dos ciudadanos antes indicados, quienes se agredían mutuamente con puñetes y patadas. El intervenido ${p1.nombre} presentaba un corte sangrante en el cuero cabelludo producto de un botellazo.\n\n` +
+      `02. Circunstancias Concomitantes: El personal policial intervino de inmediato para restablecer el orden público, logrando intervenir a los dos ciudadanos antes indicados, quienes se agredían mutuamente con puñetes y patadas. El intervenido ${p1NomInv} presentaba un corte sangrante en el cuero cabelludo producto de un botellazo.\n\n` +
       `03. Circunstancias Posteriores: Se prestó el primer auxilio trasladando al herido al Hospital de Huanta para su atención médica con custodia policial, conduciendo al segundo intervenido a la ${unidadDisp} para las investigaciones por el delito de Lesiones Mutuas.`;
 
     document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
@@ -2029,8 +2046,6 @@
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
 
-    const distrito = getVal('distrito', 'Huanta');
-    const provincia = getVal('provincia', 'Huanta');
     const hora = getVal('hora_intervencion', '10:40');
     const fechaRaw = getVal('fecha');
     const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
@@ -2041,26 +2056,30 @@
     const horaFin = getVal('hora2', '11:30');
 
     const listaPNP = obtenerListaEfectivosPNP();
-    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "TORRES PALOMINO, Renzo Gabriel", cip: "31425556" };
+    const pnpNomInv = formatearNombreInvertido(pnpPrincipal.nombre);
+
     const otrosPNPTexto = listaPNP.length > 1 
-      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${formatearNombreInvertido(p.nombre)}`).join(', ')}` 
       : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
 
     const listaInt = obtenerListaIntervenidos();
     const persona = listaInt[0] || {
-      nombre: "Ralph Bryan RAMÍREZ RIVERA",
+      nombre: "RAMÍREZ RIVERA, Ralph Bryan",
       edad: "29",
       dni: "48175779",
       natural: "Sivia",
       ocupacion: "mecánico",
       domicilio: "Jr. Lampa S/N - Huanta"
     };
+    const personaNomInv = formatearNombreInvertido(persona.nombre);
 
-    const veh = obtenerListaVehiculos()[0] || { marca: "Honda", modelo: "XR-150L", placa: "SIN PLACA" };
+    const veh = obtenerListaVehiculos()[0] || { marca: "Honda", modelo: "XR-150L", placa: "SIN PLACA", color: "Rojo" };
+    const detalleVeh = formatearDetalleVehiculo(veh);
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y CONTROL VEHICULAR:";
     document.getElementById('agregar_intervencion_1').value = 
-      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, durante un Operativo de Control Vehicular de la ${unidadPol}, intervino a: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, conductor del vehículo menor motocicleta marca ${veh.marca}, modelo ${veh.modelo}, sin placa de rodaje.`;
+      `--- Siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv} ${otrosPNPTexto}, durante un Operativo de Control Vehicular de la ${unidadPol}, intervino a: ${personaNomInv} (${persona.edad} años), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, conductor del vehículo de ${detalleVeh}.`;
 
     document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN Y PERITAJE TIV:";
     document.getElementById('agregar_intervencion_2').value = 
@@ -2082,8 +2101,6 @@
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
 
-    const distrito = getVal('distrito', 'Huanta');
-    const provincia = getVal('provincia', 'Huanta');
     const hora = getVal('hora_intervencion', '19:50');
     const fechaRaw = getVal('fecha');
     const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
@@ -2093,29 +2110,32 @@
     const horaFin = getVal('hora2', '20:40');
 
     const listaPNP = obtenerListaEfectivosPNP();
-    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "TORRES PALOMINO, Renzo Gabriel", cip: "31425556" };
+    const pnpNomInv = formatearNombreInvertido(pnpPrincipal.nombre);
+
     const otrosPNPTexto = listaPNP.length > 1 
-      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${formatearNombreInvertido(p.nombre)}`).join(', ')}` 
       : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
 
     const listaInt = obtenerListaIntervenidos();
     const persona = listaInt[0] || {
-      nombre: "Julio César MOROTE CISNEROS",
+      nombre: "MOROTE CISNEROS, Julio César",
       edad: "33",
       dni: "45123789",
       natural: "Huanta",
       estado_civil: "soltero",
       domicilio: "Jr. Comercio N° 150 - Huanta"
     };
+    const personaNomInv = formatearNombreInvertido(persona.nombre);
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y ENCABEZADO:";
     document.getElementById('agregar_intervencion_1').value = 
-      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, procedió a la detención en flagrancia de: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, domiciliado en ${persona.domicilio}.`;
+      `--- Siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv} ${otrosPNPTexto}, procedió a la detención en flagrancia de: ${personaNomInv} (${persona.edad} años), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, domiciliado en ${persona.domicilio}.`;
 
     document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
     document.getElementById('agregar_intervencion_2').value = 
       `01. Circunstancias Precedentes: Durante la intervención a un vehículo mal estacionado que obstruía el tránsito, el intervenido (quien se encontraba en estado de ebriedad) salió de un establecimiento comercial de forma agresiva vociferando palabras soeces contra el personal policial.\n\n` +
-      `02. Circunstancias Concomitantes: Al solicitársele que se calme e identifique, el sujeto arremetió físicamente contra el ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre}, propinándole un empujón a la altura del pecho y rotura parcial del chaleco táctico policial, oponiendo tenaz resistencia física al cumplimiento de la función policial.\n\n` +
+      `02. Circunstancias Concomitantes: Al solicitársele que se calme e identifique, el sujeto arremetió físicamente contra el ${pnpPrincipal.grado} PNP ${pnpNomInv}, propinándole un empujón a la altura del pecho y rotura parcial del chaleco táctico policial, oponiendo tenaz resistencia física al cumplimiento de la función policial.\n\n` +
       `03. Circunstancias Posteriores: Haciendo uso racional de la fuerza, se procedió a la reducción, inmovilización y colocación de grilletes de seguridad, trasladándolo a la ${unidadDisp} para las diligencias por Delito Contra la Administración Pública – VIOLENCIA Y RESISTENCIA A LA AUTORIDAD.`;
 
     document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
@@ -2132,8 +2152,6 @@
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
 
-    const distrito = getVal('distrito', 'Huanta');
-    const provincia = getVal('provincia', 'Huanta');
     const hora = getVal('hora_intervencion', '08:30');
     const fechaRaw = getVal('fecha');
     const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
@@ -2145,9 +2163,11 @@
     const horaFin = getVal('hora2', '09:20');
 
     const listaPNP = obtenerListaEfectivosPNP();
-    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "TORRES PALOMINO, Renzo Gabriel", cip: "31425556" };
+    const pnpNomInv = formatearNombreInvertido(pnpPrincipal.nombre);
+
     const otrosPNPTexto = listaPNP.length > 1 
-      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${formatearNombreInvertido(p.nombre)}`).join(', ')}` 
       : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
 
     const listaVeh = obtenerListaVehiculos();
@@ -2155,18 +2175,21 @@
     const v2 = listaVeh[1] || { placa: "9656-2Y", marca: "Honda", modelo: "XR-150L", color: "Rojo" };
 
     const listaInt = obtenerListaIntervenidos();
-    const c1 = listaInt[0] || { nombre: "Roberto Carlos SUÁREZ FLORES", edad: "38", dni: "41234567", domicilio: "Jr. Córdova N° 230 – Huanta", celular: "965432109" };
-    const c2 = listaInt[1] || { nombre: "Luis Fernando GÓMEZ PALOMINO", edad: "24", dni: "74567890", domicilio: "Av. San Martín S/N – Huanta", celular: "912345678" };
+    const c1 = listaInt[0] || { nombre: "SUÁREZ FLORES, Roberto Carlos", edad: "38", dni: "41234567", domicilio: "Jr. Córdova N° 230 – Huanta", celular: "965432109" };
+    const c2 = listaInt[1] || { nombre: "GÓMEZ PALOMINO, Luis Fernando", edad: "24", dni: "74567890", domicilio: "Av. San Martín S/N – Huanta", celular: "912345678" };
+
+    const c1NomInv = formatearNombreInvertido(c1.nombre);
+    const c2NomInv = formatearNombreInvertido(c2.nombre);
 
     document.getElementById('titulo_sec_1').value = "I. PARTICIPANTES Y VEHÍCULOS INVOLUCRADOS:";
     document.getElementById('agregar_intervencion_1').value = 
-      `--- En la ciudad de ${provincia}, distrito de ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en el lugar ubicado en la ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, personal perteneciente a la ${unidadPol}, a bordo de la unidad móvil ${pnp1}, procedieron a levantar la presente ACTA DE INTERVENCIÓN POLICIAL POR ACCIDENTE DE TRÁNSITO - CHOQUE, conforme al siguiente detalle:\n\n` +
+      `--- Siendo las ${hora} horas del ${fechaFormateada}, en el lugar ubicado en la ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv} ${otrosPNPTexto}, personal perteneciente a la ${unidadPol}, a bordo de la unidad móvil ${pnp1}, procedieron a levantar la presente ACTA DE INTERVENCIÓN POLICIAL POR ACCIDENTE DE TRÁNSITO - CHOQUE, conforme al siguiente detalle:\n\n` +
       `VEHÍCULO N° 01 (UNIDAD "A"):\n` +
-      `* Placa de Rodaje: ${v1.placa} | Marca: ${v1.marca} | Modelo: ${v1.modelo} | Color: ${v1.color}.\n` +
-      `* Conductor: ${c1.nombre} (${c1.edad}), DNI N° ${c1.dni}, domiciliado en ${c1.domicilio}, Cel. N° ${c1.celular}, SOAT Vigente "La Positiva".\n\n` +
+      `* Datos: ${formatearDetalleVehiculo(v1)}.\n` +
+      `* Conductor: ${c1NomInv} (${c1.edad} años), DNI N° ${c1.dni}, domiciliado en ${c1.domicilio}, Cel. N° ${c1.celular}, SOAT Vigente "La Positiva".\n\n` +
       `VEHÍCULO N° 02 (UNIDAD "B"):\n` +
-      `* Placa de Rodaje: ${v2.placa} | Marca: ${v2.marca} | Modelo: ${v2.modelo} | Color: ${v2.color}.\n` +
-      `* Conductor: ${c2.nombre} (${c2.edad}), DNI N° ${c2.dni}, domiciliado en ${c2.domicilio}, Cel. N° ${c2.celular}, SOAT Vigente.`;
+      `* Datos: ${formatearDetalleVehiculo(v2)}.\n` +
+      `* Conductor: ${c2NomInv} (${c2.edad} años), DNI N° ${c2.dni}, domiciliado en ${c2.domicilio}, Cel. N° ${c2.celular}, SOAT Vigente.`;
 
     document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN Y CONSTATACIÓN FÁCTICA:";
     document.getElementById('agregar_intervencion_2').value = 
@@ -2175,7 +2198,7 @@
       `  - Vehículo N° 01 (${v1.placa}): Presenta abolladura en el parachoques delantero lado izquierdo y rotura del faro neblinero.\n` +
       `  - Vehículo N° 02 (${v2.placa}): Presenta raspaduras en la carena lateral derecha, manillar doblado y rotura de luz direccional delantera.\n\n` +
       `* Estado de los Conductores / Lesiones:\n` +
-      `  El conductor del Vehículo N° 02 (${c2.nombre}) presentó escoriaciones leves en la rodilla derecha, manifestando encontrarse estable y negándose a ser trasladado al hospital por no revestir gravedad. El conductor del Vehículo N° 01 no presentó lesiones físicas aparentes.`;
+      `  El conductor del Vehículo N° 02 (${c2NomInv}) presentó escoriaciones leves en la rodilla derecha, manifestando encontrarse estable y negándose a ser trasladado al hospital por no revestir gravedad. El conductor del Vehículo N° 01 no presentó lesiones físicas aparentes.`;
 
     document.getElementById('titulo_sec_3').value = "III. DILIGENCIAS ADOPTADAS Y COMUNICACIÓN AL RMP:";
     document.getElementById('agregar_intervencion_3').value = 
@@ -2194,8 +2217,6 @@
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
 
-    const distrito = getVal('distrito', 'Rímac');
-    const provincia = getVal('provincia', 'Lima');
     const hora = getVal('hora_intervencion', '16:30');
     const fechaRaw = getVal('fecha');
     const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
@@ -2208,14 +2229,16 @@
     const horaFin = getVal('hora2', '17:30');
 
     const listaPNP = obtenerListaEfectivosPNP();
-    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "TORRES PALOMINO, Renzo Gabriel", cip: "31425556" };
+    const pnpNomInv = formatearNombreInvertido(pnpPrincipal.nombre);
+
     const otrosPNPTexto = listaPNP.length > 1 
-      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${formatearNombreInvertido(p.nombre)}`).join(', ')}` 
       : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
 
     const listaInt = obtenerListaIntervenidos();
     const persona = listaInt[0] || {
-      nombre: "Carlos Eduardo MENDOZA GÓMEZ",
+      nombre: "MENDOZA GÓMEZ, Carlos Eduardo",
       edad: "28",
       dni: "71234567",
       natural: "Lima",
@@ -2226,15 +2249,16 @@
       celular: "987654321",
       domicilio: "Jr. Huallaga N° 450 – Rímac"
     };
+    const personaNomInv = formatearNombreInvertido(persona.nombre);
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y ENCABEZADO:";
     document.getElementById('agregar_intervencion_1').value = 
-      `--- En la ciudad de ${provincia}, distrito del ${distrito}, siendo las ${hora} horas del ${fechaFormateada}, en el lugar ubicado en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} ${otrosPNPTexto}, personal perteneciente a la ${unidadPol}, los mismos que se encontraban realizando patrullaje motorizado preventivo a bordo de la unidad móvil ${pnp1} en cumplimiento al Plan de Operaciones de la Superioridad, procedieron a la intervención de la persona de: ${persona.nombre} (${persona.edad}), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, hijo de Don ${persona.papa || 'S/D'} y Doña ${persona.mama || 'S/D'}, N° celular ${persona.celular}, domiciliado en ${persona.domicilio}, presunto autor de la comisión del Delito Contra el Patrimonio – EXTORSIÓN.`;
+      `--- Siendo las ${hora} horas del ${fechaFormateada}, en el lugar ubicado en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv} ${otrosPNPTexto}, personal perteneciente a la ${unidadPol}, los mismos que se encontraban realizando patrullaje motorizado preventivo a bordo de la unidad móvil ${pnp1} en cumplimiento al Plan de Operaciones de la Superioridad, procedieron a la intervención de la persona de: ${personaNomInv} (${persona.edad} años), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, hijo de Don ${persona.papa || 'S/D'} y Doña ${persona.mama || 'S/D'}, N° celular ${persona.celular}, domiciliado en ${persona.domicilio}, presunto autor de la comisión del Delito Contra el Patrimonio – EXTORSIÓN.`;
 
     document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
     document.getElementById('agregar_intervencion_2').value = 
       `01. Circunstancias Precedentes: Que, en circunstancias que el personal policial se encontraba patrullando por el sector acotado, se acercó el ciudadano comerciante ${agraviado}, manifestando que venía siendo víctima de extorsión y exigencia de dinero (cobro de cupo) por parte de un sujeto de contextura delgada, polo negro y gorra roja, quien minutos antes le había dejado una nota extorsiva exigiendo el pago de S/ 5,000.00 soles a cambio de no atentar contra su vida ni la de su familia.\n\n` +
-      `02. Circunstancias Concomitantes: Que, ante dicha alerta, el personal policial interviniente realizó un patrullaje intensivo por las inmediaciones, logrando avistar a escasos metros del lugar al sujeto con las características antes descritas, quien al notar la presencia del vehículo policial intentó darse a la fuga de manera presurosa. Siendo alcanzado e intervenido en el lugar, procediéndose a su plena identificación como ${persona.nombre}.\n\n` +
+      `02. Circunstancias Concomitantes: Que, ante dicha alerta, el personal policial interviniente realizó un patrullaje intensivo por las inmediaciones, logrando avistar a escasos metros del lugar al sujeto con las características antes descritas, quien al notar la presencia del vehículo policial intentó darse a la fuga de manera presurosa. Siendo alcanzado e intervenido en el lugar, procediéndose a su plena identificación como ${personaNomInv}.\n\n` +
       `03. Circunstancias Posteriores: Al realizarse el registro de seguridad preliminar en el lugar, se le halló en el bolsillo derecho de su pantalón un (01) equipo celular marca Xiaomi, color azul, el cual el agraviado reconoció como el número telefónico desde el cual recibía mensajes extorsivos vía WhatsApp. Por medidas de seguridad del personal policial interviniente y del propio intervenido debido a la aglomeración de transeúntes en la zona, la persona intervenida fue trasladada de inmediato a la ${unidadDisp} para las diligencias urgentes e inaplazables de ley.\n\n` +
       `--- En el recinto policial se procedió a dar lectura a la persona intervenida de los derechos que le asisten en su condición de imputado conforme al Art. 71° del Código Procesal Penal, coordinándose e informándose de inmediato al Representante del Ministerio Público.`;
 
@@ -2247,15 +2271,14 @@
     minimizarPlantillas();
   }
 
-  // 13 PLANTILLA: CONTROL DE IDENTIDAD E-SINPOL PNP (MODELO ANTERIOR CONSERVADO INTEGRAMENTE)
+  // 13 PLANTILLA: CONTROL DE IDENTIDAD E-SINPOL PNP
   function cargarModeloControlIdentidad() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
 
-    const gInt = obtenerGramaticaIntervenidos();
     const listaInt = obtenerListaIntervenidos();
     const persona = listaInt[0] || {
-      nombre: "Marco Antonio ROJAS VÁZQUEZ",
+      nombre: "ROJAS VÁZQUEZ, Marco Antonio",
       edad: "32",
       natural: "Lima",
       estado_civil: "soltero",
@@ -2266,15 +2289,16 @@
       dni: "45678912",
       domicilio: "Jr. Los Pinos N° 123 - Rímac"
     };
+    const personaNomInv = formatearNombreInvertido(persona.nombre);
 
     const listaPNP = obtenerListaEfectivosPNP();
-    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "Armando VIVANCO CURO", cip: "31425556" };
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "TORRES PALOMINO, Renzo Gabriel", cip: "31425556" };
+    const pnpNomInv = formatearNombreInvertido(pnpPrincipal.nombre);
+
     const otrosPNPTexto = listaPNP.length > 1 
-      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${p.nombre}`).join(', ')}` 
+      ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${formatearNombreInvertido(p.nombre)}`).join(', ')}` 
       : "en compañía del personal PNP de apoyo";
 
-    const distrito = getVal('distrito', 'Rímac');
-    const provincia = getVal('provincia', 'Lima');
     const hora = getVal('hora_intervencion', '10:15');
     const fechaRaw = getVal('fecha');
     const fechaFormateada = (typeof formatearFechaPolicial === 'function') ? formatearFechaPolicial(fechaRaw) : fechaRaw;
@@ -2299,7 +2323,7 @@
     // SECCIÓN I: INTERVENCIÓN Y CONTROL DE IDENTIDAD
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y CONTROL DE IDENTIDAD:";
     document.getElementById('agregar_intervencion_1').value = 
-      `--- En la ciudad de ${provincia}, distrito del ${distrito}, siendo las ${hora} horas del ${fechaFormateada} en el lugar ubicado en la ${lugar}; el suscrito ${pnpPrincipal.grado} PNP ${pnpPrincipal.nombre} personal de apoyo a la ${unidadPol}, quien se encontraba ${otrosPNPTexto}; los mismos que se encontraban realizando ${actividad}, se intervino a la persona quien señaló llamarse: ${persona.nombre} de ${persona.edad} años, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, hijo de Don ${persona.papa || 'S/D'} y Doña ${persona.mama || 'S/D'}, con número de celular ${persona.celular || 'S/N'}, identificado con DNI N° ${persona.dni}, quien refiere domiciliar en ${persona.domicilio}; se solicitó el DNI con la finalidad de su plena identificación y posibles requisitorias vigentes.`;
+      `--- Siendo las ${hora} horas del ${fechaFormateada}, en el lugar ubicado en la ${lugar}; el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv} personal de apoyo a la ${unidadPol}, quien se encontraba ${otrosPNPTexto}; los mismos que se encontraban realizando ${actividad}, se intervino a la persona quien señaló llamarse: ${personaNomInv} de ${persona.edad} años, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, hijo de Don ${persona.papa || 'S/D'} y Doña ${persona.mama || 'S/D'}, con número de celular ${persona.celular || 'S/N'}, identificado con DNI N° ${persona.dni}, quien refiere domiciliar en ${persona.domicilio}; se solicitó el DNI con la finalidad de su plena identificación y posibles requisitorias vigentes.`;
 
     // SECCIÓN II: CONSULTA E-SINPOL PNP Y REQUISITORIA VIGENTE
     document.getElementById('titulo_sec_2').value = "II. CONSULTA E-SINPOL PNP Y RESULTADO DE REQUISITORIA:";
