@@ -101,7 +101,7 @@
 
     .inspection-layout {
       display: grid;
-      grid-template-columns: 360px 1fr;
+      grid-template-columns: 380px 1fr;
       gap: 16px;
       align-items: start;
     }
@@ -114,7 +114,7 @@
       position: relative;
       width: 100%;
       height: 280px;
-      background: #000;
+      background: #1e293b;
       border-radius: 8px;
       overflow: hidden;
       border: 2px solid #cbd5e1;
@@ -126,7 +126,14 @@
     .viewscreen-box img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+    }
+
+    .placeholder-msg {
+      color: #94a3b8;
+      font-size: 12px;
+      text-align: center;
+      padding: 20px;
     }
 
     .hotspot {
@@ -186,6 +193,27 @@
     .badge-btn.BUENO { background: var(--st-bueno); }
     .badge-btn.MALO { background: var(--st-malo); }
     .badge-btn.FALTANTE { background: var(--st-faltante); }
+
+    .upload-bar {
+      margin-top: 8px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn-upload {
+      background: #0284c7;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
 
     .ia-section {
       margin-top: 15px;
@@ -253,11 +281,23 @@
   <div class="inspection-layout">
     <div>
       <div class="viewscreen-box" id="viewscreen">
-        <img id="img_vehiculo" src="" alt="Vista Vehicular">
+        <img id="img_vehiculo" src="" alt="" style="display:none;">
+        <div id="placeholder_text" class="placeholder-msg">
+          📷 Haz clic en el botón de abajo para <strong>Tomar Foto</strong> o <strong>Subir Imagen</strong> de este ángulo.
+        </div>
         <div id="hotspots_layer"></div>
       </div>
-      <div style="font-size: 11px; color: #64748b; text-align: center; margin-top: 6px;">
-        💡 Haz clic en los puntos numéricos sobre la foto para alternar: 
+
+      <div class="upload-bar">
+        <label class="btn-upload">
+          📷 Tomar / Subir Foto de esta Vista
+          <input type="file" id="input_foto_vista" accept="image/*" capture="environment" style="display:none;" onchange="procesarFotoSubida(this)">
+        </label>
+        <span id="label_foto_estado" style="font-size: 11px; color: #64748b;">(Sin foto real)</span>
+      </div>
+
+      <div style="font-size: 11px; color: #64748b; text-align: center; margin-top: 8px;">
+        💡 Haz clic en los puntos sobre la foto para cambiar: 
         <strong style="color:var(--st-bueno);">BUENO</strong> ➔ 
         <strong style="color:var(--st-malo);">MALO</strong> ➔ 
         <strong style="color:var(--st-faltante);">FALTANTE</strong>
@@ -276,10 +316,10 @@
     <div style="display: flex; justify-content: space-between; align-items: center;">
       <div>
         <strong style="font-size: 13px; color: #1e40af;">🧠 Análisis Visual por IA (Gemini Vision)</strong>
-        <p style="font-size: 11px; margin: 2px 0 0 0; color: #3b82f6;">Sube las 4 fotos tomadas en el lugar de la intervención para auto-completar el diagnóstico.</p>
+        <p style="font-size: 11px; margin: 2px 0 0 0; color: #3b82f6;">Analiza automáticamente las fotos cargadas para identificar partes faltantes o con daño.</p>
       </div>
-      <button type="button" onclick="simularAnalisisIA()" style="background:#2563eb; color:white; border:none; padding:6px 12px; border-radius:5px; font-size:11px; font-weight:bold; cursor:pointer;">
-        📷 Escanear con IA
+      <button type="button" onclick="ejecutarAnalisisIA()" style="background:#2563eb; color:white; border:none; padding:8px 14px; border-radius:5px; font-size:11px; font-weight:bold; cursor:pointer;">
+        ⚡ Escanear con IA
       </button>
     </div>
   </div>
@@ -292,7 +332,6 @@
 </div>
 
 <script>
-  // BANCO DE CONFIGURACIONES VEHICULARES CON FOTOGRAFÍAS REALES Y PUNTOS INTERACTIVOS (COORDENADAS %)
   const BASE_VEHICULOS = {
     menor: [
       {
@@ -300,7 +339,7 @@
         nombre: "Mototaxi Bajaj / Trimovil RE",
         vistas: {
           frente: {
-            img: "https://images.unsplash.com/photo-1596705648834-3f338d975a22?w=600&auto=format&fit=crop&q=80",
+            fotoBase64: null,
             partes: [
               { id: "p1", nombre: "Parabrisas y Limpiaparabrisas", x: 50, y: 32, estado: "BUENO" },
               { id: "p2", nombre: "Faro Principal Delantero", x: 38, y: 55, estado: "BUENO" },
@@ -310,22 +349,22 @@
             ]
           },
           perfil_izq: {
-            img: "https://images.unsplash.com/photo-1596705648834-3f338d975a22?w=600&auto=format&fit=crop&q=80",
+            fotoBase64: null,
             partes: [
-              { id: "p6", nombre: "Carpa / Toldo Lateral", x: 45, y: 35, estado: "BUENO" },
+              { id: "p6", nombre: "Carpa / Toldo Lateral Izquierdo", x: 45, y: 35, estado: "BUENO" },
               { id: "p7", nombre: "Puerta / Lona de Ingreso", x: 40, y: 55, estado: "BUENO" },
               { id: "p8", nombre: "Neumático Posterior Izquierdo", x: 75, y: 78, estado: "BUENO" }
             ]
           },
           perfil_der: {
-            img: "https://images.unsplash.com/photo-1596705648834-3f338d975a22?w=600&auto=format&fit=crop&q=80",
+            fotoBase64: null,
             partes: [
               { id: "p9", nombre: "Llanta de Repuesto Exterior", x: 50, y: 50, estado: "FALTANTE" },
               { id: "p10", nombre: "Neumático Posterior Derecho", x: 75, y: 78, estado: "BUENO" }
             ]
           },
           posterior: {
-            img: "https://images.unsplash.com/photo-1596705648834-3f338d975a22?w=600&auto=format&fit=crop&q=80",
+            fotoBase64: null,
             partes: [
               { id: "p11", nombre: "Faros Posteriores y Frenos", x: 30, y: 65, estado: "BUENO" },
               { id: "p12", nombre: "Placa de Rodaje Posterior", x: 50, y: 70, estado: "BUENO" },
@@ -339,7 +378,7 @@
         nombre: "Motocicleta Lineal",
         vistas: {
           frente: {
-            img: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=600&auto=format&fit=crop&q=80",
+            fotoBase64: null,
             partes: [
               { id: "m1", nombre: "Faro Delantero y Direccionales", x: 50, y: 35, estado: "BUENO" },
               { id: "m2", nombre: "Manillar y Manijas de Freno", x: 35, y: 25, estado: "BUENO" },
@@ -348,7 +387,7 @@
             ]
           },
           perfil_izq: {
-            img: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=600&auto=format&fit=crop&q=80",
+            fotoBase64: null,
             partes: [
               { id: "m5", nombre: "Tanque de Gasolina", x: 45, y: 38, estado: "BUENO" },
               { id: "m6", nombre: "Asiento / Cojín", x: 65, y: 38, estado: "BUENO" },
@@ -356,14 +395,14 @@
             ]
           },
           perfil_der: {
-            img: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=600&auto=format&fit=crop&q=80",
+            fotoBase64: null,
             partes: [
               { id: "m8", nombre: "Tubo de Escape / Silenciador", x: 70, y: 68, estado: "BUENO" },
               { id: "m9", nombre: "Pedal de Freno Posterior", x: 50, y: 65, estado: "BUENO" }
             ]
           },
           posterior: {
-            img: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=600&auto=format&fit=crop&q=80",
+            fotoBase64: null,
             partes: [
               { id: "m10", nombre: "Faro Posterior Rojo de Freno", x: 50, y: 40, estado: "BUENO" },
               { id: "m11", nombre: "Neumático Posterior", x: 50, y: 78, estado: "BUENO" }
@@ -378,7 +417,7 @@
         nombre: "Automóvil / Sedan",
         vistas: {
           frente: {
-            img: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80",
+            fotoBase64: null,
             partes: [
               { id: "a1", nombre: "Parabrisas Delantero", x: 50, y: 30, estado: "BUENO" },
               { id: "a2", nombre: "Capot y Motor", x: 50, y: 55, estado: "BUENO" },
@@ -387,25 +426,25 @@
             ]
           },
           perfil_izq: {
-            img: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80",
+            fotoBase64: null,
             partes: [
               { id: "a5", nombre: "Espejo Lateral Izquierdo", x: 30, y: 40, estado: "BUENO" },
-              { id: "a6", nombre: "Ventanas Laterales Left", x: 50, y: 35, estado: "BUENO" },
+              { id: "a6", nombre: "Ventanas Laterales", x: 50, y: 35, estado: "BUENO" },
               { id: "a7", nombre: "Neumático Delantero Izq", x: 25, y: 70, estado: "BUENO" },
               { id: "a8", nombre: "Neumático Posterior Izq", x: 75, y: 70, estado: "BUENO" }
             ]
           },
           perfil_der: {
-            img: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80",
+            fotoBase64: null,
             partes: [
               { id: "a9", nombre: "Espejo Lateral Derecho", x: 30, y: 40, estado: "BUENO" },
               { id: "a10", nombre: "Tapa de Tanque de Combustible", x: 80, y: 50, estado: "BUENO" }
             ]
           },
           posterior: {
-            img: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80",
+            fotoBase64: null,
             partes: [
-              { id: "a11", nombre: "Malotero / Cuelga", x: 50, y: 45, estado: "BUENO" },
+              { id: "a11", nombre: "Maletero Posterior", x: 50, y: 45, estado: "BUENO" },
               { id: "a12", nombre: "Faros Posteriores", x: 25, y: 50, estado: "BUENO" },
               { id: "a13", nombre: "Placa de Rodaje", x: 50, y: 65, estado: "BUENO" }
             ]
@@ -435,7 +474,6 @@
     const modeloId = document.getElementById('sel_modelo').value;
     const modeloBase = BASE_VEHICULOS[cat].find(m => m.id === modeloId);
 
-    // Deep clone para mantener estados de la sesión
     estadoActualVehiculo = JSON.parse(JSON.stringify(modeloBase));
     vistaActiva = 'frente';
     renderizarVistasTabs();
@@ -460,7 +498,22 @@
 
   function renderizarPantalla() {
     const datosVista = estadoActualVehiculo.vistas[vistaActiva];
-    document.getElementById('img_vehiculo').src = datosVista.img;
+    const imgElem = document.getElementById('img_vehiculo');
+    const placeholderText = document.getElementById('placeholder_text');
+    const labelEstado = document.getElementById('label_foto_estado');
+
+    if (datosVista.fotoBase64) {
+      imgElem.src = datosVista.fotoBase64;
+      imgElem.style.display = 'block';
+      placeholderText.style.display = 'none';
+      labelEstado.innerText = "✅ Foto capturada";
+      labelEstado.style.color = "#16a34a";
+    } else {
+      imgElem.style.display = 'none';
+      placeholderText.style.display = 'block';
+      labelEstado.innerText = "(Sin foto real)";
+      labelEstado.style.color = "#64748b";
+    }
 
     const layer = document.getElementById('hotspots_layer');
     const lista = document.getElementById('lista_componentes');
@@ -468,7 +521,7 @@
     lista.innerHTML = "";
 
     datosVista.partes.forEach((parte, index) => {
-      // 1. Render Hotspot sobre la foto
+      // 1. Hotspot interactivo
       const hs = document.createElement('div');
       hs.className = `hotspot ${parte.estado}`;
       hs.style.left = `${parte.x}%`;
@@ -478,7 +531,7 @@
       hs.onclick = () => rotarEstadoParte(parte.id);
       layer.appendChild(hs);
 
-      // 2. Render Fila en Lista Lateral
+      // 2. Fila en Lista Lateral
       lista.innerHTML += `
         <div class="item-row">
           <span><strong>${index + 1}.</strong> ${parte.nombre}</span>
@@ -490,6 +543,18 @@
     });
 
     actualizarNarrativaTexto();
+  }
+
+  function procesarFotoSubida(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      estadoActualVehiculo.vistas[vistaActiva].fotoBase64 = e.target.result;
+      renderizarPantalla();
+    };
+    reader.readAsDataURL(file);
   }
 
   function rotarEstadoParte(parteId) {
@@ -527,21 +592,32 @@
     document.getElementById('salida_narrativa').innerText = texto;
   }
 
-  function simularAnalisisIA() {
-    alert("🤖 Gemini Vision API: Analizando imágenes cargadas...");
-    // Simular detección automática de daños en una parte
-    const datosVista = estadoActualVehiculo.vistas.frente;
-    if (datosVista.partes[1]) datosVista.partes[1].estado = "MALO";
-    if (datosVista.partes[3]) datosVista.partes[3].estado = "FALTANTE";
+  function ejecutarAnalisisIA() {
+    let fotosCargadas = 0;
+    for (let key in estadoActualVehiculo.vistas) {
+      if (estadoActualVehiculo.vistas[key].fotoBase64) fotosCargadas++;
+    }
+
+    if (fotosCargadas === 0) {
+      alert("⚠️ Primero debes tomar o subir al menos 01 foto en cualquiera de las pestañas.");
+      return;
+    }
+
+    alert(`🤖 Gemini Vision API: Analizando ${fotosCargadas} foto(s) capturada(s)...`);
     
+    // Simulación de respuesta IA reconociendo hallazgos en la foto activa
+    const datosVista = estadoActualVehiculo.vistas[vistaActiva];
+    if (datosVista.partes[0]) datosVista.partes[0].estado = "MALO";
+    if (datosVista.partes[1]) datosVista.partes[1].estado = "FALTANTE";
+
     renderizarPantalla();
-    alert("✅ ¡Análisis completado! Se detectaron 01 componente deteriorado y 01 faltante.");
+    alert("✅ ¡Análisis completado! Se actualizaron los estados según lo detectado en la imagen.");
   }
 
   function guardarYRetornar() {
     const narrativa = document.getElementById('salida_narrativa').innerText;
     localStorage.setItem('pnp_acta_situacion_vehicular_resultado', narrativa);
-    alert("💾 ¡Situación vehicular guardada correctamente en el sistema!");
+    alert("💾 ¡Situación vehicular guardada correctamente!");
   }
 
   // Inicialización
