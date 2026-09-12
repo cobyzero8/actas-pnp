@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Acta de Situación Vehicular - PNP</title>
+  <style>
+    .vehiculo-container {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 20px auto;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 16px;
+      background: #f8fafc;
+    }
+    .selector-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .selector-box label {
+      font-weight: bold;
+      font-size: 12px;
+      color: #0f172a;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .selector-box select {
+      width: 100%;
+      padding: 8px;
+      border: 1.5px solid #0284c7;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .esquema-wrapper {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 16px;
+      background: #ffffff;
+      padding: 14px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    /* Estilo del lienzo/esquema interactivo */
+    .canvas-vehiculo {
+      position: relative;
+      width: 300px;
+      height: 220px;
+      background: #f1f5f9;
+      border: 2px dashed #94a3b8;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .hotspot {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #0284c7;
+      color: white;
+      font-size: 11px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      transition: transform 0.15s, background 0.15s;
+    }
+    .hotspot:hover { transform: scale(1.15); }
+    .hotspot.estado-bueno { background: #16a34a; }
+    .hotspot.estado-malo { background: #d97706; }
+    .hotspot.estado-faltante { background: #dc2626; }
+    
+    .partes-lista {
+      max-height: 220px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .item-parte {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 10px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 5px;
+      font-size: 12px;
+    }
+    .btn-estado {
+      padding: 3px 8px;
+      font-size: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .resumen-acta {
+      margin-top: 16px;
+      background: #0f172a;
+      color: #38bdf8;
+      padding: 12px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+<div class="vehiculo-container">
+  <div class="selector-grid">
+    <div class="selector-box">
+      <label>1. Categoría de Vehículo:</label>
+      <select id="sel_categoria" onchange="actualizarTiposVehiculo()">
+        <option value="menor">Vehículo Menor</option>
+        <option value="mayor">Vehículo Mayor</option>
+      </select>
+    </div>
+    <div class="selector-box">
+      <label>2. Clase / Tipo Específico:</label>
+      <select id="sel_clase" onchange="cargarEsquemaVehiculo()"></select>
+    </div>
+  </div>
+
+  <div class="esquema-wrapper">
+    <div>
+      <div style="font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 6px; text-align: center;">
+        📌 Haz clic en los puntos interactivos:
+      </div>
+      <div class="canvas-vehiculo" id="canvas_vehiculo"></div>
+    </div>
+
+    <div>
+      <div style="font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 6px;">
+        ⚙️ Estado de Accesorios y Componentes:
+      </div>
+      <div class="partes-lista" id="lista_partes"></div>
+    </div>
+  </div>
+
+  <div class="resumen-acta" id="salida_narrativa">Generando texto de situación vehicular...</div>
+</div>
+
+<script>
+  // BANCO DE DATOS DE VEHÍCULOS Y SUS PARTES ESPECÍFICAS
+  const CATALOGO_VEHICULOS = {
+    menor: [
+      {
+        id: "moto_lineal",
+        nombre: "Motocicleta Lineal",
+        svg: `<svg width="180" height="120" viewBox="0 0 100 60"><circle cx="20" cy="45" r="10" fill="none" stroke="#334155" stroke-width="3"/><circle cx="80" cy="45" r="10" fill="none" stroke="#334155" stroke-width="3"/><path d="M20 45 L40 25 L65 25 L80 45 M40 25 L35 15 L25 15 M50 25 L50 45" fill="none" stroke="#0284c7" stroke-width="3"/></svg>`,
+        partes: [
+          { id: "faro_del", nombre: "Faro Delantero", x: 78, y: 20, estado: "BUENO" },
+          { id: "espejos", nombre: "Espejos Retrovisores (x2)", x: 30, y: 12, estado: "BUENO" },
+          { id: "tablero", nombre: "Tablero de Instrumentos / Velocímetro", x: 40, y: 18, estado: "BUENO" },
+          { id: "tanque", nombre: "Tanque de Combustible", x: 50, y: 25, estado: "BUENO" },
+          { id: "asiento", nombre: "Asiento / Montura", x: 62, y: 24, estado: "BUENO" },
+          { id: "neumatico_del", nombre: "Neumático Delantero", x: 80, y: 45, estado: "BUENO" },
+          { id: "neumatico_post", nombre: "Neumático Posterior", x: 20, y: 45, estado: "BUENO" },
+          { id: "escape", nombre: "Tubo de Escape / Silenciador", x: 35, y: 48, estado: "BUENO" }
+        ]
+      },
+      {
+        id: "mototaxi",
+        nombre: "Trimovil / Mototaxi",
+        svg: `<svg width="180" height="120" viewBox="0 0 100 60"><circle cx="20" cy="45" r="8" fill="none" stroke="#334155" stroke-width="3"/><circle cx="45" cy="45" r="8" fill="none" stroke="#334155" stroke-width="3"/><circle cx="80" cy="45" r="8" fill="none" stroke="#334155" stroke-width="3"/><rect x="15" y="15" width="45" height="25" fill="none" stroke="#0284c7" stroke-width="2"/><path d="M60 40 L80 45 L75 25 Z" fill="none" stroke="#0284c7" stroke-width="2"/></svg>`,
+        partes: [
+          { id: "faro_del", nombre: "Faro Principal Delantero", x: 80, y: 30, estado: "BUENO" },
+          { id: "carpa", nombre: "Carpa / Toldo Protector", x: 35, y: 15, estado: "BUENO" },
+          { id: "parabrisas", nombre: "Parabrisas Delantero y Micas", x: 72, y: 22, estado: "BUENO" },
+          { id: "llanta_rep", nombre: "Llanta de Repuesto", x: 15, y: 25, estado: "FALTANTE" },
+          { id: "asiento_pas", nombre: "Asiento Posterior de Pasajeros", x: 35, y: 30, estado: "BUENO" }
+        ]
+      }
+    ],
+    mayor: [
+      {
+        id: "automovil",
+        nombre: "Automóvil / Sedan",
+        svg: `<svg width="200" height="100" viewBox="0 0 100 50"><path d="M10 35 L20 20 L40 15 L70 15 L85 25 L95 35 Z" fill="none" stroke="#0284c7" stroke-width="3"/><circle cx="25" cy="35" r="7" fill="none" stroke="#334155" stroke-width="3"/><circle cx="75" cy="35" r="7" fill="none" stroke="#334155" stroke-width="3"/></svg>`,
+        partes: [
+          { id: "faro_del", nombre: "Faros Delanteros (Izq/Der)", x: 88, y: 30, estado: "BUENO" },
+          { id: "parabrisas_del", nombre: "Parabrisas Delantero", x: 65, y: 18, estado: "BUENO" },
+          { id: "capot", nombre: "Capot y Motor", x: 80, y: 24, estado: "BUENO" },
+          { id: "radio", nombre: "Autoradio / Pantalla Multimedios", x: 50, y: 24, estado: "BUENO" },
+          { id: "bateria", nombre: "Batería de Vehículo", x: 75, y: 12, estado: "BUENO" },
+          { id: "faros_post", nombre: "Faros Posteriores", x: 12, y: 28, estado: "BUENO" },
+          { id: "neumaticos", nombre: "Neumáticos (4 Unidades)", x: 25, y: 35, estado: "BUENO" },
+          { id: "llanta_rep", nombre: "Llanta de Repuesto", x: 18, y: 15, estado: "BUENO" }
+        ]
+      }
+    ]
+  };
+
+  let vehiculoActual = null;
+
+  function actualizarTiposVehiculo() {
+    const cat = document.getElementById('sel_categoria').value;
+    const selClase = document.getElementById('sel_clase');
+    selClase.innerHTML = "";
+    
+    CATALOGO_VEHICULOS[cat].forEach(v => {
+      selClase.innerHTML += `<option value="${v.id}">${v.nombre}</option>`;
+    });
+    cargarEsquemaVehiculo();
+  }
+
+  function cargarEsquemaVehiculo() {
+    const cat = document.getElementById('sel_categoria').value;
+    const claseId = document.getElementById('sel_clase').value;
+    const datos = CATALOGO_VEHICULOS[cat].find(v => v.id === claseId);
+    
+    // Clonar objeto para manipulación local
+    vehiculoActual = JSON.parse(JSON.stringify(datos));
+    renderizarUI();
+  }
+
+  function renderizarUI() {
+    const canvas = document.getElementById('canvas_vehiculo');
+    const lista = document.getElementById('lista_partes');
+    
+    canvas.innerHTML = vehiculoActual.svg;
+    lista.innerHTML = "";
+
+    vehiculoActual.partes.forEach((parte, index) => {
+      // 1. Dibujar Hotspot sobre el Canvas 2D
+      const btnSt = parte.estado.toLowerCase();
+      canvas.innerHTML += `
+        <div class="hotspot estado-${btnSt}" 
+             style="left: ${parte.x}%; top: ${parte.y}%;" 
+             title="${parte.nombre}: ${parte.estado}"
+             onclick="rotarEstado('${parte.id}')">
+          ${index + 1}
+        </div>
+      `;
+
+      // 2. Renderizar fila en la lista lateral
+      lista.innerHTML += `
+        <div class="item-parte">
+          <span><strong>${index + 1}.</strong> ${parte.nombre}</span>
+          <button type="button" class="btn-estado estado-${btnSt}" onclick="rotarEstado('${parte.id}')">
+            ${parte.estado}
+          </button>
+        </div>
+      `;
+    });
+
+    generarNarrativaActa();
+  }
+
+  function rotarEstado(parteId) {
+    const parte = vehiculoActual.partes.find(p => p.id === parteId);
+    if (!parte) return;
+
+    if (parte.estado === "BUENO") parte.estado = "MALO";
+    else if (parte.estado === "MALO") parte.estado = "FALTANTE";
+    else parte.estado = "BUENO";
+
+    renderizarUI();
+  }
+
+  function generarNarrativaActa() {
+    const faltantes = vehiculoActual.partes.filter(p => p.estado === "FALTANTE").map(p => p.nombre);
+    const malos = vehiculoActual.partes.filter(p => p.estado === "MALO").map(p => p.nombre);
+    const buenos = vehiculoActual.partes.filter(p => p.estado === "BUENO").map(p => p.nombre);
+
+    let texto = `ACTA DE SITUACIÓN VEHICULAR (${vehiculoActual.nombre.toUpperCase()})\n`;
+    texto += `--------------------------------------------------------\n`;
+    texto += `1. ACCESORIOS EN BUEN ESTADO: ${buenos.join(', ') || 'NINGUNO'}.\n`;
+    texto += `2. ACCESORIOS EN MAL ESTADO / DETERIORADOS: ${malos.join(', ') || 'NINGUNO'}.\n`;
+    texto += `3. ACCESORIOS FALTANTES / INEXISTENTES: ${faltantes.join(', ') || 'NINGUNO'}.\n`;
+
+    document.getElementById('salida_narrativa').innerText = texto;
+  }
+
+  // Inicializar al cargar
+  actualizarTiposVehiculo();
+</script>
+
+</body>
+</html>
