@@ -522,7 +522,7 @@
               <textarea id="narrar_positivo" rows="4" readonly style="font-size: 13px; background: #fff5f5; border: 2px solid #d9534f; font-weight: 500;"></textarea>
             </div>
 
-            <!-- DILIGENCIA DE EMBALAJE Y LACRADO (Oculto por defecto hasta que haya al menos un POSITIVO) -->
+            <!-- DILIGENCIA DE EMBALAJE Y LACRADO -->
             <div class="full" id="bloqueDiligenciaEmbalaje" style="background: #ffffff; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 10px; display: none;">
               <div style="font-weight: bold; color: #0369a1; font-size: 13px; margin-bottom: 8px;">
                 📦 Diligencia de Embalaje y Lacrado ({tipo_embalaje} / {forma_lacrado}):
@@ -763,12 +763,185 @@
     return `placa de rodaje ${placa}, clase ${clase}, marca ${marca}, modelo ${modelo}, color ${color}, año fab. ${anio}, N° motor ${motor}, N° chasis/serie ${chasis}`;
   }
 
+  // GUARDA EL ESTADO COMPLETO DEL FORMULARIO EN LOCALSTORAGE
+  function guardarEstadoFormulario() {
+    const estado = {
+      distrito: getVal('distrito'),
+      provincia: getVal('provincia'),
+      region: getVal('region'),
+      hora_intervencion: getVal('hora_intervencion'),
+      fecha: getVal('fecha'),
+      hora1: getVal('hora1'),
+      hora2: getVal('hora2'),
+      lugar: getVal('lugar'),
+
+      unidad_policial: getVal('unidad_policial'),
+      unidad_disposicion: getVal('unidad_disposicion'),
+      fiscal: getVal('fiscal'),
+      agraviado: getVal('agraviado'),
+      tipo_actividad: getVal('tipo_actividad'),
+      nombre_operativo: getVal('nombre_operativo'),
+      motivo_justificatorio: getVal('motivo_justificatorio'),
+      opcion_constancia_testigo: getVal('opcion_constancia_testigo'),
+
+      resultado_esinpol: getVal('resultado_esinpol'),
+      tipo_requisitoria: getVal('tipo_requisitoria'),
+      motivo_requisitoria: getVal('motivo_requisitoria'),
+      juzgado_requisitoria: getVal('juzgado_requisitoria'),
+      documento_requisitoria: getVal('documento_requisitoria'),
+      fecha_requisitoria: getVal('fecha_requisitoria'),
+      situacion_requisitoria: getVal('situacion_requisitoria'),
+
+      chk_soat: document.getElementById('chk_soat')?.checked,
+      st_soat: getVal('st_soat'),
+      fec_soat: getVal('fec_soat'),
+      chk_itv: document.getElementById('chk_itv')?.checked,
+      st_itv: getVal('st_itv'),
+      fec_itv: getVal('fec_itv'),
+      chk_lunas: document.getElementById('chk_lunas')?.checked,
+      st_lunas: getVal('st_lunas'),
+
+      detallesEspecies: detallesEspecies,
+      tipo_embalaje: getVal('tipo_embalaje'),
+      tipo_embalaje_manual: getVal('tipo_embalaje_manual'),
+      forma_lacrado: getVal('forma_lacrado'),
+      detalle_hallazgo: getVal('detalle_hallazgo'),
+      circunstancia_hallazgo: getVal('circunstancia_hallazgo'),
+
+      efectivos: obtenerListaEfectivosPNP(),
+      intervenidos: obtenerListaIntervenidos(),
+      vehiculos: obtenerListaVehiculos(),
+
+      cant_vehiculos_pnp: getVal('cant_vehiculos_pnp'),
+      placas_pnp: Array.from(document.querySelectorAll('[id^="placa_policial_"]')).map(el => el.value)
+    };
+
+    localStorage.setItem('pnp_formulario_estado_guardado', JSON.stringify(estado));
+  }
+
+  // RESTAURA TODOS LOS CAMPOS DEL FORMULARIO SI EXISTEN DATOS PREVIOS
+  function restaurarEstadoFormulario() {
+    const raw = localStorage.getItem('pnp_formulario_estado_guardado');
+    if (!raw) return false;
+
+    try {
+      const estado = JSON.parse(raw);
+
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el && val !== undefined && val !== null) el.value = val;
+      };
+
+      setVal('distrito', estado.distrito);
+      setVal('provincia', estado.provincia);
+      setVal('region', estado.region);
+      setVal('hora_intervencion', estado.hora_intervencion);
+      setVal('fecha', estado.fecha);
+      setVal('hora1', estado.hora1);
+      setVal('hora2', estado.hora2);
+      setVal('lugar', estado.lugar);
+
+      setVal('unidad_policial', estado.unidad_policial);
+      setVal('unidad_disposicion', estado.unidad_disposicion);
+      setVal('fiscal', estado.fiscal);
+      setVal('agraviado', estado.agraviado);
+      setVal('tipo_actividad', estado.tipo_actividad);
+      evaluarTipoActividad();
+      setVal('nombre_operativo', estado.nombre_operativo);
+      setVal('motivo_justificatorio', estado.motivo_justificatorio);
+      setVal('opcion_constancia_testigo', estado.opcion_constancia_testigo);
+
+      setVal('resultado_esinpol', estado.resultado_esinpol);
+      evaluarEsinpol();
+      setVal('tipo_requisitoria', estado.tipo_requisitoria);
+      setVal('motivo_requisitoria', estado.motivo_requisitoria);
+      setVal('juzgado_requisitoria', estado.juzgado_requisitoria);
+      setVal('documento_requisitoria', estado.documento_requisitoria);
+      setVal('fecha_requisitoria', estado.fecha_requisitoria);
+      setVal('situacion_requisitoria', estado.situacion_requisitoria);
+
+      if (document.getElementById('chk_soat') && estado.chk_soat !== undefined) document.getElementById('chk_soat').checked = estado.chk_soat;
+      setVal('st_soat', estado.st_soat);
+      setVal('fec_soat', estado.fec_soat);
+      if (document.getElementById('chk_itv') && estado.chk_itv !== undefined) document.getElementById('chk_itv').checked = estado.chk_itv;
+      setVal('st_itv', estado.st_itv);
+      setVal('fec_itv', estado.fec_itv);
+      if (document.getElementById('chk_lunas') && estado.chk_lunas !== undefined) document.getElementById('chk_lunas').checked = estado.chk_lunas;
+      setVal('st_lunas', estado.st_lunas);
+
+      setVal('tipo_embalaje', estado.tipo_embalaje);
+      evaluarEmbalajeManual();
+      setVal('tipo_embalaje_manual', estado.tipo_embalaje_manual);
+      setVal('forma_lacrado', estado.forma_lacrado);
+      setVal('detalle_hallazgo', estado.detalle_hallazgo);
+      setVal('circunstancia_hallazgo', estado.circunstancia_hallazgo);
+
+      if (estado.detallesEspecies) {
+        Object.assign(detallesEspecies, estado.detallesEspecies);
+        for (let key in detallesEspecies) {
+          const el = document.getElementById(key);
+          if (el) {
+            if (detallesEspecies[key]) {
+              el.value = "POSITIVO";
+              el.style.background = "#fee2e2";
+              el.style.color = "#991b1b";
+              el.style.borderColor = "#991b1b";
+            } else {
+              el.value = "NEGATIVO";
+              el.style.background = "#ffffff";
+              el.style.color = "#000000";
+              el.style.borderColor = "#cbd5e1";
+            }
+          }
+        }
+        cerrarModalYActualizarNarrativa();
+      }
+
+      if (estado.efectivos && estado.efectivos.length > 0) {
+        document.getElementById('contenedor_efectivos_pnp').innerHTML = "";
+        contadorEfectivosPNP = 0;
+        estado.efectivos.forEach(e => agregarEfectivoPNPCard(e));
+      }
+
+      if (estado.intervenidos && estado.intervenidos.length > 0) {
+        document.getElementById('contenedor_intervenidos').innerHTML = "";
+        contadorIntervenidos = 0;
+        estado.intervenidos.forEach(i => agregarIntervenidoCard(i));
+      }
+
+      if (estado.vehiculos && estado.vehiculos.length > 0) {
+        document.getElementById('contenedor_vehiculos').innerHTML = "";
+        contadorVehiculos = 0;
+        estado.vehiculos.forEach(v => agregarVehiculoCard(v));
+      }
+
+      if (estado.cant_vehiculos_pnp) {
+        setVal('cant_vehiculos_pnp', estado.cant_vehiculos_pnp);
+        generarCamposVehiculosPNP();
+        if (estado.placas_pnp) {
+          estado.placas_pnp.forEach((placa, idx) => {
+            setVal(`placa_policial_${idx + 1}`, placa);
+          });
+        }
+      }
+
+      return true;
+    } catch (err) {
+      console.error("Error restaurando estado:", err);
+      return false;
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
-    agregarEfectivoPNPCard();
-    agregarIntervenidoCard();
-    agregarVehiculoCard();
-    
-    generarCamposVehiculosPNP();
+    const restaurado = restaurarEstadoFormulario();
+
+    if (!restaurado) {
+      agregarEfectivoPNPCard();
+      agregarIntervenidoCard();
+      agregarVehiculoCard();
+      generarCamposVehiculosPNP();
+    }
+
     construirSeccionesNarrativa();
     evaluarEsinpol();
     
@@ -793,7 +966,6 @@
 
     adaptarFormularioPorActas(actasConfiguradas, delitoSel);
 
-    // Verificar si se completó el Acta de Situación Vehicular previa
     if (localStorage.getItem('pnp_acta_situacion_vehicular_resultado')) {
       const msgElem = document.getElementById('estado_situacion_vehicular_msg');
       if (msgElem) msgElem.style.display = 'block';
@@ -801,6 +973,8 @@
   });
 
   function irASituacionVehicular() {
+    guardarEstadoFormulario();
+
     window.pnp_lista_intervenidos = obtenerListaIntervenidos();
     window.pnp_lista_vehiculos = obtenerListaVehiculos();
     window.pnp_lista_efectivos = obtenerListaEfectivosPNP();
@@ -1069,11 +1243,11 @@
           </div>
           <div class="full">
             <label style="color: #991b1b; font-weight: bold;">📞 Persona de Confianza / Familiar a comunicar detención ({asistido_confianza}):</label>
-            <input type="text" id="asistido_confianza_${id}" class="inp-int-asistido" placeholder="Ej: su hermano Juan PÉREZ ROJAS (Cel: 987654321)" value="${datos?.asistido || 'su hermano Juan PÉREZ ROJAS (Cel: 987654321)'}" required style="border: 1.5px solid #ef4444;">
+            <input type="text" id="asistido_confianza_${id}" class="inp-int-asistido" placeholder="Ej: su hermano Juan PÉREZ ROJAS (Cel: 987654321)" value="${datos?.asistido_confianza || datos?.asistido || 'su hermano Juan PÉREZ ROJAS (Cel: 987654321)'}" required style="border: 1.5px solid #ef4444;">
           </div>
           <div class="full">
             <label style="color: #0284c7; font-weight: bold;">🛡️ Asistencia durante el Registro Personal ({asistido_confianza_registro}):</label>
-            <input type="text" id="asistido_confianza_registro_${id}" class="inp-int-asistido-reg" placeholder="Ej: no deseando ser asistido por ninguna persona" value="${datos?.asistido_registro || 'no deseando ser asistido por ninguna persona'}" required style="border: 1.5px solid #0284c7;">
+            <input type="text" id="asistido_confianza_registro_${id}" class="inp-int-asistido-reg" placeholder="Ej: no deseando ser asistido por ninguna persona" value="${datos?.asistido_confianza_registro || datos?.asistido_registro || 'no deseando ser asistido por ninguna persona'}" required style="border: 1.5px solid #0284c7;">
           </div>
         </div>
       </div>
@@ -1437,6 +1611,8 @@
       form.reportValidity();
       return;
     }
+
+    guardarEstadoFormulario();
 
     window.pnp_lista_efectivos = obtenerListaEfectivosPNP();
     localStorage.setItem('pnp_lista_efectivos', JSON.stringify(window.pnp_lista_efectivos));
