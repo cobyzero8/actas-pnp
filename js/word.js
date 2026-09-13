@@ -361,7 +361,7 @@ function obtenerListaIntervenidosForm() {
     } catch (e) {}
   }
 
-  const getValSafe = (id) => document.getElementById(id) ? document.getElementById(id).value.trim() : "S/D";
+  const getValSafe = (id) => document.getElementById(id) ? document.getElementById(id).value.trim() : "";
   return [{
     nombre: getValSafe('intervenido_nombre') || getValSafe('intervenido_nombre_1'),
     dni: getValSafe('intervenido_dni') || getValSafe('intervenido_dni_1'),
@@ -476,10 +476,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (resDelito) resDelito.innerText = delitoConfigurado;
   if (resCant) resCant.innerText = `📄 ${idsActasConfiguradas.length} acta(s) seleccionada(s) para generar`;
 
+  // Asignar fecha y hora inicial solo si los campos están vacíos
   const fechaInput = document.getElementById('fecha');
   const hora1Input = document.getElementById('hora1');
-  if (fechaInput) fechaInput.value = new Date().toISOString().split('T')[0];
-  if (hora1Input) hora1Input.value = new Date().toTimeString().slice(0, 5);
+  if (fechaInput && !fechaInput.value) fechaInput.value = new Date().toISOString().split('T')[0];
+  if (hora1Input && !hora1Input.value) hora1Input.value = new Date().toTimeString().slice(0, 5);
 });
 
 /**
