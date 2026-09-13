@@ -742,14 +742,18 @@
     return nombre;
   }
 
-  // FUNCIÓN AUXILIAR PARA FORMATEAR DETALLES DE VEHÍCULOS CON COMAS
+  // FUNCIÓN AUXILIAR PARA FORMATEAR DETALLES DE VEHÍCULOS CON COMAS Y TODOS LOS CAMPOS DE TARJETA
   function formatearDetalleVehiculo(veh) {
-    if (!veh) return "placa de rodaje NO REGISTRA, marca NO REGISTRA, modelo NO REGISTRA, color NO REGISTRA";
+    if (!veh) return "placa NO REGISTRA, clase NO REGISTRA, marca NO REGISTRA, modelo NO REGISTRA, color NO REGISTRA, año fab. NO REGISTRA, N° motor NO REGISTRA, N° chasis NO REGISTRA";
     const placa = veh.placa || 'NO REGISTRA';
+    const clase = veh.clase_vehiculo || 'TRIMOVIL';
     const marca = veh.marca || 'NO REGISTRA';
     const modelo = veh.modelo || 'NO REGISTRA';
     const color = veh.color || 'NO REGISTRA';
-    return `placa de rodaje ${placa}, marca ${marca}, modelo ${modelo}, color ${color}`;
+    const anio = veh.anio_fab || 'NO REGISTRA';
+    const motor = veh.num_motor || 'NO REGISTRA';
+    const chasis = veh.num_chasis || 'NO REGISTRA';
+    return `placa de rodaje ${placa}, clase ${clase}, marca ${marca}, modelo ${modelo}, color ${color}, año fab. ${anio}, N° motor ${motor}, N° chasis/serie ${chasis}`;
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -963,8 +967,16 @@
             <input type="text" id="intervenido_nombre_${id}" class="inp-int-nombre" placeholder="Nombre completo" required style="font-weight: bold;" value="${datos?.nombre || ''}">
           </div>
           <div>
-            <label>N° DNI</label>
+            <label>N° DNI / CE</label>
             <input type="text" id="intervenido_dni_${id}" class="inp-int-dni" placeholder="N° DNI" required style="font-weight: bold;" value="${datos?.dni || ''}">
+          </div>
+          <div>
+            <label>N° Licencia Conducir</label>
+            <input type="text" id="licencia_${id}" class="inp-int-licencia" placeholder="Ej: Q75432189" value="${datos?.licencia || ''}">
+          </div>
+          <div>
+            <label>Clase / Cat. Licencia</label>
+            <input type="text" id="categoria_licencia_${id}" class="inp-int-cat-licencia" placeholder="Ej: B-IIc" value="${datos?.categoria_licencia || ''}">
           </div>
           <div>
             <label>Edad</label>
@@ -1043,6 +1055,8 @@
         idNum: id,
         nombre: getVal(`intervenido_nombre_${id}`),
         dni: getVal(`intervenido_dni_${id}`),
+        licencia: getVal(`licencia_${id}`, '________'),
+        categoria_licencia: getVal(`categoria_licencia_${id}`, '____'),
         edad: getVal(`edad_${id}`),
         estado_civil: getVal(`estado_civil_${id}`),
         natural: getVal(`natural_${id}`),
@@ -1099,20 +1113,36 @@
         </div>
         <div class="grid">
           <div>
-            <label>Placa del Vehículo</label>
+            <label>Placa de Rodaje</label>
             <input type="text" id="placa_vehiculo_${id}" class="inp-veh-placa" placeholder="Ej: ABC-123" style="font-weight: bold;" value="${datos?.placa || ''}">
           </div>
           <div>
+            <label>Clase de Vehículo</label>
+            <input type="text" id="clase_vehiculo_${id}" class="inp-veh-clase" placeholder="Ej: TRIMOVIL / AUTOMOVIL" value="${datos?.clase_vehiculo || 'TRIMOVIL'}">
+          </div>
+          <div>
             <label>Marca</label>
-            <input type="text" id="marca_vehiculo_${id}" class="inp-veh-marca" placeholder="Ej: Toyota" value="${datos?.marca || ''}">
+            <input type="text" id="marca_vehiculo_${id}" class="inp-veh-marca" placeholder="Ej: Toyota / Ronco" value="${datos?.marca || ''}">
           </div>
           <div>
             <label>Modelo</label>
-            <input type="text" id="modelo_vehiculo_${id}" class="inp-veh-modelo" placeholder="Ej: Yaris" value="${datos?.modelo || ''}">
+            <input type="text" id="modelo_vehiculo_${id}" class="inp-veh-modelo" placeholder="Ej: Yaris / Pantera-B150" value="${datos?.modelo || ''}">
           </div>
-          <div class="full">
-            <label>Color / Estado del Vehículo</label>
-            <input type="text" id="color_vehiculo_${id}" class="inp-veh-color" placeholder="Ej: Negro / Daños materiales en parachoque" value="${datos?.color || ''}">
+          <div>
+            <label>Color</label>
+            <input type="text" id="color_vehiculo_${id}" class="inp-veh-color" placeholder="Ej: Negro / Rojo" value="${datos?.color || ''}">
+          </div>
+          <div>
+            <label>Año de Fabricación</label>
+            <input type="text" id="anio_fab_vehiculo_${id}" class="inp-veh-anio" placeholder="Ej: 2022" value="${datos?.anio_fab || ''}">
+          </div>
+          <div>
+            <label>N° de Motor</label>
+            <input type="text" id="num_motor_vehiculo_${id}" class="inp-veh-motor" placeholder="Ej: 157FMI-2022098" value="${datos?.num_motor || ''}">
+          </div>
+          <div>
+            <label>N° Chasis / Serie</label>
+            <input type="text" id="num_chasis_vehiculo_${id}" class="inp-veh-chasis" placeholder="Ej: LTMKD0798F5108917" value="${datos?.num_chasis || ''}">
           </div>
         </div>
       </div>
@@ -1145,9 +1175,13 @@
       lista.push({
         idNum: id,
         placa: getVal(`placa_vehiculo_${id}`, 'NO REGISTRA'),
+        clase_vehiculo: getVal(`clase_vehiculo_${id}`, 'TRIMOVIL'),
         marca: getVal(`marca_vehiculo_${id}`, 'NO REGISTRA'),
         modelo: getVal(`modelo_vehiculo_${id}`, 'NO REGISTRA'),
-        color: getVal(`color_vehiculo_${id}`, 'NO REGISTRA')
+        color: getVal(`color_vehiculo_${id}`, 'NO REGISTRA'),
+        anio_fab: getVal(`anio_fab_vehiculo_${id}`, 'NO REGISTRA'),
+        num_motor: getVal(`num_motor_vehiculo_${id}`, 'NO REGISTRA'),
+        num_chasis: getVal(`num_chasis_vehiculo_${id}`, 'NO REGISTRA')
       });
     });
     return lista;
@@ -1193,6 +1227,8 @@
     agregarIntervenidoCard({
       nombre: "TORRES PALOMINO, Renzo Gabriel",
       dni: "75432189",
+      licencia: "Q75432189",
+      categoria_licencia: "B-IIc",
       edad: "22",
       estado_civil: "soltero",
       natural: "Ayacucho",
@@ -1210,9 +1246,13 @@
     contadorVehiculos = 0;
     agregarVehiculoCard({
       placa: "4567-3Y",
+      clase_vehiculo: "TRIMOVIL",
       marca: "Ronco",
       modelo: "Pantera-B150",
-      color: "Negro"
+      color: "Negro",
+      anio_fab: "2022",
+      num_motor: "157FMI-2022098",
+      num_chasis: "LTMKD0798F5108917"
     });
 
     // Datos generales de lugar y tiempo
@@ -1362,6 +1402,34 @@
     window.pnp_lista_vehiculos = obtenerListaVehiculos();
     localStorage.setItem('pnp_lista_vehiculos', JSON.stringify(window.pnp_lista_vehiculos));
 
+    // Sincronizar datos generales para el módulo de situación vehicular (localStorage)
+    const datosGenerales = {
+      distrito: getVal('distrito', 'HUANTA'),
+      provincia: getVal('provincia', 'HUANTA'),
+      region: getVal('region', 'AYACUCHO'),
+      hora: getVal('hora_intervencion', '10:30'),
+      dia: new Date().getDate().toString(),
+      mes: "SEPTIEMBRE",
+      anio: "2026",
+      instalaciones: getVal('unidad_policial', 'COMISARÍA PNP HUANTA'),
+      
+      conductor_nombre: window.pnp_lista_intervenidos[0]?.nombre || "______________________",
+      conductor_dni: window.pnp_lista_intervenidos[0]?.dni || "________",
+      conductor_licencia: window.pnp_lista_intervenidos[0]?.licencia || "________",
+      conductor_licencia_categoria: window.pnp_lista_intervenidos[0]?.categoria_licencia || "____",
+      motivo_intervencion: getVal('tipo_actividad', 'OPERATIVO POLICIAL'),
+      
+      placa: window.pnp_lista_vehiculos[0]?.placa || "________",
+      clase_vehiculo: window.pnp_lista_vehiculos[0]?.clase_vehiculo || "TRIMOVIL",
+      marca: window.pnp_lista_vehiculos[0]?.marca || "________",
+      modelo: window.pnp_lista_vehiculos[0]?.modelo || "________",
+      color: window.pnp_lista_vehiculos[0]?.color || "________",
+      anio_fab: window.pnp_lista_vehiculos[0]?.anio_fab || "________",
+      num_motor: window.pnp_lista_vehiculos[0]?.num_motor || "________",
+      num_chasis: window.pnp_lista_vehiculos[0]?.num_chasis || "________"
+    };
+    localStorage.setItem('pnp_datos_generales', JSON.stringify(datosGenerales));
+
     document.getElementById('paso1_formulario').style.display = 'none';
     document.getElementById('paso2_redactor').style.display = 'block';
     
@@ -1420,12 +1488,14 @@
     listaInt.forEach((item, idx) => {
       const prefijo = listaInt.length > 1 ? `Int. ${idx + 1} - ` : '';
       const nomInvertido = formatearNombreInvertido(item.nombre);
-      const filiacionCompleta = `${nomInvertido}, con ${item.edad} años de edad, natural de ${item.natural}, de ocupación ${item.ocupacion}, identificado con DNI N° ${item.dni}, quien refiere domiciliar en ${item.domicilio}, celular N° ${item.celular || 'S/N'}, estado civil ${item.estado_civil}, hijo de don ${item.papa || 'S/D'} y doña ${item.mama || 'S/D'}`;
+      const filiacionCompleta = `${nomInvertido}, con ${item.edad} años de edad, natural de ${item.natural}, de ocupación ${item.ocupacion}, identificado con DNI N° ${item.dni}, L/C N° ${item.licencia} (Cat. ${item.categoria_licencia}), quien refiere domiciliar en ${item.domicilio}, celular N° ${item.celular || 'S/N'}, estado civil ${item.estado_civil}, hijo de don ${item.papa || 'S/D'} y doña ${item.mama || 'S/D'}`;
 
       categorias[0].items.push(
         { titulo: `📋 Filiación Completa (${prefijo}${nomInvertido})`, val: filiacionCompleta },
         { titulo: `${prefijo}Nombre Completo`, val: nomInvertido },
         { titulo: `${prefijo}DNI`, val: item.dni },
+        { titulo: `${prefijo}Licencia Conducir`, val: item.licencia },
+        { titulo: `${prefijo}Categoría Licencia`, val: item.categoria_licencia },
         { titulo: `${prefijo}Edad`, val: `${item.edad} años` },
         { titulo: `${prefijo}Domicilio`, val: item.domicilio },
         { titulo: `${prefijo}Ocupación`, val: item.ocupacion },
@@ -1453,8 +1523,12 @@
       categorias[1].items.push(
         { titulo: `${prefijo}Datos Completos del Vehículo`, val: detalleVehCompleto },
         { titulo: `${prefijo}Placa`, val: `placa de rodaje ${veh.placa}` },
+        { titulo: `${prefijo}Clase`, val: `clase ${veh.clase_vehiculo}` },
         { titulo: `${prefijo}Marca / Modelo`, val: `marca ${veh.marca}, modelo ${veh.modelo}` },
-        { titulo: `${prefijo}Color / Estado`, val: `color ${veh.color}` }
+        { titulo: `${prefijo}Color`, val: `color ${veh.color}` },
+        { titulo: `${prefijo}Año Fab.`, val: `año fab. ${veh.anio_fab}` },
+        { titulo: `${prefijo}N° Motor`, val: `N° motor ${veh.num_motor}` },
+        { titulo: `${prefijo}N° Chasis`, val: `N° chasis ${veh.num_chasis}` }
       );
     });
 
@@ -1597,7 +1671,6 @@
     const nuevoTexto = txt.value.substring(0, start) + valor + txt.value.substring(end);
     txt.value = nuevoTexto;
 
-    // Posicionar el cursor inmediatamente después del texto insertado y darle foco
     const nuevaPosicion = start + valor.length;
     txt.selectionStart = nuevaPosicion;
     txt.selectionEnd = nuevaPosicion;
@@ -1608,7 +1681,6 @@
      PLANTILLAS RÁPIDAS OFICIALES CON INICIO DIRECTO EN "Siendo las..."
      ========================================================================== */
 
-  // 01 PLANTILLA: HURTO AGRAVADO
   function cargarModelo01HurtoAgravado() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
@@ -1663,7 +1735,6 @@
     minimizarPlantillas();
   }
 
-  // 02 PLANTILLA: ROBO AGRAVADO
   function cargarModelo02RoboAgravado() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
@@ -1699,7 +1770,7 @@
       celular: "912304958"
     };
     const personaNomInv = formatearNombreInvertido(persona.nombre);
-    const veh = obtenerListaVehiculos()[0] || { placa: "4567-3Y", marca: "Ronco", modelo: "Pantera-B150", color: "Negro" };
+    const veh = obtenerListaVehiculos()[0] || { placa: "4567-3Y", clase_vehiculo: "TRIMOVIL", marca: "Ronco", modelo: "Pantera-B150", color: "Negro", anio_fab: "2022", num_motor: "157FMI-2022098", num_chasis: "LTMKD0798F5108917" };
     const detalleVeh = formatearDetalleVehiculo(veh);
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y ENCABEZADO:";
@@ -1721,7 +1792,6 @@
     minimizarPlantillas();
   }
 
-  // 03 PLANTILLA: RECEPTACIÓN
   function cargarModelo03Receptacion() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
@@ -1774,7 +1844,6 @@
     minimizarPlantillas();
   }
 
-  // 04 PLANTILLA: CONDUCCIÓN EN EBRIEDAD
   function cargarModelo04Ebriedad() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
@@ -1809,7 +1878,7 @@
     };
     const personaNomInv = formatearNombreInvertido(persona.nombre);
 
-    const veh = obtenerListaVehiculos()[0] || { placa: "4567-3Y", marca: "Ronco", modelo: "Pantera-B150", color: "Negro" };
+    const veh = obtenerListaVehiculos()[0] || { placa: "4567-3Y", clase_vehiculo: "TRIMOVIL", marca: "Ronco", modelo: "Pantera-B150", color: "Negro", anio_fab: "2022", num_motor: "157FMI-2022098", num_chasis: "LTMKD0798F5108917" };
     const detalleVeh = formatearDetalleVehiculo(veh);
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y CIRCUNSTANCIAS:";
@@ -1837,7 +1906,6 @@
     minimizarPlantillas();
   }
 
-  // 05 PLANTILLA: TENENCIA ILEGAL DE ARMAS Y MUNICIONES
   function cargarModelo05TenenciaIlegalArmas() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
@@ -1888,7 +1956,6 @@
     minimizarPlantillas();
   }
 
-  // 06 PLANTILLA: TRÁFICO ILÍCITO DE DROGAS (MICROCOMERCIALIZACIÓN)
   function cargarModelo06TIDMicrocomercializacion() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
@@ -1939,7 +2006,6 @@
     minimizarPlantillas();
   }
 
-  // 07 PLANTILLA: VIOLENCIA FAMILIAR
   function cargarModelo07ViolenciaFamiliar() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
@@ -1992,7 +2058,6 @@
     minimizarPlantillas();
   }
 
-  // 08 PLANTILLA: LESIONES EN RIÑA / TRIFULCA
   function cargarModelo08LesionesRina() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
@@ -2041,7 +2106,6 @@
     minimizarPlantillas();
   }
 
-  // 09 PLANTILLA: FALSIFICACIÓN DE DOCUMENTOS
   function cargarModelo09FalsificacionDocumentos() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
@@ -2074,7 +2138,7 @@
     };
     const personaNomInv = formatearNombreInvertido(persona.nombre);
 
-    const veh = obtenerListaVehiculos()[0] || { marca: "Honda", modelo: "XR-150L", placa: "SIN PLACA", color: "Rojo" };
+    const veh = obtenerListaVehiculos()[0] || { marca: "Honda", modelo: "XR-150L", placa: "SIN PLACA", color: "Rojo", clase_vehiculo: "TRIMOVIL", anio_fab: "2021", num_motor: "157FMI-1029384", num_chasis: "LTMKD0798F5108917" };
     const detalleVeh = formatearDetalleVehiculo(veh);
 
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y CONTROL VEHICULAR:";
@@ -2084,7 +2148,7 @@
     document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN Y PERITAJE TIV:";
     document.getElementById('agregar_intervencion_2').value = 
       `01. Circunstancias Precedentes: Se le solicitó al conductor la documentación reglamentaria para su identificación y la del vehículo menor que conducía.\n\n` +
-      `02. Circunstancias Concomitantes: El conductor presentó una Tarjeta de Identificación Vehicular (TIV) física N° 0001134023. Al realizar la verificación del número de chasis (LTMKD0798F5108917) y motor en la estructura física de la moto y cotejarlo con el sistema SUNARP/PNP, se observó que la TIV presentada no correspondía a la numeración real del vehículo, presentando impresiones y Sellos adulterados (presunta TIV fraguada/falsa).\n\n` +
+      `02. Circunstancias Concomitantes: El conductor presentó una Tarjeta de Identificación Vehicular (TIV) física N° 0001134023. Al realizar la verificación del número de chasis (${veh.num_chasis}) y motor en la estructura física de la moto y cotejarlo con el sistema SUNARP/PNP, se observó que la TIV presentada no correspondía a la numeración real del vehículo, presentando impresiones y Sellos adulterados (presunta TIV fraguada/falsa).\n\n` +
       `03. Circunstancias Posteriores: Se incautó la documentación adulterada para el peritaje documentoscópico correspondiente, trasladando al intervenido y a la motocicleta a la ${unidadDisp}.`;
 
     document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
@@ -2096,7 +2160,6 @@
     minimizarPlantillas();
   }
 
-  // 10 PLANTILLA: VIOLENCIA Y RESISTENCIA A LA AUTORIDAD
   function cargarModelo10ResistenciaAutoridad() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
@@ -2147,7 +2210,6 @@
     minimizarPlantillas();
   }
 
-  // 11 PLANTILLA: ACCIDENTE DE TRÁNSITO (CHOQUE)
   function cargarModelo11AccidenteTransito() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
@@ -2171,12 +2233,12 @@
       : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
 
     const listaVeh = obtenerListaVehiculos();
-    const v1 = listaVeh[0] || { placa: "X1Y-234", marca: "Toyota", modelo: "Yaris", color: "Gris Oscuro" };
-    const v2 = listaVeh[1] || { placa: "9656-2Y", marca: "Honda", modelo: "XR-150L", color: "Rojo" };
+    const v1 = listaVeh[0] || { placa: "X1Y-234", clase_vehiculo: "AUTOMOVIL", marca: "Toyota", modelo: "Yaris", color: "Gris Oscuro", anio_fab: "2018", num_motor: "1NZ-FE9912", num_chasis: "JTDBR12349001" };
+    const v2 = listaVeh[1] || { placa: "9656-2Y", clase_vehiculo: "TRIMOVIL", marca: "Honda", modelo: "XR-150L", color: "Rojo", anio_fab: "2021", num_motor: "157FMI-88123", num_chasis: "LTMKD0798F5108917" };
 
     const listaInt = obtenerListaIntervenidos();
-    const c1 = listaInt[0] || { nombre: "SUÁREZ FLORES, Roberto Carlos", edad: "38", dni: "41234567", domicilio: "Jr. Córdova N° 230 – Huanta", celular: "965432109" };
-    const c2 = listaInt[1] || { nombre: "GÓMEZ PALOMINO, Luis Fernando", edad: "24", dni: "74567890", domicilio: "Av. San Martín S/N – Huanta", celular: "912345678" };
+    const c1 = listaInt[0] || { nombre: "SUÁREZ FLORES, Roberto Carlos", edad: "38", dni: "41234567", licencia: "Q41234567", categoria_licencia: "A-IIa", domicilio: "Jr. Córdova N° 230 – Huanta", celular: "965432109" };
+    const c2 = listaInt[1] || { nombre: "GÓMEZ PALOMINO, Luis Fernando", edad: "24", dni: "74567890", licencia: "Q74567890", categoria_licencia: "B-IIc", domicilio: "Av. San Martín S/N – Huanta", celular: "912345678" };
 
     const c1NomInv = formatearNombreInvertido(c1.nombre);
     const c2NomInv = formatearNombreInvertido(c2.nombre);
@@ -2186,10 +2248,10 @@
       `--- Siendo las ${hora} horas del ${fechaFormateada}, en el lugar ubicado en la ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv} ${otrosPNPTexto}, personal perteneciente a la ${unidadPol}, a bordo de la unidad móvil ${pnp1}, procedieron a levantar la presente ACTA DE INTERVENCIÓN POLICIAL POR ACCIDENTE DE TRÁNSITO - CHOQUE, conforme al siguiente detalle:\n\n` +
       `VEHÍCULO N° 01 (UNIDAD "A"):\n` +
       `* Datos: ${formatearDetalleVehiculo(v1)}.\n` +
-      `* Conductor: ${c1NomInv} (${c1.edad} años), DNI N° ${c1.dni}, domiciliado en ${c1.domicilio}, Cel. N° ${c1.celular}, SOAT Vigente "La Positiva".\n\n` +
+      `* Conductor: ${c1NomInv} (${c1.edad} años), DNI N° ${c1.dni}, L/C N° ${c1.licencia} (${c1.categoria_licencia}), domiciliado en ${c1.domicilio}, Cel. N° ${c1.celular}, SOAT Vigente "La Positiva".\n\n` +
       `VEHÍCULO N° 02 (UNIDAD "B"):\n` +
       `* Datos: ${formatearDetalleVehiculo(v2)}.\n` +
-      `* Conductor: ${c2NomInv} (${c2.edad} años), DNI N° ${c2.dni}, domiciliado en ${c2.domicilio}, Cel. N° ${c2.celular}, SOAT Vigente.`;
+      `* Conductor: ${c2NomInv} (${c2.edad} años), DNI N° ${c2.dni}, L/C N° ${c2.licencia} (${c2.categoria_licencia}), domiciliado en ${c2.domicilio}, Cel. N° ${c2.celular}, SOAT Vigente.`;
 
     document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN Y CONSTATACIÓN FÁCTICA:";
     document.getElementById('agregar_intervencion_2').value = 
@@ -2212,7 +2274,6 @@
     minimizarPlantillas();
   }
 
-  // 12 PLANTILLA: EXTORSIÓN
   function cargarModelo12Extorsion() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
@@ -2271,7 +2332,6 @@
     minimizarPlantillas();
   }
 
-  // 13 PLANTILLA: CONTROL DE IDENTIDAD E-SINPOL PNP
   function cargarModeloControlIdentidad() {
     document.getElementById('cant_secciones').value = 3;
     construirSeccionesNarrativa();
@@ -2320,12 +2380,10 @@
     const agraviado = getVal('agraviado', 'Comercializadora El Sol S.A.C.');
     const horaFin = getVal('hora2', '11:00');
 
-    // SECCIÓN I: INTERVENCIÓN Y CONTROL DE IDENTIDAD
     document.getElementById('titulo_sec_1').value = "I. INTERVENCION POLICIAL Y CONTROL DE IDENTIDAD:";
     document.getElementById('agregar_intervencion_1').value = 
       `--- Siendo las ${hora} horas del ${fechaFormateada}, en el lugar ubicado en la ${lugar}; el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv} personal de apoyo a la ${unidadPol}, quien se encontraba ${otrosPNPTexto}; los mismos que se encontraban realizando ${actividad}, se intervino a la persona quien señaló llamarse: ${personaNomInv} de ${persona.edad} años, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, hijo de Don ${persona.papa || 'S/D'} y Doña ${persona.mama || 'S/D'}, con número de celular ${persona.celular || 'S/N'}, identificado con DNI N° ${persona.dni}, quien refiere domiciliar en ${persona.domicilio}; se solicitó el DNI con la finalidad de su plena identificación y posibles requisitorias vigentes.`;
 
-    // SECCIÓN II: CONSULTA E-SINPOL PNP Y REQUISITORIA VIGENTE
     document.getElementById('titulo_sec_2').value = "II. CONSULTA E-SINPOL PNP Y RESULTADO DE REQUISITORIA:";
     if (esinpolSt === 'POSITIVO') {
       document.getElementById('agregar_intervencion_2').value = 
@@ -2343,7 +2401,6 @@
         `--- Se procedió a su plena identificación conforme a ley, retornando a sus actividades habituales sin inconvenientes, habiendo recibido buen trato físico y psicológico durante la diligencia.`;
     }
 
-    // SECCIÓN III: PUESTA A DISPOSICIÓN Y CIERRE
     document.getElementById('titulo_sec_3').value = "III. PUESTA A DISPOSICIÓN Y CIERRE DE DILIGENCIA:";
     document.getElementById('agregar_intervencion_3').value = 
       `--- Que la persona intervenida es puesta a disposición de la ${unidadDisp}, con las actas instruidas, para posteriormente ser puesto a disposición de la autoridad competente.\n\n` +
