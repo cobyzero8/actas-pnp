@@ -117,6 +117,15 @@ const CATALOGO_ACTAS = [
     archivo: "plantilla/acta_constatacion.docx", 
     llevaHora: true, 
     esIndividual: true 
+  },
+  { 
+    id: "acta_situacion_vehicular", 
+    aliases: ["acta_situacion_vehicular", "situacion_vehicular", "acta_s_v", "acta_s_v_vehiculo_mayor", "acta_s_v_vehiculo_menor", "ACTA_DE_SITUACION_VEHICULAR"], 
+    titulo: "15. Acta de Situación Vehicular", 
+    archivo: "plantilla/acta_s_v_vehiculo_mayor.docx", 
+    llevaHora: true, 
+    esIndividual: true,
+    esVehicular: true 
   }
 ];
 
@@ -128,6 +137,28 @@ let actasAProcesarSecuencia = [];
 let indiceActaActual = 0;
 let datosFormularioBase = {};
 let horariosPorActa = {};
+
+/**
+ * SELECCIÓN INTELECTA Y DINÁMICA DE PLANTILLA VEHICULAR (MAYOR vs MENOR)
+ */
+function obtenerRutaArchivoActa(acta, vehiculo) {
+  const idLimpio = (acta.id || '').toLowerCase();
+  const esSituacionVehicular = idLimpio.includes('situacion_vehicular') || idLimpio.includes('s_v');
+
+  if (esSituacionVehicular) {
+    const claseRaw = (vehiculo && (vehiculo.clase_vehiculo || vehiculo.clase)) ? (vehiculo.clase_vehiculo || vehiculo.clase) : '';
+    const claseUpper = claseRaw.toUpperCase().trim();
+    const palabrasVehiculoMenor = ['TRIMOVIL', 'MOTOCICLETA', 'MOTOTAXI', 'MOTOCAR', 'MOTO', 'CUATRIMOTO', 'TRICICLO'];
+
+    const esVehiculoMenor = palabrasVehiculoMenor.some(tipo => claseUpper.includes(tipo));
+
+    return esVehiculoMenor 
+      ? 'plantilla/acta_s_v_vehiculo_menor.docx' 
+      : 'plantilla/acta_s_v_vehiculo_mayor.docx';
+  }
+
+  return acta.archivo;
+}
 
 /**
  * REGISTRAR ACTA CUSTOM O MANUAL
@@ -367,20 +398,24 @@ function obtenerListaVehiculosForm() {
 
   const getValSafe = (id) => document.getElementById(id) ? document.getElementById(id).value.trim() : "";
   const placa = getValSafe('placa_vehiculo_1') || getValSafe('placa_vehiculo') || "NO REGISTRA";
+  const clase_vehiculo = getValSafe('clase_vehiculo_1') || getValSafe('clase_vehiculo') || "TRIMOVIL";
   const marca = getValSafe('marca_vehiculo_1') || getValSafe('marca_vehiculo') || "NO REGISTRA";
   const modelo = getValSafe('modelo_vehiculo_1') || getValSafe('modelo_vehiculo') || "NO REGISTRA";
   const color = getValSafe('color_vehiculo_1') || getValSafe('color_vehiculo') || "NO REGISTRA";
+  const anio_fab = getValSafe('anio_fab_vehiculo_1') || getValSafe('anio_fab') || "NO REGISTRA";
+  const num_motor = getValSafe('num_motor_vehiculo_1') || getValSafe('num_motor') || "NO REGISTRA";
+  const num_chasis = getValSafe('num_chasis_vehiculo_1') || getValSafe('num_chasis') || "NO REGISTRA";
 
-  return [{ placa, marca, modelo, color }];
+  return [{ placa, clase_vehiculo, marca, modelo, color, anio_fab, num_motor, num_chasis }];
 }
 
 function construirTextoVehiculosResumen(listaVehiculos) {
   if (!listaVehiculos || listaVehiculos.length === 0) return "NO REGISTRA";
   if (listaVehiculos.length === 1) {
     const v = listaVehiculos[0];
-    return `el vehículo de placa N° ${v.placa} (Marca: ${v.marca}, Modelo: ${v.modelo}, Color/Estado: ${v.color})`;
+    return `el vehículo de placa N° ${v.placa} (Clase: ${v.clase_vehiculo || 'TRIMOVIL'}, Marca: ${v.marca}, Modelo: ${v.modelo}, Color/Estado: ${v.color})`;
   }
-  const partes = listaVehiculos.map(v => `el vehículo de placa N° ${v.placa} (Marca: ${v.marca}, Modelo: ${v.modelo})`);
+  const partes = listaVehiculos.map(v => `el vehículo de placa N° ${v.placa} (${v.clase_vehiculo || 'TRIMOVIL'} ${v.marca} ${v.modelo})`);
   const ultimo = partes.pop();
   return `${partes.join(', ')} y ${ultimo}`;
 }
@@ -469,7 +504,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
         archivo: `plantilla/${nombreArchivo}`,
         llevaHora: true,
         esIndividual: true,
-        esVehicular: false
+        esVehicular: idLimpio.includes('vehicular') || idLimpio.includes('s_v')
       };
     }
 
@@ -486,7 +521,7 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
   const pnpPrincipal = listaEfectivosPNP[0] || { grado: "S3", nombre: "ARMANDO VIVANCO CURO", cip: "31425556" };
 
   const listaVehiculos = obtenerListaVehiculosForm();
-  const vehPrincipal = listaVehiculos[0] || { placa: "NO REGISTRA", marca: "NO REGISTRA", modelo: "NO REGISTRA", color: "NO REGISTRA" };
+  const vehPrincipal = listaVehiculos[0] || { placa: "NO REGISTRA", clase_vehiculo: "TRIMOVIL", marca: "NO REGISTRA", modelo: "NO REGISTRA", color: "NO REGISTRA" };
 
   datosFormularioBase = {
     delito: delitoConfigurado,
@@ -501,9 +536,13 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
     unidad_disposicion: document.getElementById('unidad_disposicion') ? document.getElementById('unidad_disposicion').value : "SIAT-COM PNP HUANTA",
 
     placa_vehiculo: vehPrincipal.placa,
+    clase_vehiculo: vehPrincipal.clase_vehiculo,
     marca_vehiculo: vehPrincipal.marca,
     modelo_vehiculo: vehPrincipal.modelo,
     color_vehiculo: vehPrincipal.color,
+    anio_fab_vehiculo: vehPrincipal.anio_fab || "NO REGISTRA",
+    num_motor_vehiculo: vehPrincipal.num_motor || "NO REGISTRA",
+    num_chasis_vehiculo: vehPrincipal.num_chasis || "NO REGISTRA",
     vehiculos_resumen: construirTextoVehiculosResumen(listaVehiculos),
 
     drogas: document.getElementById('drogas') ? document.getElementById('drogas').value : "NEGATIVO",
@@ -692,6 +731,9 @@ async function ejecutarGeneracionFinalExpediente() {
     const horaPruebaG = sumarMinutosAHora(horaIntVal, 15);
     const bloqueFirmasG = generarBloqueCierreYFirmas(horaTerminoTotal, listaIntervenidos);
 
+    // RESULTADO COMPLETO DEL MÓDULO GRÁFICO DE SITUACIÓN VEHICULAR (SI EXISTE)
+    const resultadoSituacionVehicular = localStorage.getItem('pnp_acta_situacion_vehicular_resultado') || "NO REGISTRA INSPECCIÓN GRÁFICA";
+
     // OBJETO DE DATOS BASE COMPLETO
     const datosFinalesBase = {
       ...datosFormularioBase,
@@ -711,6 +753,7 @@ async function ejecutarGeneracionFinalExpediente() {
       bloque_firmas: bloqueFirmasG,
       hora_prueba: horaPruebaG,
       hora_termino: horaTerminoTotal,
+      acta_situacion_vehicular_resultado: resultadoSituacionVehicular,
 
       intervenidos_resumen: textoIntervenidosColectivo,
       vehiculos_resumen: textoVehiculosColectivo,
@@ -753,7 +796,7 @@ async function ejecutarGeneracionFinalExpediente() {
     for (let acta of actasAProcesarSecuencia) {
       const hor = horariosPorActa[acta.id] || { horaInicio: "", horaTermino: "" };
       const esActaColectiva = (acta.esIndividual === false || acta.id === 'acta_intervencion' || acta.id === 'acta_hallazgo_recojo' || acta.id === 'acta_ocurrencia');
-      const esActaVehicular = (acta.esVehicular === true || acta.id === 'acta_registro_vehicular' || acta.id === 'acta_inmovilizacion');
+      const esActaVehicular = (acta.esVehicular === true || acta.id === 'acta_registro_vehicular' || acta.id === 'acta_inmovilizacion' || acta.id === 'acta_situacion_vehicular');
 
       if (esActaColectiva) {
         // CASO A: ACTA ÚNICA Y COLECTIVA
@@ -784,29 +827,34 @@ async function ejecutarGeneracionFinalExpediente() {
         }
 
       } else if (esActaVehicular) {
-        // CASO B: ACTAS VEHICULARES INDIVIDUALES
+        // CASO B: ACTAS VEHICULARES INDIVIDUALES (EVALUACIÓN AUTOMÁTICA DE PLANTILLA MAYOR / MENOR)
         for (let idxV = 0; idxV < listaVehiculos.length; idxV++) {
           const veh = listaVehiculos[idxV];
+          const rutaPlantillaFinal = obtenerRutaArchivoActa(acta, veh);
 
           const datosDocVehiculo = {
             ...datosFinalesBase,
             placa_vehiculo: veh.placa,
+            clase_vehiculo: veh.clase_vehiculo || "TRIMOVIL",
             marca_vehiculo: veh.marca,
             modelo_vehiculo: veh.modelo,
             color_vehiculo: veh.color,
+            anio_fab_vehiculo: veh.anio_fab || "NO REGISTRA",
+            num_motor_vehiculo: veh.num_motor || "NO REGISTRA",
+            num_chasis_vehiculo: veh.num_chasis || "NO REGISTRA",
             hora1: hor.horaInicio || datosFinalesBase.hora1,
             hora2: hor.horaTermino || datosFinalesBase.hora2
           };
 
           try {
-            const blobDoc = await generarDocumentoWord(acta.archivo, datosDocVehiculo);
+            const blobDoc = await generarDocumentoWord(rutaPlantillaFinal, datosDocVehiculo);
             const sufijoVehiculo = (listaVehiculos.length > 1) ? `_PLACA_${veh.placa}` : '';
             const nombreArchivoDoc = `${acta.titulo}${sufijoVehiculo}.docx`;
 
             zip.file(nombreArchivoDoc, blobDoc);
             archivosAgregados++;
           } catch (err) {
-            console.error(`Error al generar ${acta.archivo} para vehículo placa ${veh.placa}:`, err);
+            console.error(`Error al generar ${rutaPlantillaFinal} para vehículo placa ${veh.placa}:`, err);
           }
         }
 
