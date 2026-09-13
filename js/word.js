@@ -363,18 +363,20 @@ function obtenerListaIntervenidosForm() {
 
   const getValSafe = (id) => document.getElementById(id) ? document.getElementById(id).value.trim() : "S/D";
   return [{
-    nombre: getValSafe('intervenido_nombre'),
-    dni: getValSafe('intervenido_dni'),
-    edad: getValSafe('edad'),
-    estado_civil: getValSafe('estado_civil'),
-    natural: getValSafe('natural'),
-    celular: getValSafe('celular1'),
-    papa: getValSafe('papa'),
-    mama: getValSafe('mama'),
-    ocupacion: getValSafe('ocupacion'),
-    domicilio: getValSafe('domicilio'),
-    asistido_confianza: getValSafe('asistido_confianza'),
-    asistido_confianza_registro: getValSafe('asistido_confianza_registro')
+    nombre: getValSafe('intervenido_nombre') || getValSafe('intervenido_nombre_1'),
+    dni: getValSafe('intervenido_dni') || getValSafe('intervenido_dni_1'),
+    licencia: getValSafe('licencia') || getValSafe('licencia_1') || "________",
+    categoria_licencia: getValSafe('categoria_licencia') || getValSafe('categoria_licencia_1') || "____",
+    edad: getValSafe('edad') || getValSafe('edad_1'),
+    estado_civil: getValSafe('estado_civil') || getValSafe('estado_civil_1'),
+    natural: getValSafe('natural') || getValSafe('natural_1'),
+    celular: getValSafe('celular1') || getValSafe('celular1_1'),
+    papa: getValSafe('papa') || getValSafe('papa_1'),
+    mama: getValSafe('mama') || getValSafe('mama_1'),
+    ocupacion: getValSafe('ocupacion') || getValSafe('ocupacion_1'),
+    domicilio: getValSafe('domicilio') || getValSafe('domicilio_1'),
+    asistido_confianza: getValSafe('asistido_confianza') || getValSafe('asistido_confianza_1'),
+    asistido_confianza_registro: getValSafe('asistido_confianza_registro') || getValSafe('asistido_confianza_registro_1')
   }];
 }
 
@@ -424,7 +426,7 @@ function obtenerTextoFiliacionCompletaMultiples(lista) {
   if (!lista || lista.length === 0) return "No registra intervenidos.";
   return lista.map((item, idx) => {
     const prefijo = lista.length > 1 ? `INTERVENIDO N° ${idx + 1}: ` : '';
-    return `${prefijo}${item.nombre}, con ${item.edad} años de edad, natural de ${item.natural}, de ocupación ${item.ocupacion}, identificado con DNI N° ${item.dni}, quien refiere domiciliar en ${item.domicilio}, celular N° ${item.celular || 'S/N'}, estado civil ${item.estado_civil}, hijo de don ${item.papa || 'S/D'} y doña ${item.mama || 'S/D'}.`;
+    return `${prefijo}${item.nombre}, con ${item.edad} años de edad, natural de ${item.natural}, de ocupación ${item.ocupacion}, identificado con DNI N° ${item.dni}, L/C N° ${item.licencia || '________'} (Cat. ${item.categoria_licencia || '____'}), quien refiere domiciliar en ${item.domicilio}, celular N° ${item.celular || 'S/N'}, estado civil ${item.estado_civil}, hijo de don ${item.papa || 'S/D'} y doña ${item.mama || 'S/D'}.`;
   }).join('\n\n');
 }
 
@@ -525,15 +527,24 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
 
   datosFormularioBase = {
     delito: delitoConfigurado,
-    distrito: document.getElementById('distrito').value,
-    provincia: document.getElementById('provincia').value,
-    region: document.getElementById('region').value,
+    distrito: document.getElementById('distrito') ? document.getElementById('distrito').value : "Huanta",
+    provincia: document.getElementById('provincia') ? document.getElementById('provincia').value : "Huanta",
+    region: document.getElementById('region') ? document.getElementById('region').value : "Ayacucho",
     fecha: formatearFechaPolicial(fechaRaw),
-    lugar: document.getElementById('lugar').value,
+    lugar: document.getElementById('lugar') ? document.getElementById('lugar').value : "",
 
+    agraviado: document.getElementById('agraviado') ? document.getElementById('agraviado').value.trim() : "EL ESTADO",
     motivo_justificatorio: document.getElementById('motivo_justificatorio') ? document.getElementById('motivo_justificatorio').value : "",
     unidad_policial: document.getElementById('unidad_policial') ? document.getElementById('unidad_policial').value : "UTSEVI PNP HUANTA",
     unidad_disposicion: document.getElementById('unidad_disposicion') ? document.getElementById('unidad_disposicion').value : "SIAT-COM PNP HUANTA",
+
+    resultado_esinpol: document.getElementById('resultado_esinpol') ? document.getElementById('resultado_esinpol').value : "NEGATIVO",
+    tipo_requisitoria: document.getElementById('tipo_requisitoria') ? document.getElementById('tipo_requisitoria').value : "",
+    motivo_requisitoria: document.getElementById('motivo_requisitoria') ? document.getElementById('motivo_requisitoria').value : "",
+    juzgado_requisitoria: document.getElementById('juzgado_requisitoria') ? document.getElementById('juzgado_requisitoria').value : "",
+    documento_requisitoria: document.getElementById('documento_requisitoria') ? document.getElementById('documento_requisitoria').value : "",
+    fecha_requisitoria: document.getElementById('fecha_requisitoria') ? formatearFechaPolicial(document.getElementById('fecha_requisitoria').value) : "",
+    situacion_requisitoria: document.getElementById('situacion_requisitoria') ? document.getElementById('situacion_requisitoria').value : "",
 
     placa_vehiculo: vehPrincipal.placa,
     clase_vehiculo: vehPrincipal.clase_vehiculo,
@@ -567,8 +578,8 @@ document.getElementById('expedienteForm').addEventListener('submit', async (e) =
   indiceActaActual = 0;
   horariosPorActa = {};
 
-  const horaInicialBase = document.getElementById('hora1').value || "08:00";
-  avanzarAoSaltarAQuienLleveHora(horaInicialBase);
+  const horaInicialBase = document.getElementById('hora1') ? document.getElementById('hora1').value : "08:00";
+  avanzarAoSaltarAQuienLleveHora(horaInicialBase || "08:00");
 });
 
 function avanzarAoSaltarAQuienLleveHora(horaSugeridaInicio) {
@@ -676,6 +687,9 @@ async function ejecutarGeneracionFinalExpediente() {
     const fiscalElem = document.getElementById('fiscal');
     const fiscalVal = fiscalElem ? (fiscalElem.value.trim() || "RMP NO ESPECIFICADO") : "RMP NO ESPECIFICADO";
 
+    const agraviadoElem = document.getElementById('agraviado');
+    const agraviadoVal = agraviadoElem ? (agraviadoElem.value.trim() || "EL ESTADO") : "EL ESTADO";
+
     const tipoActElem = document.getElementById('tipo_actividad');
     const tipoActVal = tipoActElem ? tipoActElem.value : 'PATRULLAJE DE RUTINA';
     const nomOpElem = document.getElementById('nombre_operativo');
@@ -740,6 +754,22 @@ async function ejecutarGeneracionFinalExpediente() {
       ...vehiculosPNPObj,
       ...seccionesObj,
       
+      // VARIABLES DE PRIMER INTERVENIDO (DATOS BASE TOP-LEVEL)
+      intervenido_nombre: listaIntervenidos[0]?.nombre || "",
+      intervenido_dni: listaIntervenidos[0]?.dni || "",
+      licencia: listaIntervenidos[0]?.licencia || "________",
+      categoria_licencia: listaIntervenidos[0]?.categoria_licencia || "____",
+      edad: listaIntervenidos[0]?.edad || "",
+      estado_civil: listaIntervenidos[0]?.estado_civil || "",
+      natural: listaIntervenidos[0]?.natural || "",
+      celular1: listaIntervenidos[0]?.celular || "S/N",
+      papa: listaIntervenidos[0]?.papa || "S/D",
+      mama: listaIntervenidos[0]?.mama || "S/D",
+      ocupacion: listaIntervenidos[0]?.ocupacion || "",
+      domicilio: listaIntervenidos[0]?.domicilio || "",
+      asistido_confianza: listaIntervenidos[0]?.asistido_confianza || "",
+      asistido_confianza_registro: listaIntervenidos[0]?.asistido_confianza_registro || "",
+
       // VARIABLES MULTI-EFECTIVO PNP
       efectivos_intervinientes_texto: obtenerTextoEfectivosNarrativa(listaEfectivosPNP),
       firmas_pnp: generarBloqueFirmasPNP(listaEfectivosPNP),
@@ -759,6 +789,7 @@ async function ejecutarGeneracionFinalExpediente() {
       vehiculos_resumen: textoVehiculosColectivo,
       hora_intervencion: horaIntVal,
       fiscal: fiscalVal,
+      agraviado: agraviadoVal,
       actividad_realizada: actividadTexto,
       documentos_retran: procesarDocumentosRNT(),
       hora1: regPersonal.horaInicio,
@@ -804,6 +835,8 @@ async function ejecutarGeneracionFinalExpediente() {
           ...datosFinalesBase,
           intervenido_nombre: textoIntervenidosColectivo,
           intervenido_dni: listaIntervenidos.map(i => i.dni).join(' / '),
+          licencia: listaIntervenidos.map(i => i.licencia || "________").join(' / '),
+          categoria_licencia: listaIntervenidos.map(i => i.categoria_licencia || "____").join(' / '),
           edad: listaIntervenidos.map(i => i.edad).join(' / '),
           estado_civil: listaIntervenidos[0].estado_civil,
           natural: listaIntervenidos[0].natural,
@@ -867,6 +900,8 @@ async function ejecutarGeneracionFinalExpediente() {
             ...datosFinalesBase,
             intervenido_nombre: persona.nombre,
             intervenido_dni: persona.dni,
+            licencia: persona.licencia || "________",
+            categoria_licencia: persona.categoria_licencia || "____",
             edad: persona.edad,
             estado_civil: persona.estado_civil,
             natural: persona.natural,
