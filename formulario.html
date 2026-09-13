@@ -830,7 +830,14 @@
       if (msgElem) msgElem.style.display = 'block';
     }
 
-    mostrarEtapa(1);
+    // RETORNO DE SITUACIÓN VEHICULAR: Si la bandera existe, posiciona directamente en Etapa 5
+    const vieneDeVehiculos = localStorage.getItem('pnp_retorno_etapa_vehiculo');
+    if (vieneDeVehiculos === 'true') {
+      localStorage.removeItem('pnp_retorno_etapa_vehiculo');
+      mostrarEtapa(5);
+    } else {
+      mostrarEtapa(1);
+    }
   });
 
   // GESTIÓN DE WIZARD POR ETAPAS
