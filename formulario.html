@@ -448,9 +448,18 @@
         <div class="section-block block-vehiculo" id="bloqueVehiculos">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <div class="section-title" style="margin: 0;">🚘 5. Vehículos Involucrados en la Intervención</div>
-            <button type="button" class="btn btn-primary" onclick="agregarVehiculoCard()" style="width: auto; padding: 4px 12px; font-size: 12px; background: #d97706; border-color: #d97706;">
-              ➕ Agregar Otro Vehículo
-            </button>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <button type="button" class="btn" onclick="irASituacionVehicular()" style="font-size: 11px; padding: 5px 10px; background: #0284c7; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
+                🚗 Llenar Inspección Gráfica
+              </button>
+              <button type="button" class="btn btn-primary" onclick="agregarVehiculoCard()" style="width: auto; padding: 4px 12px; font-size: 12px; background: #d97706; border-color: #d97706;">
+                ➕ Agregar Otro Vehículo
+              </button>
+            </div>
+          </div>
+
+          <div id="estado_situacion_vehicular_msg" style="display: none; font-size: 11px; color: #16a34a; font-weight: bold; margin-bottom: 8px; background: #f0fdf4; padding: 6px; border: 1px solid #86efac; border-radius: 4px;">
+            ✅ Acta de Situación Vehicular completada en el módulo gráfico.
           </div>
 
           <div id="contenedor_vehiculos"></div>
@@ -729,7 +738,6 @@
     "VIII. COMUNICACIÓN AL RMP:"
   ];
 
-  // FUNCIÓN AUXILIAR PARA FORMATEAR NOMBRES EN FORMATO "Nombres, APELLIDOS"
   function formatearNombreInvertido(nombre) {
     if (!nombre) return "S/N";
     nombre = nombre.trim();
@@ -742,7 +750,6 @@
     return nombre;
   }
 
-  // FUNCIÓN AUXILIAR PARA FORMATEAR DETALLES DE VEHÍCULOS CON COMAS Y TODOS LOS CAMPOS DE TARJETA
   function formatearDetalleVehiculo(veh) {
     if (!veh) return "placa NO REGISTRA, clase NO REGISTRA, marca NO REGISTRA, modelo NO REGISTRA, color NO REGISTRA, año fab. NO REGISTRA, N° motor NO REGISTRA, N° chasis NO REGISTRA";
     const placa = veh.placa || 'NO REGISTRA';
@@ -785,7 +792,52 @@
     if (elCant) elCant.innerText = `${cantActas} acta(s) seleccionada(s) para este expediente.`;
 
     adaptarFormularioPorActas(actasConfiguradas, delitoSel);
+
+    // Verificar si se completó el Acta de Situación Vehicular previa
+    if (localStorage.getItem('pnp_acta_situacion_vehicular_resultado')) {
+      const msgElem = document.getElementById('estado_situacion_vehicular_msg');
+      if (msgElem) msgElem.style.display = 'block';
+    }
   });
+
+  function irASituacionVehicular() {
+    window.pnp_lista_intervenidos = obtenerListaIntervenidos();
+    window.pnp_lista_vehiculos = obtenerListaVehiculos();
+    window.pnp_lista_efectivos = obtenerListaEfectivosPNP();
+
+    localStorage.setItem('pnp_lista_intervenidos', JSON.stringify(window.pnp_lista_intervenidos));
+    localStorage.setItem('pnp_lista_vehiculos', JSON.stringify(window.pnp_lista_vehiculos));
+    localStorage.setItem('pnp_lista_efectivos', JSON.stringify(window.pnp_lista_efectivos));
+
+    const datosGenerales = {
+      distrito: getVal('distrito', 'HUANTA'),
+      provincia: getVal('provincia', 'HUANTA'),
+      region: getVal('region', 'AYACUCHO'),
+      hora: getVal('hora_intervencion', '10:30'),
+      dia: new Date().getDate().toString(),
+      mes: "SEPTIEMBRE",
+      anio: "2026",
+      instalaciones: getVal('unidad_policial', 'COMISARÍA PNP HUANTA'),
+      
+      conductor_nombre: window.pnp_lista_intervenidos[0]?.nombre || "______________________",
+      conductor_dni: window.pnp_lista_intervenidos[0]?.dni || "________",
+      conductor_licencia: window.pnp_lista_intervenidos[0]?.licencia || "________",
+      conductor_licencia_categoria: window.pnp_lista_intervenidos[0]?.categoria_licencia || "____",
+      motivo_intervencion: getVal('tipo_actividad', 'OPERATIVO POLICIAL'),
+      
+      placa: window.pnp_lista_vehiculos[0]?.placa || "________",
+      clase_vehiculo: window.pnp_lista_vehiculos[0]?.clase_vehiculo || "TRIMOVIL",
+      marca: window.pnp_lista_vehiculos[0]?.marca || "________",
+      modelo: window.pnp_lista_vehiculos[0]?.modelo || "________",
+      color: window.pnp_lista_vehiculos[0]?.color || "________",
+      anio_fab: window.pnp_lista_vehiculos[0]?.anio_fab || "________",
+      num_motor: window.pnp_lista_vehiculos[0]?.num_motor || "________",
+      num_chasis: window.pnp_lista_vehiculos[0]?.num_chasis || "________"
+    };
+
+    localStorage.setItem('pnp_datos_generales', JSON.stringify(datosGenerales));
+    window.location.href = 'situacion_vehicular.html';
+  }
 
   function evaluarEsinpol() {
     const res = document.getElementById('resultado_esinpol').value;
@@ -1212,7 +1264,6 @@
   function cargarDatosEjemplo() {
     const hoy = new Date().toISOString().split('T')[0];
     
-    // 1. Cargar SOLO 1 Efectivo Policial
     document.getElementById('contenedor_efectivos_pnp').innerHTML = "";
     contadorEfectivosPNP = 0;
     agregarEfectivoPNPCard({
@@ -1221,7 +1272,6 @@
       cip: "31425556"
     });
 
-    // 2. Cargar SOLO 1 Persona Intervenida
     document.getElementById('contenedor_intervenidos').innerHTML = "";
     contadorIntervenidos = 0;
     agregarIntervenidoCard({
@@ -1241,7 +1291,6 @@
       asistido_registro: "no deseando ser asistido por ninguna persona"
     });
 
-    // 3. Cargar SOLO 1 Vehículo
     document.getElementById('contenedor_vehiculos').innerHTML = "";
     contadorVehiculos = 0;
     agregarVehiculoCard({
@@ -1255,7 +1304,6 @@
       num_chasis: "LTMKD0798F5108917"
     });
 
-    // Datos generales de lugar y tiempo
     document.getElementById('distrito').value = "Huanta";
     document.getElementById('provincia').value = "Huanta";
     document.getElementById('region').value = "Ayacucho";
@@ -1265,7 +1313,6 @@
     document.getElementById('hora2').value = "12:00";
     document.getElementById('lugar').value = "Jr. Gervasio Santillana Cdra. 2 (exteriores del Mercado Central de Huanta)";
 
-    // Unidades, fiscal y actividad
     document.getElementById('unidad_policial').value = "UTSEVI PNP HUANTA";
     document.getElementById('unidad_disposicion').value = "Comisaría Sectorial PNP Huanta";
     document.getElementById('fiscal').value = "Abog. Ernesto ARROYO MEDINA";
@@ -1273,7 +1320,6 @@
     document.getElementById('tipo_actividad').value = "PATRULLAJE DE RUTINA";
     evaluarTipoActividad();
 
-    // Requisitoria E-SINPOL PNP (Configurado por defecto en POSITIVO con datos de ejemplo)
     document.getElementById('resultado_esinpol').value = "POSITIVO";
     evaluarEsinpol();
     document.getElementById('tipo_requisitoria').value = "CAPTURA VIGENTE / REQUISITORIA";
@@ -1283,7 +1329,6 @@
     document.getElementById('fecha_requisitoria').value = hoy;
     document.getElementById('situacion_requisitoria').value = "SOLICITADO / REQUISITORIADO";
 
-    // Unidad policial móvil
     document.getElementById('cant_vehiculos_pnp').value = 1;
     generarCamposVehiculosPNP();
     if (document.getElementById('placa_policial_1')) {
@@ -1402,7 +1447,6 @@
     window.pnp_lista_vehiculos = obtenerListaVehiculos();
     localStorage.setItem('pnp_lista_vehiculos', JSON.stringify(window.pnp_lista_vehiculos));
 
-    // Sincronizar datos generales para el módulo de situación vehicular (localStorage)
     const datosGenerales = {
       distrito: getVal('distrito', 'HUANTA'),
       provincia: getVal('provincia', 'HUANTA'),
@@ -1531,6 +1575,14 @@
         { titulo: `${prefijo}N° Chasis`, val: `N° chasis ${veh.num_chasis}` }
       );
     });
+
+    const actaVehicularGuardada = localStorage.getItem('pnp_acta_situacion_vehicular_resultado');
+    if (actaVehicularGuardada) {
+      categorias[1].items.push({
+        titulo: "📄 Acta Completa de Situación Vehicular",
+        val: actaVehicularGuardada
+      });
+    }
 
     const opcConstancia = getVal('opcion_constancia_testigo');
     let resumenConstanciaChip = "Realizado en la Dependencia Policial";
@@ -1676,10 +1728,6 @@
     txt.selectionEnd = nuevaPosicion;
     txt.focus();
   }
-
-  /* ==========================================================================
-     PLANTILLAS RÁPIDAS OFICIALES CON INICIO DIRECTO EN "Siendo las..."
-     ========================================================================== */
 
   function cargarModelo01HurtoAgravado() {
     document.getElementById('cant_secciones').value = 3;
