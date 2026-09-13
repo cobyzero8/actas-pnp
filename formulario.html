@@ -6,11 +6,14 @@
   <title>Llenar Datos - PNP</title>
   <link rel="stylesheet" href="css/styles.css">
   
+  <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/docxtemplater@3.37.11/build/docxtemplater.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  
+  <!-- Librerías para generación de Word y compresión ZIP -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.4/pizzip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.11/docxtemplater.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
   <style>
     .modal-overlay {
@@ -2319,7 +2322,7 @@
     document.getElementById('agregar_intervencion_2').value = 
       `01. Circunstancias Precedentes: En patrullaje preventivo por el sector, se observó una pelea tumultuaria (trifulca) entre varios sujetos en la vía pública, lanzándose objetos contundentes (botellas de vidrio).\n\n` +
       `02. Circunstancias Concomitantes: El personal policial intervino de inmediato para restablecer el orden público, logrando intervenir a los dos ciudadanos antes indicados, quienes se agredían mutuamente con puñetes y patadas. El intervenido ${p1NomInv} presentaba un corte sangrante en el cuero cabelludo producto de un botellazo.\n\n` +
-      `03. Circunstancias Posteriores: Se prestó el primer auxilio trasladando al herido al Hospital de Huanta para su atención médica con custodia policial, conduciendo al segundo intervenido a la ${unidadDisp} para las investigaciones por el delito de Lesiones Mutuas.`;
+      `03. Circunstancias Posteriores: Se prestó el primer auxilio trasladando al herido al Hospital de Huanta para su atención médica con custodia policial, conduciento al segundo intervenido a la ${unidadDisp} para las investigaciones por el delito de Lesiones Mutuas.`;
 
     document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
     document.getElementById('agregar_intervencion_3').value = 
