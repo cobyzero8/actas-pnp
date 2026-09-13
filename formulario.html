@@ -703,7 +703,7 @@
 
 <script src="js/auth.js"></script>
 <script src="js/word.js?v=18"></script>
-  
+
 <script>
   const detallesEspecies = { drogas: null, moneda: null, joyas: null, municion: null, otros: null };
   let campoEspecieActual = null;
@@ -712,6 +712,11 @@
   let contadorEfectivosPNP = 0;
   let contadorIntervenidos = 0;
   let contadorVehiculos = 0;
+
+  const MESES_ESPANOL = [
+    "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
+    "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"
+  ];
 
   const MAPA_TITULOS_ACTAS = {
     "acta_ocurrencia": "acta de ocurrencia",
@@ -747,7 +752,7 @@
     if (nombre.includes(',')) {
       const partes = nombre.split(',').map(p => p.trim());
       if (partes.length >= 2) {
-        return `${partes[1]}, ${partes[0]}`;
+        return `${partes[1]} ${partes[0]}`;
       }
     }
     return nombre;
@@ -766,8 +771,37 @@
     return `placa de rodaje ${placa}, clase ${clase}, marca ${marca}, modelo ${modelo}, color ${color}, año fab. ${anio}, N° motor ${motor}, N° chasis/serie ${chasis}`;
   }
 
+  function extraerFechaPartes() {
+    const valFecha = getVal('fecha', '');
+    if (valFecha) {
+      const partes = valFecha.split('-');
+      if (partes.length === 3) {
+        const anio = partes[0];
+        const mesIdx = parseInt(partes[1], 10) - 1;
+        const dia = parseInt(partes[2], 10).toString();
+        const mes = MESES_ESPANOL[mesIdx] || "SEPTIEMBRE";
+        return { dia, mes, anio };
+      }
+    }
+    const hoy = new Date();
+    return {
+      dia: hoy.getDate().toString(),
+      mes: MESES_ESPANOL[hoy.getMonth()],
+      anio: hoy.getFullYear().toString()
+    };
+  }
+
   // GUARDA EL ESTADO COMPLETO DEL FORMULARIO EN LOCALSTORAGE
   function guardarEstadoFormulario() {
+    const cantSec = parseInt(document.getElementById('cant_secciones')?.value, 10) || 3;
+    const seccionesArr = [];
+    for (let i = 1; i <= cantSec; i++) {
+      seccionesArr.push({
+        titulo: getVal(`titulo_sec_${i}`, ''),
+        contenido: getVal(`agregar_intervencion_${i}`, '')
+      });
+    }
+
     const estado = {
       distrito: getVal('distrito'),
       provincia: getVal('provincia'),
@@ -816,7 +850,10 @@
       vehiculos: obtenerListaVehiculos(),
 
       cant_vehiculos_pnp: getVal('cant_vehiculos_pnp'),
-      placas_pnp: Array.from(document.querySelectorAll('[id^="placa_policial_"]')).map(el => el.value)
+      placas_pnp: Array.from(document.querySelectorAll('[id^="placa_policial_"]')).map(el => el.value),
+
+      cant_secciones: cantSec,
+      seccionesNarrativa: seccionesArr
     };
 
     localStorage.setItem('pnp_formulario_estado_guardado', JSON.stringify(estado));
@@ -928,6 +965,17 @@
         }
       }
 
+      if (estado.cant_secciones) {
+        setVal('cant_secciones', estado.cant_secciones);
+        construirSeccionesNarrativa();
+        if (estado.seccionesNarrativa && estado.seccionesNarrativa.length > 0) {
+          estado.seccionesNarrativa.forEach((sec, idx) => {
+            setVal(`titulo_sec_${idx + 1}`, sec.titulo);
+            setVal(`agregar_intervencion_${idx + 1}`, sec.contenido);
+          });
+        }
+      }
+
       return true;
     } catch (err) {
       console.error("Error restaurando estado:", err);
@@ -943,9 +991,9 @@
       agregarIntervenidoCard();
       agregarVehiculoCard();
       generarCamposVehiculosPNP();
+      construirSeccionesNarrativa();
     }
 
-    construirSeccionesNarrativa();
     evaluarEsinpol();
     
     const horaIntInput = document.getElementById('hora_intervencion');
@@ -986,14 +1034,16 @@
     localStorage.setItem('pnp_lista_vehiculos', JSON.stringify(window.pnp_lista_vehiculos));
     localStorage.setItem('pnp_lista_efectivos', JSON.stringify(window.pnp_lista_efectivos));
 
+    const fechaPartes = extraerFechaPartes();
+
     const datosGenerales = {
       distrito: getVal('distrito', 'HUANTA'),
       provincia: getVal('provincia', 'HUANTA'),
       region: getVal('region', 'AYACUCHO'),
       hora: getVal('hora_intervencion', '10:30'),
-      dia: new Date().getDate().toString(),
-      mes: "SEPTIEMBRE",
-      anio: "2026",
+      dia: fechaPartes.dia,
+      mes: fechaPartes.mes,
+      anio: fechaPartes.anio,
       instalaciones: getVal('unidad_policial', 'COMISARÍA PNP HUANTA'),
       
       conductor_nombre: window.pnp_lista_intervenidos[0]?.nombre || "______________________",
@@ -1626,14 +1676,16 @@
     window.pnp_lista_vehiculos = obtenerListaVehiculos();
     localStorage.setItem('pnp_lista_vehiculos', JSON.stringify(window.pnp_lista_vehiculos));
 
+    const fechaPartes = extraerFechaPartes();
+
     const datosGenerales = {
       distrito: getVal('distrito', 'HUANTA'),
       provincia: getVal('provincia', 'HUANTA'),
       region: getVal('region', 'AYACUCHO'),
       hora: getVal('hora_intervencion', '10:30'),
-      dia: new Date().getDate().toString(),
-      mes: "SEPTIEMBRE",
-      anio: "2026",
+      dia: fechaPartes.dia,
+      mes: fechaPartes.mes,
+      anio: fechaPartes.anio,
       instalaciones: getVal('unidad_policial', 'COMISARÍA PNP HUANTA'),
       
       conductor_nombre: window.pnp_lista_intervenidos[0]?.nombre || "______________________",
@@ -1661,6 +1713,7 @@
   }
 
   function volverAPaso1() {
+    guardarEstadoFormulario();
     document.getElementById('paso2_redactor').style.display = 'none';
     document.getElementById('paso1_formulario').style.display = 'block';
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1868,10 +1921,22 @@
   function construirSeccionesNarrativa() {
     const cant = parseInt(document.getElementById('cant_secciones').value, 10) || 1;
     const cont = document.getElementById('contenedor_parrafos_intervencion');
+    
+    // Guardar valores previos si existen para no sobrescribir
+    const valoresActuales = [];
+    for (let i = 1; i <= cant; i++) {
+      const tit = document.getElementById(`titulo_sec_${i}`)?.value;
+      const txt = document.getElementById(`agregar_intervencion_${i}`)?.value;
+      if (tit !== undefined || txt !== undefined) {
+        valoresActuales[i] = { tit, txt };
+      }
+    }
+
     cont.innerHTML = "";
 
     for (let i = 1; i <= cant; i++) {
-      const tituloSugerido = TITULOS_SECCIONES_PNP[i - 1] || `SECCIÓN ${i}:`;
+      const tituloSugerido = valoresActuales[i]?.tit || TITULOS_SECCIONES_PNP[i - 1] || `SECCIÓN ${i}:`;
+      const contenidoPrevio = valoresActuales[i]?.txt || "";
 
       cont.innerHTML += `
         <div style="background: #fff; border: 1px solid #cbd5e1; padding: 14px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
@@ -1883,7 +1948,7 @@
           <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px; color: #475569;">
             Contenido ({agregar_intervencion${i}}):
           </label>
-          <textarea id="agregar_intervencion_${i}" class="narrativa-textarea" rows="8" onfocus="textareaActivoId='agregar_intervencion_${i}'" placeholder="Redacte los hechos correspondientes a esta sección..."></textarea>
+          <textarea id="agregar_intervencion_${i}" class="narrativa-textarea" rows="8" onfocus="textareaActivoId='agregar_intervencion_${i}'" placeholder="Redacte los hechos correspondientes a esta sección...">${contenidoPrevio}</textarea>
         </div>
       `;
     }
