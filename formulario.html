@@ -702,7 +702,7 @@
 </div>
 
 <script src="js/auth.js"></script>
-<script src="js/word.js?v=18"></script>
+<script src="js/word.js"></script>
 
 <script>
   const detallesEspecies = { drogas: null, moneda: null, joyas: null, municion: null, otros: null };
@@ -732,7 +732,9 @@
     "acta_hallazgo_recojo": "acta de hallazgo y recojo",
     "acta_registro_vehicular": "acta de registro vehicular",
     "acta_registro_personal": "acta de registro personal",
-    "acta_buen_trato": "constancia de buen trato"
+    "acta_buen_trato": "constancia de buen trato",
+    "acta_s_v_vehiculo_mayor": "acta de situación vehicular (vehículo mayor)",
+    "acta_s_v_vehiculo_menor": "acta de situación vehicular (vehículo menor)"
   };
 
   const TITULOS_SECCIONES_PNP = [
@@ -1076,7 +1078,7 @@
 
   function adaptarFormularioPorActas(actasConfiguradas, delitoTexto) {
     const requiereVehiculos = actasConfiguradas.some(id => 
-      ["acta_registro_vehicular", "acta_inmovilizacion"].includes(id)
+      ["acta_registro_vehicular", "acta_inmovilizacion", "acta_s_v_vehiculo_mayor", "acta_s_v_vehiculo_menor"].includes(id)
     ) || delitoTexto.toUpperCase().includes("EBRIEDAD") || delitoTexto.toUpperCase().includes("TRÁNSITO") || delitoTexto.toUpperCase().includes("CULPOSAS");
 
     const requiereEvidencia = actasConfiguradas.some(id => 
