@@ -803,6 +803,7 @@
     }
 
     evaluarEsinpol();
+    evaluarTipoActividad();
     
     const horaIntInput = document.getElementById('hora_intervencion');
     if (horaIntInput && !horaIntInput.value) {
@@ -839,6 +840,14 @@
       mostrarEtapa(1);
     }
   });
+
+  function evaluarTipoActividad() {
+    const sel = document.getElementById('tipo_actividad');
+    const box = document.getElementById('box_nombre_operativo');
+    if (sel && box) {
+      box.style.display = (sel.value === 'OPERATIVO POLICIAL') ? 'block' : 'none';
+    }
+  }
 
   // GESTIÓN DE WIZARD POR ETAPAS
   function adaptarEtapasPorActas(actasConfiguradas, delitoTexto) {
@@ -1013,14 +1022,14 @@
     }
 
     const estado = {
-      distrito: getVal('distrito'), provincia: getVal('provincia'), region: getVal('region'),
-      hora_intervencion: getVal('hora_intervencion'), fecha: getVal('fecha'), hora1: getVal('hora1'), hora2: getVal('hora2'), lugar: getVal('lugar'),
-      unidad_policial: getVal('unidad_policial'), unidad_disposicion: getVal('unidad_disposicion'), fiscal: getVal('fiscal'), agraviado: getVal('agraviado'),
-      tipo_actividad: getVal('tipo_actividad'), nombre_operativo: getVal('nombre_operativo'), motivo_justificatorio: getVal('motivo_justificatorio'), opcion_constancia_testigo: getVal('opcion_constancia_testigo'),
-      resultado_esinpol: getVal('resultado_esinpol'), tipo_requisitoria: getVal('tipo_requisitoria'), motivo_requisitoria: getVal('motivo_requisitoria'), juzgado_requisitoria: getVal('juzgado_requisitoria'), documento_requisitoria: getVal('documento_requisitoria'), fecha_requisitoria: getVal('fecha_requisitoria'), situacion_requisitoria: getVal('situacion_requisitoria'),
-      chk_soat: document.getElementById('chk_soat')?.checked, st_soat: getVal('st_soat'), fec_soat: getVal('fec_soat'), chk_itv: document.getElementById('chk_itv')?.checked, st_itv: getVal('st_itv'), fec_itv: getVal('fec_itv'), chk_lunas: document.getElementById('chk_lunas')?.checked, st_lunas: getVal('st_lunas'),
-      detallesEspecies: detallesEspecies, tipo_embalaje: getVal('tipo_embalaje'), tipo_embalaje_manual: getVal('tipo_embalaje_manual'), forma_lacrado: getVal('forma_lacrado'), detalle_hallazgo: getVal('detalle_hallazgo'), circunstancia_hallazgo: getVal('circunstancia_hallazgo'),
-      efectivos: obtenerListaEfectivosPNP(), intervenidos: obtenerListaIntervenidos(), vehiculos: obtenerListaVehiculos(), cant_vehiculos_pnp: getVal('cant_vehiculos_pnp'),
+      distrito: getVal('distrito', ''), provincia: getVal('provincia', ''), region: getVal('region', ''),
+      hora_intervencion: getVal('hora_intervencion', ''), fecha: getVal('fecha', ''), hora1: getVal('hora1', ''), hora2: getVal('hora2', ''), lugar: getVal('lugar', ''),
+      unidad_policial: getVal('unidad_policial', ''), unidad_disposicion: getVal('unidad_disposicion', ''), fiscal: getVal('fiscal', ''), agraviado: getVal('agraviado', ''),
+      tipo_actividad: getVal('tipo_actividad', ''), nombre_operativo: getVal('nombre_operativo', ''), motivo_justificatorio: getVal('motivo_justificatorio', ''), opcion_constancia_testigo: getVal('opcion_constancia_testigo', ''),
+      resultado_esinpol: getVal('resultado_esinpol', ''), tipo_requisitoria: getVal('tipo_requisitoria', ''), motivo_requisitoria: getVal('motivo_requisitoria', ''), juzgado_requisitoria: getVal('juzgado_requisitoria', ''), documento_requisitoria: getVal('documento_requisitoria', ''), fecha_requisitoria: getVal('fecha_requisitoria', ''), situacion_requisitoria: getVal('situacion_requisitoria', ''),
+      chk_soat: document.getElementById('chk_soat')?.checked, st_soat: getVal('st_soat', ''), fec_soat: getVal('fec_soat', ''), chk_itv: document.getElementById('chk_itv')?.checked, st_itv: getVal('st_itv', ''), fec_itv: getVal('fec_itv', ''), chk_lunas: document.getElementById('chk_lunas')?.checked, st_lunas: getVal('st_lunas', ''),
+      detallesEspecies: detallesEspecies, tipo_embalaje: getVal('tipo_embalaje', ''), tipo_embalaje_manual: getVal('tipo_embalaje_manual', ''), forma_lacrado: getVal('forma_lacrado', ''), detalle_hallazgo: getVal('detalle_hallazgo', ''), circunstancia_hallazgo: getVal('circunstancia_hallazgo', ''),
+      efectivos: obtenerListaEfectivosPNP(), intervenidos: obtenerListaIntervenidos(), vehiculos: obtenerListaVehiculos(), cant_vehiculos_pnp: getVal('cant_vehiculos_pnp', '1'),
       placas_pnp: Array.from(document.querySelectorAll('[id^="placa_policial_"]')).map(el => el.value), cant_secciones: cantSec, seccionesNarrativa: seccionesArr
     };
 
@@ -1080,6 +1089,7 @@
 
       return true;
     } catch (err) {
+      console.error("Error al restaurar el estado del formulario:", err);
       return false;
     }
   }
@@ -1146,7 +1156,7 @@
     const lista = [];
     document.querySelectorAll('.card-efectivo-pnp').forEach(card => {
       const id = card.id.replace('card_efectivo_pnp_', '');
-      lista.push({ idNum: id, grado: getVal(`pnp_grado_${id}`, 'PNP'), nombre: getVal(`pnp_nombre_${id}`, 'NO ESPECIFICADO'), cip: getVal(`pnp_cip_${id}`, 'S/C') });
+      lista.push({ idNum: id, grado: getVal(`pnp_grado_${id}`, ''), nombre: getVal(`pnp_nombre_${id}`, ''), cip: getVal(`pnp_cip_${id}`, '') });
     });
     return lista;
   }
@@ -1224,7 +1234,21 @@
     document.querySelectorAll('.card-intervenido').forEach(card => {
       const id = card.id.replace('card_intervenido_', '');
       lista.push({
-        idNum: id, nombre: getVal(`intervenido_nombre_${id}`), dni: getVal(`intervenido_dni_${id}`), licencia: getVal(`licencia_${id}`, '________'), categoria_licencia: getVal(`categoria_licencia_${id}`, '____'), edad: getVal(`edad_${id}`), estado_civil: getVal(`estado_civil_${id}`), natural: getVal(`natural_${id}`), celular: getVal(`celular1_${id}`), papa: getVal(`papa_${id}`), mama: getVal(`mama_${id}`), ocupacion: getVal(`ocupacion_${id}`), domicilio: getVal(`domicilio_${id}`), asistido_confianza: getVal(`asistido_confianza_${id}`), asistido_confianza_registro: getVal(`asistido_confianza_registro_${id}`)
+        idNum: id, 
+        nombre: getVal(`intervenido_nombre_${id}`, ''), 
+        dni: getVal(`intervenido_dni_${id}`, ''), 
+        licencia: getVal(`licencia_${id}`, ''), 
+        categoria_licencia: getVal(`categoria_licencia_${id}`, ''), 
+        edad: getVal(`edad_${id}`, ''), 
+        estado_civil: getVal(`estado_civil_${id}`, 'soltero'), 
+        natural: getVal(`natural_${id}`, ''), 
+        celular: getVal(`celular1_${id}`, ''), 
+        papa: getVal(`papa_${id}`, ''), 
+        mama: getVal(`mama_${id}`, ''), 
+        ocupacion: getVal(`ocupacion_${id}`, ''), 
+        domicilio: getVal(`domicilio_${id}`, ''), 
+        asistido_confianza: getVal(`asistido_confianza_${id}`, ''), 
+        asistido_confianza_registro: getVal(`asistido_confianza_registro_${id}`, '')
       });
     });
     return lista;
@@ -1283,7 +1307,15 @@
     document.querySelectorAll('.card-vehiculo').forEach(card => {
       const id = card.id.replace('card_vehiculo_', '');
       lista.push({
-        idNum: id, placa: getVal(`placa_vehiculo_${id}`, 'NO REGISTRA'), clase_vehiculo: getVal(`clase_vehiculo_${id}`, 'TRIMOVIL'), marca: getVal(`marca_vehiculo_${id}`, 'NO REGISTRA'), modelo: getVal(`modelo_vehiculo_${id}`, 'NO REGISTRA'), color: getVal(`color_vehiculo_${id}`, 'NO REGISTRA'), anio_fab: getVal(`anio_fab_vehiculo_${id}`, 'NO REGISTRA'), num_motor: getVal(`num_motor_vehiculo_${id}`, 'NO REGISTRA'), num_chasis: getVal(`num_chasis_vehiculo_${id}`, 'NO REGISTRA')
+        idNum: id, 
+        placa: getVal(`placa_vehiculo_${id}`, ''), 
+        clase_vehiculo: getVal(`clase_vehiculo_${id}`, 'TRIMOVIL'), 
+        marca: getVal(`marca_vehiculo_${id}`, ''), 
+        modelo: getVal(`modelo_vehiculo_${id}`, ''), 
+        color: getVal(`color_vehiculo_${id}`, ''), 
+        anio_fab: getVal(`anio_fab_vehiculo_${id}`, ''), 
+        num_motor: getVal(`num_motor_vehiculo_${id}`, ''), 
+        num_chasis: getVal(`num_chasis_vehiculo_${id}`, '')
       });
     });
     return lista;
@@ -1319,7 +1351,7 @@
     alert("⚡ ¡Datos de prueba cargados exitosamente!");
   }
 
-  function getVal(id, fallback = "S/D") {
+  function getVal(id, fallback = "") {
     const el = document.getElementById(id);
     return el && el.value.trim() !== "" ? el.value.trim() : fallback;
   }
@@ -1469,22 +1501,22 @@
     if (embFinal) categorias[5].items.push({ titulo: "Tipo de Embalaje", val: embFinal });
 
     const formaLac = getVal('forma_lacrado');
-    if (formaLac && formaLac !== 'S/D') categorias[5].items.push({ titulo: "Método de Lacrado", val: formaLac });
+    if (formaLac && formaLac !== '') categorias[5].items.push({ titulo: "Método de Lacrado", val: formaLac });
 
     const positivo = getVal('narrar_positivo');
     if (positivo && positivo !== 'NINGUNO') categorias[5].items.push({ titulo: "Hallazgos Positivos Incautados", val: positivo });
 
     const detHallaz = getVal('detalle_hallazgo');
-    if (detHallaz && detHallaz !== 'S/D') categorias[5].items.push({ titulo: "Bien / Objeto Hallado", val: detHallaz });
+    if (detHallaz && detHallaz !== '') categorias[5].items.push({ titulo: "Bien / Objeto Hallado", val: detHallaz });
 
     const circHallaz = getVal('circunstancia_hallazgo');
-    if (circHallaz && circHallaz !== 'S/D') categorias[5].items.push({ titulo: "Circunstancia del Hallazgo", val: circHallaz });
+    if (circHallaz && circHallaz !== '') categorias[5].items.push({ titulo: "Circunstancia del Hallazgo", val: circHallaz });
 
     categorias.forEach(cat => {
       if (cat.items.length === 0) return;
       let htmlBloque = `<div class="panel-categoria ${cat.clase}"><div class="panel-cat-titulo">${cat.titulo}</div>`;
       cat.items.forEach(item => {
-        if (item.val && item.val !== 'S/N' && item.val !== 'S/D' && item.val !== 'NINGUNO') {
+        if (item.val && item.val !== 'S/N' && item.val !== '' && item.val !== 'NINGUNO') {
           const valEscapado = item.val.replace(/'/g, "\\'").replace(/\n/g, "\\n");
           htmlBloque += `
             <button type="button" class="chip-btn" onclick="insertarTextoEnActivo('${valEscapado}')">
