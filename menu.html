@@ -184,6 +184,23 @@
       </datalist>
     </div>
 
+    <!-- CONSULTA DE PARTICIPACIÓN VEHICULAR -->
+    <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-bottom: 20px;">
+      <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: bold; color: var(--primary); font-size: 13px;">
+        <input type="checkbox" id="chk_incluir_vehiculo_pregunta" onchange="conmutarActaVehicular(this.checked)" style="width: 18px; height: 18px;">
+        🚗 ¿Participaron o se incautaron vehículos en la intervención?
+      </label>
+
+      <div id="panel_vehicular_acceso" style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1; align-items: center; justify-content: space-between;">
+        <span style="font-size: 12px; color: #475569;">
+          Se incluirá el <strong>Acta de Situación Vehicular</strong> en el expediente.
+        </span>
+        <a href="situacion_vehicular.html" style="background: #0284c7; color: white; padding: 6px 12px; border-radius: 5px; text-decoration: none; font-size: 11px; font-weight: bold; display: inline-block;">
+          📋 Rellenar Inspección (4 Vistas / IA)
+        </a>
+      </div>
+    </div>
+
     <!-- PASO 2: CHECKLIST DE ACTAS A GENERAR -->
     <div class="protocol-box" style="background: #eef4fc; border-left: 5px solid var(--primary); padding: 15px; border-radius: 6px; margin-bottom: 20px;">
       <label style="color: var(--primary); font-size: 14px; font-weight: bold; display: block; margin-bottom: 8px;">
@@ -227,8 +244,11 @@
       * El sistema ha marcado estas actas automáticamente en tu menú. Las actas extra de campo se deben formular manualmente si no están en catálogo.
     </p>
 
-    <div style="text-align: right;">
-      <button onclick="cerrarModalSugerencia()" style="background: #0284c7; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer;">
+    <div style="text-align: right; display: flex; gap: 10px; justify-content: flex-end;">
+      <a href="situacion_vehicular.html" id="btnModuloVehicularModal" style="display: none; background: #0284c7; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; text-decoration: none; font-size: 12px;">
+        📋 Llenar Inspección Vehicular
+      </a>
+      <button onclick="cerrarModalSugerencia()" style="background: #003366; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px;">
         Entendido, continuar
       </button>
     </div>
@@ -255,13 +275,14 @@
     { id: "acta_hallazgo_recojo", titulo: "11. Acta de Hallazgo y Recojo", archivo: "plantilla/acta_hallazgo_recojo.docx" },
     { id: "acta_ocurrencia", titulo: "12. Acta de Ocurrencia", archivo: "plantilla/acta_ocurrencia.docx" },
     { id: "acta_intervencion_control_identidad", titulo: "13. Acta de Intervención y Control de Identidad", archivo: "plantilla/acta_intervencion_control_identidad.docx" },
-    { id: "acta_constatacion", titulo: "14. Acta de Constatación", archivo: "plantilla/acta_constatacion.docx" }
+    { id: "acta_constatacion", titulo: "14. Acta de Constatación", archivo: "plantilla/acta_constatacion.docx" },
+    { id: "acta_situacion_vehicular", titulo: "15. Acta de Situación Vehicular", archivo: "plantilla/acta_s_v_vehiculo_mayor.docx" }
   ];
 
   const PROCEDIMIENTOS_PNP = {
     "EBRIEDAD": {
       kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
-      especiales: ["acta_registro_vehicular", "acta_inmovilizacion"]
+      especiales: ["acta_registro_vehicular", "acta_inmovilizacion", "acta_situacion_vehicular"]
     },
     "ARMAS": {
       kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
@@ -273,11 +294,11 @@
     },
     "HURTO_ROBO": {
       kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
-      especiales: ["acta_lacrado_cadena_custodia", "formato_A-6_rotulo_indicios_evidencias", "acta_incautacion"]
+      especiales: ["acta_lacrado_cadena_custodia", "formato_A-6_rotulo_indicios_evidencias", "acta_incautacion", "acta_situacion_vehicular"]
     },
     "RECEPTACION": {
       kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
-      especiales: ["acta_lacrado_cadena_custodia", "formato_A-6_rotulo_indicios_evidencias", "acta_incautacion"]
+      especiales: ["acta_lacrado_cadena_custodia", "formato_A-6_rotulo_indicios_evidencias", "acta_incautacion", "acta_situacion_vehicular"]
     },
     "USURPACION_DANOS": {
       kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
@@ -301,7 +322,7 @@
     },
     "LESIONES_TRANSITO": {
       kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
-      especiales: ["acta_registro_vehicular", "acta_inmovilizacion"]
+      especiales: ["acta_registro_vehicular", "acta_inmovilizacion", "acta_situacion_vehicular"]
     },
     "HOMICIDIO": {
       kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
@@ -317,7 +338,7 @@
     },
     "RESISTENCIA": {
       kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
-      especiales: ["acta_registro_vehicular", "acta_inmovilizacion"]
+      especiales: ["acta_registro_vehicular", "acta_inmovilizacion", "acta_situacion_vehicular"]
     },
     "COHECHO": {
       kit: ["acta_intervencion", "acta_registro_personal", "acta_lectura_derechos", "acta_detencion", "acta_buen_trato"],
@@ -359,10 +380,11 @@
     const contenedorUI = document.getElementById('checklistContenedor');
     contenedorUI.innerHTML = "";
     CATALOGO_ACTAS.forEach((acta) => {
+      const esVehicular = acta.id === "acta_situacion_vehicular";
       contenedorUI.innerHTML += `
         <label style="display: flex; align-items: center; gap: 10px; font-weight: normal; cursor: pointer; background: #fff; padding: 8px 12px; border-radius: 5px; border: 1px solid #cbd5e1;">
-          <input type="checkbox" id="chk_${acta.id}" value="${acta.id}" style="width: 18px; height: 18px;">
-          <span style="font-size: 13px;">📄 <strong>${acta.titulo}</strong></span>
+          <input type="checkbox" id="chk_${acta.id}" value="${acta.id}" onchange="sincronizarCheckboxVehiculo('${acta.id}', this.checked)" style="width: 18px; height: 18px;">
+          <span style="font-size: 13px;">📄 <strong>${acta.titulo}</strong> ${esVehicular ? '<span style="color:#0284c7; font-size:11px;">(4 Vistas / IA)</span>' : ''}</span>
         </label>
       `;
     });
@@ -377,6 +399,24 @@
       }
     });
   });
+
+  function conmutarActaVehicular(estado) {
+    const chkSV = document.getElementById('chk_acta_situacion_vehicular');
+    if (chkSV) chkSV.checked = estado;
+    
+    const panel = document.getElementById('panel_vehicular_acceso');
+    if (panel) panel.style.display = estado ? 'flex' : 'none';
+  }
+
+  function sincronizarCheckboxVehiculo(idActa, estado) {
+    if (idActa === 'acta_situacion_vehicular') {
+      const chkPregunta = document.getElementById('chk_incluir_vehiculo_pregunta');
+      if (chkPregunta) chkPregunta.checked = estado;
+      
+      const panel = document.getElementById('panel_vehicular_acceso');
+      if (panel) panel.style.display = estado ? 'flex' : 'none';
+    }
+  }
 
   function aplicarProtocoloPolicial(textoDelito) {
     const categoria = clasificarDelito(textoDelito);
@@ -398,17 +438,29 @@
       }
     });
 
+    let requiereVehiculo = false;
+
     if (protocolo.especiales.length > 0) {
       protocolo.especiales.forEach(idActa => {
         const chk = document.getElementById(`chk_${idActa}`);
         if (chk) {
           chk.checked = true;
           ulEsp.innerHTML += `<li>${chk.nextElementSibling.innerText}</li>`;
+          if (idActa === 'acta_situacion_vehicular') requiereVehiculo = true;
         }
       });
     } else {
       ulEsp.innerHTML = "<li>No se identifican actas estandarizadas adicionales en catálogo.</li>";
     }
+
+    const chkPregunta = document.getElementById('chk_incluir_vehiculo_pregunta');
+    if (chkPregunta) chkPregunta.checked = requiereVehiculo;
+    
+    const panel = document.getElementById('panel_vehicular_acceso');
+    if (panel) panel.style.display = requiereVehiculo ? 'flex' : 'none';
+
+    const btnModalVehiculo = document.getElementById('btnModuloVehicularModal');
+    if (btnModalVehiculo) btnModalVehiculo.style.display = requiereVehiculo ? 'inline-block' : 'none';
 
     document.getElementById('modalSugerenciaActas').style.display = 'flex';
   }
@@ -419,7 +471,10 @@
 
   function marcarTodas(estado) {
     const checkboxes = document.querySelectorAll('#checklistContenedor input[type="checkbox"]');
-    checkboxes.forEach(chk => chk.checked = estado);
+    checkboxes.forEach(chk => {
+      chk.checked = estado;
+      sincronizarCheckboxVehiculo(chk.value, estado);
+    });
   }
 
   function continuarAlFormulario() {
