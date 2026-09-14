@@ -139,6 +139,10 @@ let datosFormularioBase = {};
 let horariosPorActa = {};
 let datosFinalesCompilados = {};
 
+/* ==========================================================================
+   FUNCIONES AUXILIARES Y DE FORMATO
+   ========================================================================== */
+
 function obtenerRutaArchivoActa(acta, vehiculo) {
   const idLimpio = (acta.id || '').toLowerCase();
   const esSituacionVehicular = idLimpio.includes('situacion_vehicular') || idLimpio.includes('s_v');
@@ -159,7 +163,7 @@ function obtenerRutaArchivoActa(acta, vehiculo) {
 }
 
 function registrarActaManual(nuevaActa) {
-  if (!nuevaActa.id || !nuevaActa.titulo) {
+  if (!nuevaActa || !nuevaActa.id || !nuevaActa.titulo) {
     console.error("⚠️ El acta manual requiere al menos 'id' y 'titulo'.");
     return;
   }
@@ -221,8 +225,8 @@ function formatearFechaPolicial(fechaCadena) {
 function sumarMinutosAHora(horaStr, minutosASumar) {
   if (!horaStr || !horaStr.includes(':')) return "00:00";
   const partes = horaStr.split(':');
-  let horas = parseInt(partes[0], 10);
-  let minutos = parseInt(partes[1], 10) + minutosASumar;
+  let horas = parseInt(partes[0], 10) || 0;
+  let minutos = (parseInt(partes[1], 10) || 0) + minutosASumar;
 
   while (minutos >= 60) {
     minutos -= 60;
@@ -284,9 +288,13 @@ function procesarDocumentosRNT() {
   return hallazgos.length > 0 ? hallazgos.join(', ') : "NO PRESENTA DOCUMENTACIÓN / EN PROCESO DE VERIFICACIÓN";
 }
 
+/* ==========================================================================
+   EXTRACCIÓN DE LISTAS Y DATOS DE FORMULARIO
+   ========================================================================== */
+
 function obtenerListaEfectivosPNPForm() {
-  if (typeof obtenerListaEfectivosPNP === 'function') {
-    const lista = obtenerListaEfectivosPNP();
+  if (typeof window.obtenerListaEfectivosPNP === 'function') {
+    const lista = window.obtenerListaEfectivosPNP();
     if (lista && lista.length > 0) return lista;
   }
 
@@ -355,8 +363,8 @@ function obtenerTextoVehiculosPoliciales() {
 }
 
 function obtenerListaIntervenidosForm() {
-  if (typeof obtenerListaIntervenidos === 'function') {
-    const lista = obtenerListaIntervenidos();
+  if (typeof window.obtenerListaIntervenidos === 'function') {
+    const lista = window.obtenerListaIntervenidos();
     if (lista && lista.length > 0) return lista;
   }
 
@@ -395,8 +403,8 @@ function obtenerListaIntervenidosForm() {
 }
 
 function obtenerListaVehiculosForm() {
-  if (typeof obtenerListaVehiculos === 'function') {
-    const lista = obtenerListaVehiculos();
+  if (typeof window.obtenerListaVehiculos === 'function') {
+    const lista = window.obtenerListaVehiculos();
     if (lista && lista.length > 0) return lista;
   }
 
@@ -445,9 +453,13 @@ function obtenerTextoFiliacionCompletaMultiples(lista) {
 }
 
 function generarBloqueCierreYFirmas(horaFin, lista) {
+  const adjuntosTexto = typeof window.obtenerListaAdjuntosFormateada === 'function' 
+    ? window.obtenerListaAdjuntosFormateada() 
+    : '';
+
   let textoCierre = `\n--- Siendo las ${horaFin} Horas del mismo día se dio por concluida la presente diligencia, firmando los participantes en señal de conformidad. -------------------\n\n` +
     `Se adjunta:\n` +
-    `${typeof obtenerListaAdjuntosFormateada === 'function' ? obtenerListaAdjuntosFormateada() : ''}\n\n\n`;
+    `${adjuntosTexto}\n\n\n`;
 
   if (!lista || lista.length <= 1) {
     const int1 = (lista && lista[0]) ? lista[0] : { nombre: '{intervenido_nombre}', dni: '{intervenido_dni}' };
@@ -505,6 +517,10 @@ function obtenerDatosMapeadosSituacionVehicular() {
 
   return datosMapeados;
 }
+
+/* ==========================================================================
+   INICIALIZACIÓN Y EVENTOS
+   ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
   delitoConfigurado = localStorage.getItem('pnp_delito_seleccionado') || "DILIGENCIA POLICIAL INDEPENDIENTE";
@@ -565,7 +581,7 @@ if (formExpediente) {
       return;
     }
 
-    const fechaRaw = document.getElementById('fecha').value;
+    const fechaRaw = document.getElementById('fecha') ? document.getElementById('fecha').value : '';
     const listaEfectivosPNP = obtenerListaEfectivosPNPForm();
     const pnpPrincipal = listaEfectivosPNP[0] || { grado: "S3", nombre: "ARMANDO VIVANCO CURO", cip: "31425556" };
 
@@ -629,6 +645,10 @@ if (formExpediente) {
     avanzarAoSaltarAQuienLleveHora(horaInicialBase || "08:00");
   });
 }
+
+/* ==========================================================================
+   GESTIÓN DE MODAL DE HORARIOS
+   ========================================================================== */
 
 function avanzarAoSaltarAQuienLleveHora(horaSugeridaInicio) {
   while (indiceActaActual < actasAProcesarSecuencia.length) {
@@ -726,9 +746,10 @@ async function confirmarHoraActaActual() {
   }
 }
 
-/**
- * Prepara todos los datos del expediente y muestra el Modal de Vista Previa
- */
+/* ==========================================================================
+   VISTA PREVIA DE EXPEDIENTE POLICIAL
+   ========================================================================== */
+
 function prepararYMostrarVistaPrevia() {
   const regPersonal = horariosPorActa['acta_registro_personal'] || { horaInicio: "08:00", horaTermino: "08:05" };
   const lecturaDerechos = horariosPorActa['acta_lectura_derechos'] || { horaInicio: "08:06", horaTermino: "08:11" };
@@ -860,9 +881,6 @@ function prepararYMostrarVistaPrevia() {
   mostrarModalVistaPrevia();
 }
 
-/**
- * Crea e inyecta dinámicamente el modal de Vista Previa en el DOM si no existe
- */
 function asegurarModalVistaPreviaDOM() {
   if (document.getElementById('modalVistaPrevia')) return;
 
@@ -905,7 +923,7 @@ function mostrarModalVistaPrevia() {
   const d = datosFinalesCompilados;
 
   let htmlActas = "";
-  actasAProcesarSecuencia.forEach((acta, idx) => {
+  actasAProcesarSecuencia.forEach((acta) => {
     const hor = horariosPorActa[acta.id] || { horaInicio: "-", horaTermino: "-" };
     htmlActas += `
       <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:10px; border-radius:6px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
@@ -1007,6 +1025,10 @@ async function confirmarYGenerarExpedienteDesdePrevia() {
   await ejecutarGeneracionFinalExpediente();
 }
 
+/* ==========================================================================
+   GENERACIÓN Y DESCARGA DE ARCHIVOS WORD Y ZIP
+   ========================================================================== */
+
 async function ejecutarGeneracionFinalExpediente() {
   const statusMsg = document.getElementById('statusMsg');
   if (statusMsg) {
@@ -1019,14 +1041,13 @@ async function ejecutarGeneracionFinalExpediente() {
     const datosFinalesBase = datosFinalesCompilados;
     const listaIntervenidos = datosFinalesBase._listaIntervenidos || [];
     const listaVehiculos = datosFinalesBase._listaVehiculos || [];
-    const listaEfectivosPNP = datosFinalesBase._listaEfectivos || [];
     const textoIntervenidosColectivo = datosFinalesBase.resumen_intervenidos || "";
 
     // REGISTRO EN SUPABASE (Aislado)
     try {
       const client = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
       if (client && typeof client.from === 'function') {
-        const { data, error } = await client.from('intervenciones').insert([{
+        const { error } = await client.from('intervenciones').insert([{
           tipo_delito: datosFinalesBase.delito || "DILIGENCIA POLICIAL INDEPENDIENTE",
           fecha: datosFinalesBase.fecha,
           hora: datosFinalesBase.hora1,
@@ -1164,8 +1185,8 @@ async function ejecutarGeneracionFinalExpediente() {
     }
 
     const guardarBlob = (blob, nombreArchivo) => {
-      if (typeof saveAs === 'function') {
-        saveAs(blob, nombreArchivo);
+      if (typeof window.saveAs === 'function') {
+        window.saveAs(blob, nombreArchivo);
       } else {
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
@@ -1207,8 +1228,8 @@ async function generarDocumentoWord(rutaPlantilla, datos) {
   const PizZipLib = window.PizZip || window.pizzip || (window.PizZip && window.PizZip.default) || (typeof PizZip !== 'undefined' ? PizZip : null);
   const DocxLib = window.docxtemplater || window.Docxtemplater || (window.docxtemplater && window.docxtemplater.default) || (typeof docxtemplater !== 'undefined' ? docxtemplater : null);
 
-  if (!PizZipLib) throw new Error("No se cargó la librería PizZip en el navegador. Revisa las etiquetas <script> en el HTML.");
-  if (!DocxLib) throw new Error("No se cargó la librería Docxtemplater en el navegador. Revisa las etiquetas <script> en el HTML.");
+  if (!PizZipLib) throw new Error("No se cargó la librería PizZip en el navegador.");
+  if (!DocxLib) throw new Error("No se cargó la librería Docxtemplater en el navegador.");
 
   const urlAntiCache = `${rutaPlantilla}?t=${new Date().getTime()}`;
   const response = await fetch(urlAntiCache);
@@ -1254,3 +1275,14 @@ function limpiarPantalla() {
     if (hora1Input) hora1Input.value = new Date().toTimeString().slice(0, 5);
   }
 }
+
+/* ==========================================================================
+   EXPORTACIÓN DE FUNCIONES AL SCOPE GLOBAL (WINDOW)
+   ========================================================================== */
+
+window.registrarActaManual = registrarActaManual;
+window.cancelarProcesoHoras = cancelarProcesoHoras;
+window.confirmarHoraActaActual = confirmarHoraActaActual;
+window.cerrarModalVistaPrevia = cerrarModalVistaPrevia;
+window.confirmarYGenerarExpedienteDesdePrevia = confirmarYGenerarExpedienteDesdePrevia;
+window.limpiarPantalla = limpiarPantalla;
