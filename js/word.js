@@ -332,6 +332,27 @@ function generarBloqueFirmasPNP(lista) {
   return bloque;
 }
 
+function obtenerTextoVehiculosPoliciales() {
+  const cantVehElem = document.getElementById('cant_vehiculos_pnp');
+  const cantVeh = cantVehElem ? (parseInt(cantVehElem.value, 10) || 1) : 1;
+  const placas = [];
+
+  for (let i = 1; i <= cantVeh; i++) {
+    const inputElem = document.getElementById(`placa_policial_${i}`);
+    const val = inputElem ? inputElem.value.trim() : "";
+    if (val) placas.push(val);
+  }
+
+  if (placas.length === 0) {
+    return "a bordo de la U.M. de placa S/P";
+  } else if (placas.length === 1) {
+    return `a bordo de la U.M. de placa N° ${placas[0]}`;
+  } else {
+    const ultimo = placas.pop();
+    return `a bordo de las U.M. de placas N° ${placas.join(', N° ')} y N° ${ultimo}`;
+  }
+}
+
 function obtenerListaIntervenidosForm() {
   if (typeof obtenerListaIntervenidos === 'function') {
     const lista = obtenerListaIntervenidos();
@@ -750,6 +771,8 @@ async function ejecutarGeneracionFinalExpediente() {
       ...vehiculosPNPObj,
       ...seccionesObj,
       
+      vehiculos_policiales_texto: obtenerTextoVehiculosPoliciales(),
+
       intervenido_nombre: listaIntervenidos[0]?.nombre || "",
       intervenido_dni: listaIntervenidos[0]?.dni || "",
       licencia: listaIntervenidos[0]?.licencia || "________",
