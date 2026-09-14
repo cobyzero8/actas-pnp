@@ -426,20 +426,24 @@ function obtenerListaVehiculosForm() {
   const marca = getValSafe('marca_vehiculo_1') || getValSafe('marca_vehiculo') || "NO REGISTRA";
   const modelo = getValSafe('modelo_vehiculo_1') || getValSafe('modelo_vehiculo') || "NO REGISTRA";
   const color = getValSafe('color_vehiculo_1') || getValSafe('color_vehiculo') || "NO REGISTRA";
-  const anio_fab = getValSafe('anio_fab_vehiculo_1') || getValSafe('anio_fab') || "NO REGISTRA";
-  const num_motor = getValSafe('num_motor_vehiculo_1') || getValSafe('num_motor') || "NO REGISTRA";
-  const num_chasis = getValSafe('num_chasis_vehiculo_1') || getValSafe('num_chasis') || "NO REGISTRA";
+  const anio_fab = getValSafe('anio_fab_vehiculo_1') || getValSafe('anio_fab_vehiculo') || getValSafe('anio_fab') || "NO REGISTRA";
+  const num_motor = getValSafe('num_motor_vehiculo_1') || getValSafe('num_motor_vehiculo') || getValSafe('num_motor') || "NO REGISTRA";
+  const num_chasis = getValSafe('num_chasis_vehiculo_1') || getValSafe('num_chasis_vehiculo') || getValSafe('num_chasis') || "NO REGISTRA";
 
   return [{ placa, clase_vehiculo, marca, modelo, color, anio_fab, num_motor, num_chasis }];
+}
+
+function formatearDetalleVehiculoCompleto(v) {
+  if (!v) return "NO REGISTRA";
+  return `el vehículo de placa N° ${v.placa || 'NO REGISTRA'} (Clase: ${v.clase_vehiculo || 'TRIMOVIL'}, Marca: ${v.marca || 'NO REGISTRA'}, Modelo: ${v.modelo || 'NO REGISTRA'}, Color: ${v.color || 'NO REGISTRA'}, Año Fab.: ${v.anio_fab || 'NO REGISTRA'}, N° Motor: ${v.num_motor || 'NO REGISTRA'}, N° Chasis/Serie: ${v.num_chasis || 'NO REGISTRA'})`;
 }
 
 function construirTextoVehiculosResumen(listaVehiculos) {
   if (!listaVehiculos || listaVehiculos.length === 0) return "NO REGISTRA";
   if (listaVehiculos.length === 1) {
-    const v = listaVehiculos[0];
-    return `el vehículo de placa N° ${v.placa} (Clase: ${v.clase_vehiculo || 'TRIMOVIL'}, Marca: ${v.marca}, Modelo: ${v.modelo}, Color/Estado: ${v.color})`;
+    return formatearDetalleVehiculoCompleto(listaVehiculos[0]);
   }
-  const partes = listaVehiculos.map(v => `el vehículo de placa N° ${v.placa} (${v.clase_vehiculo || 'TRIMOVIL'} ${v.marca} ${v.modelo})`);
+  const partes = listaVehiculos.map(v => formatearDetalleVehiculoCompleto(v));
   const ultimo = partes.pop();
   return `${partes.join(', ')} y ${ultimo}`;
 }
@@ -618,6 +622,7 @@ if (formExpediente) {
       num_motor_vehiculo: vehPrincipal.num_motor || "NO REGISTRA",
       num_chasis_vehiculo: vehPrincipal.num_chasis || "NO REGISTRA",
       vehiculos_resumen: construirTextoVehiculosResumen(listaVehiculos),
+      resumen_vehiculos: construirTextoVehiculosResumen(listaVehiculos),
 
       drogas: document.getElementById('drogas') ? document.getElementById('drogas').value : "NEGATIVO",
       moneda: document.getElementById('moneda') ? document.getElementById('moneda').value : "NEGATIVO",
@@ -851,6 +856,7 @@ function prepararYMostrarVistaPrevia() {
     filiacion_intervenidos: filiacionCompleta,
     resumen_intervenidos: textoIntervenidosColectivo,
     resumen_vehiculos: textoVehiculosColectivo,
+    vehiculos_resumen: textoVehiculosColectivo,
     secciones_narrativa: bloquesNarrativaLista.join('\n\n'),
     calidad_detenido: listaIntervenidos.length > 1 ? "DETENIDOS" : "DETENIDO",
     bloque_firmas: bloqueFirmasG,
@@ -859,7 +865,6 @@ function prepararYMostrarVistaPrevia() {
     acta_situacion_vehicular_resultado: resultadoSituacionVehicular,
 
     intervenidos_resumen: textoIntervenidosColectivo,
-    vehiculos_resumen: textoVehiculosColectivo,
     hora_intervencion: horaIntVal,
     fiscal: fiscalVal,
     agraviado: agraviadoVal,
