@@ -468,6 +468,48 @@ function generarBloqueCierreYFirmas(horaFin, lista) {
   return textoCierre;
 }
 
+/**
+ * Mapea las respuestas guardadas de Situación Vehicular hacia las etiquetas individuales del Word.
+ * Convierte valores "BUENO", "MALO", "REGULAR", "FALTA" en sus códigos "B", "M", "R", "F".
+ */
+function obtenerDatosMapeadosSituacionVehicular() {
+  const rawSV = localStorage.getItem('pnp_sv_estado_formulario');
+  const datosMapeados = {};
+
+  if (!rawSV) return datosMapeados;
+
+  try {
+    const estadoSV = JSON.parse(rawSV);
+    const valoresItems = estadoSV.valores_items || {};
+
+    for (let itemNombre in valoresItems) {
+      const valorTexto = valoresItems[itemNombre] || "BUENO";
+      
+      let codigoEstado = "B";
+      if (valorTexto.includes("MALO")) codigoEstado = "M";
+      else if (valorTexto.includes("REGULAR")) codigoEstado = "R";
+      else if (valorTexto.includes("FALTA")) codigoEstado = "F";
+
+      // Limpia tildes, caracteres especiales y convierte a snake_case
+      const claveEtiqueta = "sv_" + itemNombre.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]/g, "_")
+        .replace(/_+/g, "_")
+        .replace(/^_+|_+$/g, "");
+
+      datosMapeados[claveEtiqueta] = codigoEstado;
+    }
+
+    datosMapeados['sv_observaciones'] = estadoSV.observaciones_situacion || "Sin observaciones adicionales.";
+    datosMapeados['sv_combustible'] = estadoSV.combustible_nivel || "1/2 TANQUE";
+
+  } catch (e) {
+    console.error("⚠️ Error al procesar los datos guardados de Situación Vehicular:", e);
+  }
+
+  return datosMapeados;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   delitoConfigurado = localStorage.getItem('pnp_delito_seleccionado') || "DILIGENCIA POLICIAL INDEPENDIENTE";
   const actasJSON = localStorage.getItem('pnp_actas_seleccionadas');
@@ -888,12 +930,15 @@ async function ejecutarGeneracionFinalExpediente() {
         }
 
       } else if (esActaVehicular) {
+        const datosMapeadosSV = obtenerDatosMapeadosSituacionVehicular();
+
         for (let idxV = 0; idxV < listaVehiculos.length; idxV++) {
           const veh = listaVehiculos[idxV];
           const rutaPlantillaFinal = obtenerRutaArchivoActa(acta, veh);
 
           const datosDocVehiculo = {
             ...datosFinalesBase,
+            ...datosMapeadosSV,
             placa_vehiculo: veh.placa,
             clase_vehiculo: veh.clase_vehiculo || "TRIMOVIL",
             marca_vehiculo: veh.marca,
