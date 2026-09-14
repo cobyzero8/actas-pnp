@@ -794,7 +794,7 @@ async function ejecutarGeneracionFinalExpediente() {
       hora_detencion: horaDetencionVal
     };
 
-    // INTENTO DE REGISTRO EN SUPABASE (Aislado para no bloquear descargas en caso de error)
+    // REGISTRO EN SUPABASE (Aislado)
     try {
       const client = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
       if (client && typeof client.from === 'function') {
@@ -824,6 +824,7 @@ async function ejecutarGeneracionFinalExpediente() {
 
     const zip = new JSZipLib();
     let archivosAgregados = 0;
+    let erroresArchivos = [];
 
     for (let acta of actasAProcesarSecuencia) {
       const hor = horariosPorActa[acta.id] || { horaInicio: "", horaTermino: "" };
@@ -857,6 +858,7 @@ async function ejecutarGeneracionFinalExpediente() {
           archivosAgregados++;
         } catch (err) {
           console.error(`Error al generar ${acta.archivo}:`, err);
+          erroresArchivos.push(`• ${acta.titulo}: ${err.message}`);
         }
 
       } else if (esActaVehicular) {
@@ -887,6 +889,7 @@ async function ejecutarGeneracionFinalExpediente() {
             archivosAgregados++;
           } catch (err) {
             console.error(`Error al generar ${rutaPlantillaFinal} para vehículo placa ${veh.placa}:`, err);
+            erroresArchivos.push(`• ${acta.titulo} (${veh.placa}): ${err.message}`);
           }
         }
 
@@ -923,20 +926,35 @@ async function ejecutarGeneracionFinalExpediente() {
             archivosAgregados++;
           } catch (err) {
             console.error(`Error al generar ${acta.archivo} para DNI ${persona.dni}:`, err);
+            erroresArchivos.push(`• ${acta.titulo} (DNI ${persona.dni}): ${err.message}`);
           }
         }
       }
     }
 
-    if (archivosAgregados === 1 && listaIntervenidos.length === 1 && listaVehiculos.length === 1) {
+    const guardarBlob = (blob, nombreArchivo) => {
+      if (typeof saveAs === 'function') {
+        saveAs(blob, nombreArchivo);
+      } else {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = nombreArchivo;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    };
+
+    if (archivosAgregados === 1) {
       const soloFicheroKey = Object.keys(zip.files)[0];
       const blobUnico = await zip.file(soloFicheroKey).async("blob");
-      saveAs(blobUnico, soloFicheroKey);
+      guardarBlob(blobUnico, soloFicheroKey);
     } else if (archivosAgregados > 0) {
       const zipContent = await zip.generateAsync({ type: "blob" });
-      saveAs(zipContent, `Expediente_PNP_${datosFinalesBase.distrito}_${datosFinalesBase.fecha}.zip`);
+      guardarBlob(zipContent, `Expediente_PNP_${datosFinalesBase.distrito}_${datosFinalesBase.fecha}.zip`);
     } else {
-      throw new Error("No se pudo compilar ninguna de las actas seleccionadas.");
+      const detalleError = erroresArchivos.length > 0 ? `\n${erroresArchivos.join('\n')}` : '';
+      throw new Error(`No se pudo compilar ninguna de las actas seleccionadas.${detalleError}`);
     }
 
     if (statusMsg) {
@@ -947,9 +965,10 @@ async function ejecutarGeneracionFinalExpediente() {
   } catch (err) {
     if (statusMsg) {
       statusMsg.className = "alert-msg alert-danger";
-      statusMsg.innerText = "❌ Error al procesar expediente: " + err.message;
+      statusMsg.innerText = "❌ Error al procesar expediente:\n" + err.message;
     }
     console.error("Error global en generación:", err);
+    alert("❌ Error al generar las actas:\n" + err.message);
   }
 }
 
@@ -957,8 +976,8 @@ async function generarDocumentoWord(rutaPlantilla, datos) {
   const PizZipLib = window.PizZip || (typeof PizZip !== 'undefined' ? PizZip : null);
   const DocxLib = window.docxtemplater || window.Docxtemplater || (typeof docxtemplater !== 'undefined' ? docxtemplater : null);
 
-  if (!PizZipLib) throw new Error("No se pudo cargar la librería PizZip en el navegador.");
-  if (!DocxLib) throw new Error("No se pudo cargar la librería Docxtemplater en el navegador.");
+  if (!PizZipLib) throw new Error("No se cargó PizZip en el navegador.");
+  if (!DocxLib) throw new Error("No se cargó Docxtemplater en el navegador.");
 
   const urlAntiCache = `${rutaPlantilla}?t=${new Date().getTime()}`;
   const response = await fetch(urlAntiCache);
@@ -973,7 +992,7 @@ async function generarDocumentoWord(rutaPlantilla, datos) {
   try {
     zip = new PizZipLib(arrayBuffer);
   } catch (e) {
-    throw new Error(`El archivo descargado desde '${rutaPlantilla}' no es un documento Word (.docx) válido: ${e.message}`);
+    throw new Error(`El archivo en '${rutaPlantilla}' no es un .docx válido: ${e.message}`);
   }
 
   let doc;
@@ -985,7 +1004,7 @@ async function generarDocumentoWord(rutaPlantilla, datos) {
     });
     doc.render(datos);
   } catch (e) {
-    throw new Error(`Error al compilar etiquetas docxtemplater en '${rutaPlantilla}': ${e.message}`);
+    throw new Error(`Etiqueta o formato inválido en '${rutaPlantilla}': ${e.message}`);
   }
 
   return doc.getZip().generate({
