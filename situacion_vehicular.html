@@ -59,6 +59,32 @@
       font-weight: bold;
       color: #334155;
     }
+    .tipo-vehiculo-selector {
+      background: #f8fafc;
+      border: 2px solid #0284c7;
+      padding: 12px 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .tipo-vehiculo-selector label {
+      font-weight: bold;
+      font-size: 13px;
+      color: #0369a1;
+      text-transform: uppercase;
+    }
+    .tipo-vehiculo-selector select {
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: bold;
+      border-radius: 6px;
+      border: 1.5px solid #0284c7;
+      background: #ffffff;
+      color: #0f172a;
+      cursor: pointer;
+    }
     .section-title {
       background: #f8fafc;
       border-left: 4px solid #0284c7;
@@ -95,6 +121,7 @@
       color: #1e293b;
       flex: 1;
       text-transform: uppercase;
+      padding-right: 5px;
     }
     .select-estado {
       padding: 4px 8px;
@@ -177,6 +204,15 @@
     </div>
   </div>
 
+  <!-- SELECTOR DE TIPO DE VEHÍCULO -->
+  <div class="tipo-vehiculo-selector">
+    <label for="select_tipo_formato">📌 Formato de Inspección:</label>
+    <select id="select_tipo_formato" onchange="cambiarFormatoTipoVehiculo(this.value)">
+      <option value="MAYOR">VEHÍCULO MAYOR (Automóvil, Camioneta, Camión, SUV, etc.)</option>
+      <option value="MENOR">VEHÍCULO MENOR (Trimovil, Motocicleta, Mototaxi, Motocar, etc.)</option>
+    </select>
+  </div>
+
   <!-- Nivel de Combustible -->
   <div class="fuel-gauge-container">
     <label>⛽ NIVEL DE COMBUSTIBLE EN TANQUE:</label>
@@ -192,21 +228,25 @@
 
   <form id="situacionVehicularForm">
 
-    <!-- I. PARTE EXTERIOR -->
-    <div class="section-title">🚘 I. PARTE EXTERIOR</div>
-    <div class="grid-check" id="sec_exterior"></div>
+    <!-- SECCIÓN 1 -->
+    <div class="section-title" id="tit_sec_1">🚘 I. PARTE EXTERIOR</div>
+    <div class="grid-check" id="sec_1"></div>
 
-    <!-- II. PARTE INTERIOR -->
-    <div class="section-title">💺 II. PARTE INTERIOR</div>
-    <div class="grid-check" id="sec_interior"></div>
+    <!-- SECCIÓN 2 -->
+    <div class="section-title" id="tit_sec_2">💺 II. PARTE INTERIOR</div>
+    <div class="grid-check" id="sec_2"></div>
 
-    <!-- III. OTROS / ACCESORIOS Y HERRAMIENTAS -->
-    <div class="section-title">📝 III. OTROS (OBSERVACIONES, HERRAMIENTAS Y ACCESORIOS ADICIONALES)</div>
-    <textarea id="observaciones_situacion" class="obs-textarea" placeholder="Especifique accesorios adicionales, estado general, rayaduras, abolladuras o detalles no contemplados en la lista anterior..."></textarea>
+    <!-- SECCIÓN 3 -->
+    <div class="section-title" id="tit_sec_3">⚙️ III. MOTOR Y MECÁNICA</div>
+    <div class="grid-check" id="sec_3"></div>
 
-    <!-- IV. MOTOR -->
-    <div class="section-title">⚙️ IV. MOTOR</div>
-    <div class="grid-check" id="sec_motor"></div>
+    <!-- SECCIÓN 4 (SOLO PARA VEHÍCULO MENOR / OTROS) -->
+    <div class="section-title" id="tit_sec_4">🛠️ IV. ESTRUCTURA Y ACCESORIOS ADICIONALES</div>
+    <div class="grid-check" id="sec_4"></div>
+
+    <!-- OBSERVACIONES -->
+    <div class="section-title">📝 OBSERVACIONES, DAÑOS VISIBLES Y ESTADO GENERAL</div>
+    <textarea id="observaciones_situacion" class="obs-textarea" placeholder="Especifique rayaduras, abolladuras, accesorios no contemplados en la lista o detalles relevantes..."></textarea>
 
     <div style="margin-top: 25px; display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #e2e8f0; padding-top: 15px;">
       <a href="formulario.html" onclick="notificarRegreso()" class="btn-action btn-back">⬅️ Cancelar / Volver</a>
@@ -219,31 +259,59 @@
 </div>
 
 <script>
-  // LISTA OFICIAL PNP SEGÚN ACTA DE SITUACIÓN VEHICULAR
-  const ITEMS_EXTERIOR = [
+  // --- CATALOGO VEHÍCULO MAYOR ---
+  const MAYOR_SEC_1 = [
     "FARO GRANDE DELT", "INTERMITENTES", "FAROS POSTERIORES", "BISELES",
     "LIMPIA PARABRISA", "PARABRISAS", "LUNAS", "ESPEJO EXTERIOR",
     "ANTENAS", "PARACHOQUES", "LLANTAS", "LLANTAS DE REPUESTO"
   ];
 
-  const ITEMS_INTERIOR = [
+  const MAYOR_SEC_2 = [
     "TABLERO", "CHAPA CONTACTO", "RADIO MUSICAL", "ENCENDEDOR",
     "PISOS", "MANIJAS", "CENICEROS", "VASOS",
     "PARASOLES", "CHAPAS", "CODERAS", "GATA",
     "LLAVE DE RUEDA", "PARLANTES", "ESPEJO INTERIOR", "ASIENTOS"
   ];
 
-  const ITEMS_MOTOR = [
+  const MAYOR_SEC_3 = [
     "BATERIA", "RADIADOR", "ARRANCADOR", "ALTERNADOR",
     "CARBURADOR", "PURIFICADOR", "DISTRIBUIDOR", "BOBINA",
     "TAPA DE ACEITE", "BUJÍAS", "CHICOTES", "VARILLA ACEITE"
   ];
 
+  // --- CATALOGO VEHÍCULO MENOR (TRIMOVIL / MOTOCICLETA / MOTOTAXI) ---
+  const MENOR_SEC_1 = [
+    "VELOCÍMETRO", "TACÓMETRO", "PALANCA DE CAMBIOS", "FRENO DELANTERO",
+    "EMPUÑADURA DEL ACELERADOR", "INTERRUPTOR CONTROL DE FARO", "PEDAL DEL FRENO TRASERO",
+    "PEDAL DE ARRANQUE", "PALANCA DE EMBRAGUE", "COMUNICADOR DE SEÑALES", "PULSADOR DE LA BOCINA", "PALANCA"
+  ];
+
+  const MENOR_SEC_2 = [
+    "FARO DELANTERO", "LUCES DE PELIGRO", "DIRECCIONAL DERECHO", "DIRECCIONAL IZQUIERDO",
+    "LUCES AUXILIARES", "ESPEJO RETROVISOR", "RADIO", "CAJITA DE CD", "BATERÍA"
+  ];
+
+  const MENOR_SEC_3 = [
+    "CHUPÓN DE BUJÍA", "BUJÍAS", "CARBURADOR", "TAPA DE ACEITE", "CADENAS"
+  ];
+
+  const MENOR_SEC_4 = [
+    "TAPA DEL DEPÓSITO DE COMBUSTIBLE", "PEDAL DE CAMBIOS", "LLANTAS", "TOLDO",
+    "ASIENTOS", "TAPAS LATERALES", "TAPABARRO DELANTERO", "TAPABARRO TRASERO"
+  ];
+
+  const PALABRAS_VEHICULO_MENOR = ['TRIMOVIL', 'MOTOCICLETA', 'MOTOTAXI', 'MOTOCAR', 'MOTO', 'CUATRIMOTO', 'TRICICLO'];
+
   document.addEventListener('DOMContentLoaded', () => {
-    cargarDatosGenerales();
-    renderizarSeccion('sec_exterior', ITEMS_EXTERIOR, 'ext');
-    renderizarSeccion('sec_interior', ITEMS_INTERIOR, 'int');
-    renderizarSeccion('sec_motor', ITEMS_MOTOR, 'mot');
+    const claseDetectada = cargarDatosGenerales();
+    
+    // Auto-detectar tipo de formato por clase de vehículo
+    const esMenor = PALABRAS_VEHICULO_MENOR.some(tipo => claseDetectada.toUpperCase().includes(tipo));
+    const tipoInicial = esMenor ? 'MENOR' : 'MAYOR';
+
+    document.getElementById('select_tipo_formato').value = tipoInicial;
+    cambiarFormatoTipoVehiculo(tipoInicial);
+    
     restaurarEstadoSV();
   });
 
@@ -258,14 +326,48 @@
     try { if (rawVeh) { const list = JSON.parse(rawVeh); if (list.length > 0) veh = list[0]; } } catch(e){}
     try { if (rawInt) { const list = JSON.parse(rawInt); if (list.length > 0) int = list[0]; } } catch(e){}
 
+    const clase = veh.clase_vehiculo || datos.clase_vehiculo || 'TRIMOVIL';
+
     document.getElementById('lbl_placa').innerText = veh.placa || datos.placa || 'NO REGISTRA';
-    document.getElementById('lbl_clase').innerText = veh.clase_vehiculo || datos.clase_vehiculo || 'TRIMOVIL';
+    document.getElementById('lbl_clase').innerText = clase;
     document.getElementById('lbl_marca_modelo').innerText = `${veh.marca || datos.marca || 'S/M'} / ${veh.modelo || datos.modelo || 'S/M'}`;
     document.getElementById('lbl_color').innerText = veh.color || datos.color || 'NO REGISTRA';
     document.getElementById('lbl_motor').innerText = veh.num_motor || datos.num_motor || 'NO REGISTRA';
     document.getElementById('lbl_chasis').innerText = veh.num_chasis || datos.num_chasis || 'NO REGISTRA';
     document.getElementById('lbl_conductor').innerText = int.nombre || datos.conductor_nombre || 'PERSONA EN PROCESO DE IDENTIFICACIÓN';
     document.getElementById('lbl_dni_licencia').innerText = `DNI: ${int.dni || datos.conductor_dni || 'S/D'} | L/C: ${int.licencia || datos.conductor_licencia || 'S/L'}`;
+
+    return clase;
+  }
+
+  function cambiarFormatoTipoVehiculo(tipo) {
+    const tit1 = document.getElementById('tit_sec_1');
+    const tit2 = document.getElementById('tit_sec_2');
+    const tit3 = document.getElementById('tit_sec_3');
+    const tit4 = document.getElementById('tit_sec_4');
+
+    if (tipo === 'MENOR') {
+      tit1.innerText = "🕹️ I. CONTROLES Y MANUBRIO";
+      tit2.innerText = "💡 II. LUCES Y SISTEMA ELÉCTRICO";
+      tit3.innerText = "⚙️ III. MOTOR Y TRANSMISIÓN";
+      tit4.innerText = "🛵 IV. ESTRUCTURA, ACCESORIOS Y CARROCERÍA";
+      tit4.style.display = "block";
+
+      renderizarSeccion('sec_1', MENOR_SEC_1, 's1');
+      renderizarSeccion('sec_2', MENOR_SEC_2, 's2');
+      renderizarSeccion('sec_3', MENOR_SEC_3, 's3');
+      renderizarSeccion('sec_4', MENOR_SEC_4, 's4');
+    } else {
+      tit1.innerText = "🚘 I. PARTE EXTERIOR";
+      tit2.innerText = "💺 II. PARTE INTERIOR";
+      tit3.innerText = "⚙️ III. MOTOR Y MECÁNICA";
+      tit4.style.display = "none";
+      document.getElementById('sec_4').innerHTML = "";
+
+      renderizarSeccion('sec_1', MAYOR_SEC_1, 's1');
+      renderizarSeccion('sec_2', MAYOR_SEC_2, 's2');
+      renderizarSeccion('sec_3', MAYOR_SEC_3, 's3');
+    }
   }
 
   function renderizarSeccion(contenedorId, listaItems, prefijo) {
@@ -277,7 +379,7 @@
       const html = `
         <div class="check-item">
           <label for="${fieldId}">${item}:</label>
-          <select id="${fieldId}" class="select-estado bueno" onchange="actualizarColorSelect(this)">
+          <select id="${fieldId}" class="select-estado bueno" data-nombre="${item}" onchange="actualizarColorSelect(this)">
             <option value="BUENO" class="bueno" selected>BUENO</option>
             <option value="REGULAR" class="bueno">REGULAR</option>
             <option value="MALO" class="malo">MALO</option>
@@ -302,66 +404,76 @@
   }
 
   function guardarSituacionVehicular() {
-    const novedadesExterior = [];
-    const novedadesInterior = [];
-    const novedadesMotor = [];
+    const tipoFormato = document.getElementById('select_tipo_formato').value;
+    const novedadesSec1 = [];
+    const novedadesSec2 = [];
+    const novedadesSec3 = [];
+    const novedadesSec4 = [];
 
-    const recopilarDatosGroup = (listaItems, prefijo, listaDestino) => {
-      listaItems.forEach((item, index) => {
-        const el = document.getElementById(`sv_${prefijo}_${index}`);
-        if (el && el.value !== 'BUENO') {
-          listaDestino.push(`${item}: ${el.value}`);
+    const recopilarDatosGroup = (contenedorId, listaDestino) => {
+      const selects = document.querySelectorAll(`#${contenedorId} select`);
+      selects.forEach(el => {
+        const nombre = el.getAttribute('data-nombre') || 'ITEM';
+        if (el.value !== 'BUENO') {
+          listaDestino.push(`${nombre}: ${el.value}`);
         }
       });
     };
 
-    recopilarDatosGroup(ITEMS_EXTERIOR, 'ext', novedadesExterior);
-    recopilarDatosGroup(ITEMS_INTERIOR, 'int', novedadesInterior);
-    recopilarDatosGroup(ITEMS_MOTOR, 'mot', novedadesMotor);
+    recopilarDatosGroup('sec_1', novedadesSec1);
+    recopilarDatosGroup('sec_2', novedadesSec2);
+    recopilarDatosGroup('sec_3', novedadesSec3);
+    if (tipoFormato === 'MENOR') {
+      recopilarDatosGroup('sec_4', novedadesSec4);
+    }
 
     const nivelGas = document.getElementById('combustible_nivel').value;
     const obsText = document.getElementById('observaciones_situacion').value.trim();
 
-    let resultadoFinalTexto = `NIVEL DE COMBUSTIBLE: ${nivelGas}.\n\n`;
+    let resultadoFinalTexto = `FORMATO: ACTA DE SITUACIÓN VEHICULAR (${tipoFormato === 'MENOR' ? 'VEHÍCULO MENOR' : 'VEHÍCULO MAYOR'}).\n`;
+    resultadoFinalTexto += `NIVEL DE COMBUSTIBLE: ${nivelGas}.\n\n`;
 
-    if (novedadesExterior.length > 0) {
-      resultadoFinalTexto += `I. PARTE EXTERIOR (NOVEDADES):\n- ` + novedadesExterior.join('\n- ') + `\n\n`;
-    } else {
-      resultadoFinalTexto += `I. PARTE EXTERIOR: En buen estado de conservación.\n\n`;
-    }
+    const tit1Text = document.getElementById('tit_sec_1').innerText;
+    const tit2Text = document.getElementById('tit_sec_2').innerText;
+    const tit3Text = document.getElementById('tit_sec_3').innerText;
 
-    if (novedadesInterior.length > 0) {
-      resultadoFinalTexto += `II. PARTE INTERIOR (NOVEDADES):\n- ` + novedadesInterior.join('\n- ') + `\n\n`;
-    } else {
-      resultadoFinalTexto += `II. PARTE INTERIOR: En buen estado de conservación.\n\n`;
+    resultadoFinalTexto += `${tit1Text}:\n` + (novedadesSec1.length > 0 ? `- ${novedadesSec1.join('\n- ')}` : `En buen estado.`) + `\n\n`;
+    resultadoFinalTexto += `${tit2Text}:\n` + (novedadesSec2.length > 0 ? `- ${novedadesSec2.join('\n- ')}` : `En buen estado.`) + `\n\n`;
+    resultadoFinalTexto += `${tit3Text}:\n` + (novedadesSec3.length > 0 ? `- ${novedadesSec3.join('\n- ')}` : `En buen estado.`) + `\n\n`;
+
+    if (tipoFormato === 'MENOR') {
+      const tit4Text = document.getElementById('tit_sec_4').innerText;
+      resultadoFinalTexto += `${tit4Text}:\n` + (novedadesSec4.length > 0 ? `- ${novedadesSec4.join('\n- ')}` : `En buen estado.`) + `\n\n`;
     }
 
     if (obsText) {
-      resultadoFinalTexto += `III. OTROS / OBSERVACIONES:\n${obsText}\n\n`;
+      resultadoFinalTexto += `OBSERVACIONES / DAÑOS VISIBLES:\n${obsText}`;
     } else {
-      resultadoFinalTexto += `III. OTROS: Sin observaciones adicionales.\n\n`;
-    }
-
-    if (novedadesMotor.length > 0) {
-      resultadoFinalTexto += `IV. MOTOR (NOVEDADES):\n- ` + novedadesMotor.join('\n- ');
-    } else {
-      resultadoFinalTexto += `IV. MOTOR: Componentes completos y en buen estado.`;
+      resultadoFinalTexto += `OBSERVACIONES: Sin observaciones adicionales.`;
     }
 
     // Guardar resultado y banderilla de retorno en localStorage
     localStorage.setItem('pnp_acta_situacion_vehicular_resultado', resultadoFinalTexto);
     localStorage.setItem('pnp_retorno_etapa_vehiculo', 'true');
 
-    // Guardar estado individual de cada combo para restaurar en futuras ediciones
-    const estadoFormSV = {};
+    // Guardar estado completo de inputs para restaurar en futuras ediciones
+    const estadoFormSV = {
+      tipo_formato: tipoFormato,
+      combustible_nivel: nivelGas,
+      observaciones_situacion: obsText,
+      valores_items: {}
+    };
+
     document.querySelectorAll('select[id^="sv_"]').forEach(sel => {
-      estadoFormSV[sel.id] = sel.value;
+      const nombre = sel.getAttribute('data-nombre');
+      if (nombre) {
+        estadoFormSV.valores_items[nombre] = sel.value;
+      }
     });
-    estadoFormSV['combustible_nivel'] = nivelGas;
-    estadoFormSV['observaciones_situacion'] = obsText;
+
     localStorage.setItem('pnp_sv_estado_formulario', JSON.stringify(estadoFormSV));
 
-    alert("✅ Inspección del Acta de Situación Vehicular guardada con éxito.");
+    alert(`✅ Inspección del Acta de Situación Vehicular (${tipoFormato === 'MENOR' ? 'Vehículo Menor' : 'Vehículo Mayor'}) guardada con éxito.`);
     window.location.href = 'formulario.html';
   }
 
@@ -370,14 +482,24 @@
     if (!raw) return;
     try {
       const estado = JSON.parse(raw);
-      for (let key in estado) {
-        const el = document.getElementById(key);
-        if (el) {
-          el.value = estado[key];
-          if (el.tagName === 'SELECT' && key !== 'combustible_nivel') {
-            actualizarColorSelect(el);
+      if (estado.tipo_formato) {
+        document.getElementById('select_tipo_formato').value = estado.tipo_formato;
+        cambiarFormatoTipoVehiculo(estado.tipo_formato);
+      }
+      if (estado.combustible_nivel) {
+        document.getElementById('combustible_nivel').value = estado.combustible_nivel;
+      }
+      if (estado.observaciones_situacion !== undefined) {
+        document.getElementById('observaciones_situacion').value = estado.observaciones_situacion;
+      }
+      if (estado.valores_items) {
+        document.querySelectorAll('select[id^="sv_"]').forEach(sel => {
+          const nombre = sel.getAttribute('data-nombre');
+          if (nombre && estado.valores_items[nombre]) {
+            sel.value = estado.valores_items[nombre];
+            actualizarColorSelect(sel);
           }
-        }
+        });
       }
     } catch(e){}
   }
