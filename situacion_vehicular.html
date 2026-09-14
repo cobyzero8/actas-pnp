@@ -336,7 +336,7 @@
   <!-- RESULTADO GENERAL CONSOLIDADO EN TEXTO DE LOS 4 LADOS -->
   <div style="margin-top: 20px;">
     <div style="font-size: 13px; font-weight: bold; color: var(--pnp-blue); margin-bottom: 6px;">
-      📄 RESULTADO CONSOLIDADO DEL ACTA (GENERAL Y POR LADOS):
+      📄 RESULTADO CONSOLIDADO DEL INVENTARIO Y DESTELLO POR VISTAS:
     </div>
     <div class="output-box" id="salida_narrativa">Generando reporte vehicular consolidado...</div>
   </div>
@@ -484,33 +484,6 @@
   let estadoActualVehiculo = null;
   let vistaActiva = 'frente';
 
-  function obtenerDatosGenerales() {
-    const guardados = localStorage.getItem('pnp_datos_generales');
-    return guardados ? JSON.parse(guardados) : {
-      distrito: "HUANTA",
-      provincia: "HUANTA",
-      region: "AYACUCHO",
-      hora: "10:30",
-      dia: new Date().getDate().toString(),
-      mes: "SEPTIEMBRE",
-      anio: "2026",
-      instalaciones: "COMISARÍA PNP HUANTA",
-      conductor_nombre: "______________________",
-      conductor_dni: "________",
-      conductor_licencia: "________",
-      conductor_licencia_categoria: "____",
-      motivo_intervencion: "OPERATIVO POLICIAL",
-      placa: "________",
-      clase_vehiculo: "TRIMOVIL",
-      marca: "________",
-      modelo: "________",
-      color: "________",
-      anio_fab: "________",
-      num_motor: "________",
-      num_chasis: "________"
-    };
-  }
-
   function cambiarCategoria() {
     const cat = document.getElementById('sel_categoria').value;
     const selModelo = document.getElementById('sel_modelo');
@@ -628,7 +601,6 @@
   }
 
   function actualizarNarrativaTexto() {
-    const dg = obtenerDatosGenerales();
     let todas = [];
     let desglosePorVista = "";
 
@@ -653,26 +625,13 @@
     const txtObsElem = document.getElementById('txt_observaciones_vehiculo');
     const obsManuales = txtObsElem ? txtObsElem.value.trim() : "";
 
-    let texto = `ACTA DE SITUACIÓN VEHICULAR (${estadoActualVehiculo.nombre.toUpperCase()})\n`;
-    texto += `========================================================================\n`;
-    texto += `En el Distrito de ${dg.distrito}, Provincia de ${dg.provincia}, Región de ${dg.region}, siendo las ${dg.hora} horas del día ${dg.dia} de ${dg.mes} del ${dg.anio}, en las instalaciones de ${dg.instalaciones}, el efectivo policial interviniente que suscribe, en presencia del conductor y/o propietario:\n\n`;
-    texto += `DATOS DEL INTERVENIDO / CONDUCTOR:\n`;
-    texto += `- Nombres y Apellidos: ${dg.conductor_nombre}\n`;
-    texto += `- DNI / CE: ${dg.conductor_dni} | Licencia de Conducir: ${dg.conductor_licencia} | Cat.: ${dg.conductor_licencia_categoria}\n`;
-    texto += `- Motivo de Intervención: ${dg.motivo_intervencion}\n\n`;
-
-    texto += `I. DATOS DE IDENTIFICACIÓN VEHICULAR:\n`;
-    texto += `- Placa de Rodaje: ${dg.placa} | Clase: ${dg.clase_vehiculo}\n`;
-    texto += `- Marca: ${dg.marca} | Modelo: ${dg.modelo} | Color: ${dg.color}\n`;
-    texto += `- Año Fab.: ${dg.anio_fab} | N° Motor: ${dg.num_motor} | N° Chasis/Serie: ${dg.num_chasis}\n\n`;
-
-    texto += `II. SÍNTESIS GENERAL DE ACCESORIOS:\n`;
+    let texto = `A. SÍNTESIS GENERAL DE ACCESORIOS:\n`;
     texto += `1. BUEN ESTADO CONSERVACIÓN: ${buenos.join(', ') || 'NINGUNO'}.\n`;
     texto += `2. DAÑADOS / DETERIORADOS: ${malos.join(', ') || 'NINGUNO'}.\n`;
     texto += `3. FALTANTES / INEXISTENTES: ${faltantes.join(', ') || 'NINGUNO'}.\n\n`;
 
-    texto += `III. DETALLE DESCRIPTIVO POR VISTAS FOTOGRÁFICAS (4 ÁNGULOS):${desglosePorVista}\n`;
-    texto += `IV. OBSERVACIONES Y OTROS DETALLES:\n${obsManuales || 'SIN OBSERVACIONES ADICIONALES.'}`;
+    texto += `B. DETALLE DESCRIPTIVO POR VISTAS FOTOGRÁFICAS (4 ÁNGULOS):${desglosePorVista}\n`;
+    texto += `C. OBSERVACIONES Y OTROS DETALLES:\n${obsManuales || 'SIN OBSERVACIONES ADICIONALES.'}`;
 
     document.getElementById('salida_narrativa').innerText = texto;
   }
