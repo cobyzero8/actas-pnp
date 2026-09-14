@@ -3,674 +3,384 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prototipo - Acta de Situación Vehicular PNP</title>
+  <title>Acta de Situación Vehicular - PNP</title>
+  <link rel="stylesheet" href="css/styles.css">
   <style>
-    :root {
-      --pnp-blue: #003366;
-      --pnp-dark: #0f172a;
-      --st-bueno: #16a34a;
-      --st-malo: #d97706;
-      --st-faltante: #dc2626;
-    }
-
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: #f1f5f9;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       margin: 0;
       padding: 15px;
-      color: #334155;
     }
-
-    .container {
-      max-width: 980px;
+    .sv-container {
+      max-width: 1100px;
       margin: 0 auto;
       background: #ffffff;
       border-radius: 10px;
       padding: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
-
-    .header-bar {
+    .sv-header {
+      background: #003366;
+      color: #ffffff;
+      padding: 15px 20px;
+      border-radius: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 2px solid var(--pnp-blue);
-      padding-bottom: 10px;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
-
-    .header-bar h2 {
+    .sv-header h2 {
       margin: 0;
-      color: var(--pnp-blue);
       font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-
-    .grid-selectores {
+    .info-card {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 12px 15px;
+      margin-bottom: 20px;
+    }
+    .info-card h4 {
+      margin: 0 0 10px 0;
+      color: #1e40af;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+    .grid-info {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 15px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      font-size: 12px;
+    }
+    .grid-info div span {
+      font-weight: bold;
+      color: #334155;
+    }
+    .section-title {
       background: #f8fafc;
+      border-left: 4px solid #0284c7;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #0369a1;
+      text-transform: uppercase;
+      margin: 20px 0 10px 0;
+      border-radius: 0 6px 6px 0;
+    }
+    .grid-check {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 10px;
+    }
+    .check-item {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      padding: 8px 10px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      transition: background-color 0.15s ease;
+    }
+    .check-item:hover {
+      background-color: #f8fafc;
+    }
+    .check-item label {
+      cursor: pointer;
+      font-weight: 600;
+      color: #1e293b;
+      flex: 1;
+      text-transform: uppercase;
+    }
+    .select-estado {
+      padding: 4px 8px;
+      font-size: 11px;
+      border-radius: 4px;
+      border: 1px solid #94a3b8;
+      font-weight: bold;
+    }
+    .select-estado.bueno { color: #166534; background: #f0fdf4; }
+    .select-estado.malo { color: #991b1b; background: #fef2f2; }
+    .select-estado.falta { color: #854d0e; background: #fefce8; }
+
+    .fuel-gauge-container {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      background: #fffbeb;
+      border: 1px solid #fde047;
       padding: 12px;
       border-radius: 8px;
-      border: 1px solid #e2e8f0;
+      margin-bottom: 15px;
     }
-
-    .select-box label {
+    .fuel-gauge-container label {
       font-size: 12px;
       font-weight: bold;
-      color: var(--pnp-dark);
-      display: block;
-      margin-bottom: 4px;
+      color: #9a3412;
     }
-
-    .select-box select {
-      width: 100%;
-      padding: 8px;
-      border: 1.5px solid #0284c7;
+    .btn-action {
+      padding: 10px 20px;
       border-radius: 6px;
       font-size: 13px;
-      font-weight: 500;
-    }
-
-    .vistas-tabs {
-      display: flex;
-      gap: 6px;
-      justify-content: center;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
-
-    .btn-tab {
-      background: #e2e8f0;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: bold;
-      cursor: pointer;
-      color: #475569;
-      transition: all 0.2s ease;
-    }
-
-    .btn-tab.active {
-      background: var(--pnp-blue);
-      color: #ffffff;
-      box-shadow: 0 2px 5px rgba(0,51,102,0.3);
-    }
-
-    .inspection-layout {
-      display: grid;
-      grid-template-columns: 380px 1fr;
-      gap: 16px;
-      align-items: start;
-    }
-
-    @media (max-width: 768px) {
-      .inspection-layout { grid-template-columns: 1fr; }
-    }
-
-    .viewscreen-box {
-      position: relative;
-      width: 100%;
-      height: 280px;
-      background: #1e293b;
-      border-radius: 8px;
-      overflow: hidden;
-      border: 2px solid #cbd5e1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .viewscreen-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-
-    .placeholder-msg {
-      color: #94a3b8;
-      font-size: 12px;
-      text-align: center;
-      padding: 20px;
-    }
-
-    .hotspot {
-      position: absolute;
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      color: #ffffff;
-      font-size: 11px;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 0 0 2px rgba(255,255,255,0.9), 0 2px 6px rgba(0,0,0,0.4);
-      transform: translate(-50%, -50%);
-      transition: transform 0.15s ease, background 0.2s ease;
-      user-select: none;
-    }
-
-    .hotspot:hover { transform: translate(-50%, -50%) scale(1.2); }
-    .hotspot.BUENO { background: var(--st-bueno); }
-    .hotspot.MALO { background: var(--st-malo); }
-    .hotspot.FALTANTE { background: var(--st-faltante); }
-
-    .checklist-box {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 12px;
-      max-height: 380px;
-      overflow-y: auto;
-    }
-
-    .item-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 10px;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      margin-bottom: 6px;
-      font-size: 12px;
-    }
-
-    .badge-btn {
-      padding: 4px 10px;
-      border-radius: 4px;
-      border: none;
-      color: #ffffff;
-      font-size: 11px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .badge-btn.BUENO { background: var(--st-bueno); }
-    .badge-btn.MALO { background: var(--st-malo); }
-    .badge-btn.FALTANTE { background: var(--st-faltante); }
-
-    .upload-bar {
-      margin-top: 8px;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .btn-upload {
-      background: #0284c7;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 5px;
-      font-size: 11px;
       font-weight: bold;
       cursor: pointer;
       border: none;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
+      transition: transform 0.1s ease, opacity 0.2s ease;
     }
+    .btn-action:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-save { background: #166534; color: white; }
+    .btn-back { background: #64748b; color: white; text-decoration: none; }
 
-    .ia-section {
-      margin-top: 15px;
-      background: #eff6ff;
-      border: 1.5px dashed #3b82f6;
-      border-radius: 8px;
-      padding: 12px;
-    }
-
-    .output-box {
-      margin-top: 15px;
-      background: var(--pnp-dark);
-      color: #38bdf8;
-      padding: 16px;
-      border-radius: 8px;
-      font-family: monospace;
-      font-size: 12px;
-      white-space: pre-wrap;
-      line-height: 1.6;
-      border: 1px solid #334155;
-    }
-
-    .btn-action {
-      background: var(--st-bueno);
-      color: #fff;
-      border: none;
-      padding: 12px 16px;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 14px;
-      cursor: pointer;
+    .obs-textarea {
       width: 100%;
-      margin-top: 15px;
+      box-sizing: border-box;
+      padding: 10px;
+      font-size: 13px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 6px;
+      min-height: 90px;
+      resize: vertical;
+      margin-top: 8px;
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="header-bar">
-    <h2>Catálogo e Inspección de Situación Vehicular PNP</h2>
-    <a href="formulario.html" style="text-decoration: none; font-size: 12px; color: var(--pnp-blue); font-weight: bold;">← Volver al Formulario</a>
-  </div>
-
-  <div class="grid-selectores">
-    <div class="select-box">
-      <label>1. Categoría de Vehículo:</label>
-      <select id="sel_categoria" onchange="cambiarCategoria()">
-        <option value="menor">Vehículo Menor (Mototaxi / Moto Lineal / Trimovil)</option>
-        <option value="mayor">Vehículo Mayor (Auto / Camioneta / Combi)</option>
-      </select>
-    </div>
-    <div class="select-box">
-      <label>2. Modelo / Tipo Específico:</label>
-      <select id="sel_modelo" onchange="cargarVehiculoModelo()"></select>
-    </div>
-  </div>
-
-  <div class="vistas-tabs" id="contenedor_tabs">
-    <button type="button" class="btn-tab active" onclick="cambiarVista('frente')">📸 1. Frente</button>
-    <button type="button" class="btn-tab" onclick="cambiarVista('perfil_izq')">📸 2. Lado Izquierdo</button>
-    <button type="button" class="btn-tab" onclick="cambiarVista('perfil_der')">📸 3. Lado Derecho</button>
-    <button type="button" class="btn-tab" onclick="cambiarVista('posterior')">📸 4. Posterior</button>
-  </div>
-
-  <div class="inspection-layout">
+<div class="sv-container">
+  <div class="sv-header">
     <div>
-      <div class="viewscreen-box" id="viewscreen">
-        <img id="img_vehiculo" src="" alt="" style="display:none;">
-        <div id="placeholder_text" class="placeholder-msg">
-          📷 Haz clic en el botón de abajo para <strong>Tomar Foto</strong> o <strong>Subir Imagen</strong> de esta vista.
-        </div>
-        <div id="hotspots_layer"></div>
-      </div>
-
-      <div class="upload-bar">
-        <label class="btn-upload">
-          📷 Cargar / Capturar Foto de este Ángulo
-          <input type="file" id="input_foto_vista" accept="image/*" capture="environment" style="display:none;" onchange="procesarFotoSubida(this)">
-        </label>
-        <span id="label_foto_estado" style="font-size: 11px; color: #64748b;">(Sin foto real)</span>
-      </div>
-
-      <div style="font-size: 11px; color: #64748b; text-align: center; margin-top: 8px;">
-        💡 Cambia estados tocando la foto o lista: 
-        <strong style="color:var(--st-bueno);">BUENO</strong> ➔ 
-        <strong style="color:var(--st-malo);">MALO</strong> ➔ 
-        <strong style="color:var(--st-faltante);">FALTANTE</strong>
-      </div>
+      <h2>🚗 ACTA DE SITUACIÓN VEHICULAR (INSPECCIÓN TÉCNICA PNP)</h2>
+      <span style="font-size: 11px; opacity: 0.85;">Policía Nacional del Perú - Formato Oficial de Inventario</span>
     </div>
+    <a href="formulario.html" onclick="notificarRegreso()" class="btn-action btn-back">⬅️ Volver al Formulario</a>
+  </div>
 
-    <div class="checklist-box">
-      <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px; color: var(--pnp-dark);">
-        📋 Componentes de la Vista Activa:
-      </div>
-      <div id="lista_componentes"></div>
+  <!-- RESUMEN DE DATOS DEL VEHÍCULO Y CONDUCTOR -->
+  <div class="info-card">
+    <h4>📋 DATOS GENERALES DEL VEHÍCULO E INTERVENIDO</h4>
+    <div class="grid-info">
+      <div><span>Placa:</span> <span id="lbl_placa" style="color: #2563eb;">-</span></div>
+      <div><span>Clase:</span> <span id="lbl_clase">-</span></div>
+      <div><span>Marca / Modelo:</span> <span id="lbl_marca_modelo">-</span></div>
+      <div><span>Color:</span> <span id="lbl_color">-</span></div>
+      <div><span>N° Motor:</span> <span id="lbl_motor">-</span></div>
+      <div><span>N° Chasis/Serie:</span> <span id="lbl_chasis">-</span></div>
+      <div><span>Conductor:</span> <span id="lbl_conductor" style="color: #991b1b;">-</span></div>
+      <div><span>DNI / Licencia:</span> <span id="lbl_dni_licencia">-</span></div>
     </div>
   </div>
 
-  <div class="ia-section">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <div>
-        <strong style="font-size: 13px; color: #1e40af;">🧠 Diagnóstico de Fotos por IA (Gemini Vision)</strong>
-        <p style="font-size: 11px; margin: 2px 0 0 0; color: #3b82f6;">Analiza las imágenes registradas y actualiza automáticamente los 4 sectores del vehículo.</p>
-      </div>
-      <button type="button" onclick="ejecutarAnalisisIA()" style="background:#2563eb; color:white; border:none; padding:8px 14px; border-radius:5px; font-size:11px; font-weight:bold; cursor:pointer;">
-        ⚡ Escanear Fotos
+  <!-- Nivel de Combustible -->
+  <div class="fuel-gauge-container">
+    <label>⛽ NIVEL DE COMBUSTIBLE EN TANQUE:</label>
+    <select id="combustible_nivel" class="select-estado" style="font-size: 12px; padding: 6px 10px;">
+      <option value="RESERVA (R)">RESERVA (R)</option>
+      <option value="1/4 DE TANQUE">1/4 DE TANQUE</option>
+      <option value="1/2 TANQUE" selected>1/2 TANQUE</option>
+      <option value="3/4 DE TANQUE">3/4 DE TANQUE</option>
+      <option value="TANQUE LLENO (1/1)">TANQUE LLENO (1/1)</option>
+      <option value="NO ESPECIFICA / INOPERATIVO">NO ESPECIFICA / INOPERATIVO</option>
+    </select>
+  </div>
+
+  <form id="situacionVehicularForm">
+
+    <!-- I. PARTE EXTERIOR -->
+    <div class="section-title">🚘 I. PARTE EXTERIOR</div>
+    <div class="grid-check" id="sec_exterior"></div>
+
+    <!-- II. PARTE INTERIOR -->
+    <div class="section-title">💺 II. PARTE INTERIOR</div>
+    <div class="grid-check" id="sec_interior"></div>
+
+    <!-- III. OTROS / ACCESORIOS Y HERRAMIENTAS -->
+    <div class="section-title">📝 III. OTROS (OBSERVACIONES, HERRAMIENTAS Y ACCESORIOS ADICIONALES)</div>
+    <textarea id="observaciones_situacion" class="obs-textarea" placeholder="Especifique accesorios adicionales, estado general, rayaduras, abolladuras o detalles no contemplados en la lista anterior..."></textarea>
+
+    <!-- IV. MOTOR -->
+    <div class="section-title">⚙️ IV. MOTOR</div>
+    <div class="grid-check" id="sec_motor"></div>
+
+    <div style="margin-top: 25px; display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #e2e8f0; padding-top: 15px;">
+      <a href="formulario.html" onclick="notificarRegreso()" class="btn-action btn-back">⬅️ Cancelar / Volver</a>
+      <button type="button" onclick="guardarSituacionVehicular()" class="btn-action btn-save" style="font-size: 14px; padding: 12px 24px;">
+        💾 Guardar Situación Vehicular y Volver
       </button>
     </div>
-  </div>
 
-  <!-- CAMPO DE OBSERVACIONES ADICIONALES -->
-  <div style="margin-top: 15px;">
-    <label style="font-size: 13px; font-weight: bold; color: var(--pnp-blue); display: block; margin-bottom: 6px;">
-      ✏️ OBSERVACIONES / OTROS DETALLES DEL VEHÍCULO:
-    </label>
-    <textarea id="txt_observaciones_vehiculo" rows="3" oninput="actualizarNarrativaTexto()" placeholder="Ingrese observaciones adicionales como rayaduras, abolladuras, accesorios extras, estado del motor o detalles específicos..." style="width: 100%; box-sizing: border-box; padding: 10px; font-size: 12px; border-radius: 6px; border: 1.5px solid #0284c7; font-family: inherit; resize: vertical;"></textarea>
-  </div>
-
-  <!-- RESULTADO GENERAL CONSOLIDADO EN TEXTO DE LOS 4 LADOS -->
-  <div style="margin-top: 20px;">
-    <div style="font-size: 13px; font-weight: bold; color: var(--pnp-blue); margin-bottom: 6px;">
-      📄 RESULTADO CONSOLIDADO DEL INVENTARIO Y DESTELLO POR VISTAS:
-    </div>
-    <div class="output-box" id="salida_narrativa">Generando reporte vehicular consolidado...</div>
-  </div>
-
-  <button type="button" class="btn-action" onclick="guardarYRetornar()">
-    💾 Guardar Situación Vehicular y Transferir al Formulario Principal
-  </button>
+  </form>
 </div>
 
 <script>
-  const BASE_VEHICULOS = {
-    menor: [
-      {
-        id: "mototaxi_bajaj",
-        nombre: "Mototaxi Bajaj / Trimovil RE",
-        vistas: {
-          frente: {
-            nombreVista: "VISTA DELANTERA / FRENTE",
-            fotoBase64: null,
-            partes: [
-              { id: "p1", nombre: "Parabrisas y Limpiaparabrisas", x: 50, y: 32, estado: "BUENO" },
-              { id: "p2", nombre: "Faro Principal Delantero", x: 38, y: 55, estado: "BUENO" },
-              { id: "p3", nombre: "Espejo Retrovisor Izquierdo", x: 25, y: 24, estado: "BUENO" },
-              { id: "p4", nombre: "Espejo Retrovisor Derecho", x: 75, y: 24, estado: "BUENO" },
-              { id: "p5", nombre: "Neumático Delantero", x: 50, y: 85, estado: "BUENO" }
-            ]
-          },
-          perfil_izq: {
-            nombreVista: "VISTA LADO IZQUIERDO",
-            fotoBase64: null,
-            partes: [
-              { id: "p6", nombre: "Carpa / Toldo Lateral Izquierdo", x: 45, y: 35, estado: "BUENO" },
-              { id: "p7", nombre: "Puerta / Lona de Ingreso", x: 40, y: 55, estado: "BUENO" },
-              { id: "p8", nombre: "Neumático Posterior Izquierdo", x: 75, y: 78, estado: "BUENO" }
-            ]
-          },
-          perfil_der: {
-            nombreVista: "VISTA LADO DERECHO",
-            fotoBase64: null,
-            partes: [
-              { id: "p9", nombre: "Llanta de Repuesto Exterior", x: 50, y: 50, estado: "FALTANTE" },
-              { id: "p10", nombre: "Neumático Posterior Derecho", x: 75, y: 78, estado: "BUENO" }
-            ]
-          },
-          posterior: {
-            nombreVista: "VISTA POSTERIOR / TRASERA",
-            fotoBase64: null,
-            partes: [
-              { id: "p11", nombre: "Faros Posteriores y Frenos", x: 30, y: 65, estado: "BUENO" },
-              { id: "p12", nombre: "Placa de Rodaje Posterior", x: 50, y: 70, estado: "BUENO" },
-              { id: "p13", nombre: "Tubo de Escape", x: 70, y: 82, estado: "BUENO" }
-            ]
-          }
-        }
-      },
-      {
-        id: "moto_lineal",
-        nombre: "Motocicleta Lineal",
-        vistas: {
-          frente: {
-            nombreVista: "VISTA DELANTERA / FRENTE",
-            fotoBase64: null,
-            partes: [
-              { id: "m1", nombre: "Faro Delantero y Direccionales", x: 50, y: 35, estado: "BUENO" },
-              { id: "m2", nombre: "Manillar y Manijas de Freno", x: 35, y: 25, estado: "BUENO" },
-              { id: "m3", nombre: "Tablero de Instrumentos", x: 50, y: 22, estado: "BUENO" },
-              { id: "m4", nombre: "Neumático Delantero", x: 50, y: 75, estado: "BUENO" }
-            ]
-          },
-          perfil_izq: {
-            nombreVista: "VISTA LADO IZQUIERDO",
-            fotoBase64: null,
-            partes: [
-              { id: "m5", nombre: "Tanque de Gasolina", x: 45, y: 38, estado: "BUENO" },
-              { id: "m6", nombre: "Asiento / Cojín", x: 65, y: 38, estado: "BUENO" },
-              { id: "m7", nombre: "Cadena y Transmisión", x: 70, y: 72, estado: "BUENO" }
-            ]
-          },
-          perfil_der: {
-            nombreVista: "VISTA LADO DERECHO",
-            fotoBase64: null,
-            partes: [
-              { id: "m8", nombre: "Tubo de Escape / Silenciador", x: 70, y: 68, estado: "BUENO" },
-              { id: "m9", nombre: "Pedal de Freno Posterior", x: 50, y: 65, estado: "BUENO" }
-            ]
-          },
-          posterior: {
-            nombreVista: "VISTA POSTERIOR / TRASERA",
-            fotoBase64: null,
-            partes: [
-              { id: "m10", nombre: "Faro Posterior Rojo de Freno", x: 50, y: 40, estado: "BUENO" },
-              { id: "m11", nombre: "Neumático Posterior", x: 50, y: 78, estado: "BUENO" }
-            ]
-          }
-        }
-      }
-    ],
-    mayor: [
-      {
-        id: "auto_sedan",
-        nombre: "Automóvil / Sedan",
-        vistas: {
-          frente: {
-            nombreVista: "VISTA DELANTERA / FRENTE",
-            fotoBase64: null,
-            partes: [
-              { id: "a1", nombre: "Parabrisas Delantero", x: 50, y: 30, estado: "BUENO" },
-              { id: "a2", nombre: "Capot y Motor", x: 50, y: 55, estado: "BUENO" },
-              { id: "a3", nombre: "Faros Principales (Par)", x: 25, y: 58, estado: "BUENO" },
-              { id: "a4", nombre: "Parachoque Delantero", x: 50, y: 75, estado: "BUENO" }
-            ]
-          },
-          perfil_izq: {
-            nombreVista: "VISTA LADO IZQUIERDO",
-            fotoBase64: null,
-            partes: [
-              { id: "a5", nombre: "Espejo Lateral Izquierdo", x: 30, y: 40, estado: "BUENO" },
-              { id: "a6", nombre: "Ventanas Laterales Left", x: 50, y: 35, estado: "BUENO" },
-              { id: "a7", nombre: "Neumático Delantero Izq", x: 25, y: 70, estado: "BUENO" },
-              { id: "a8", nombre: "Neumático Posterior Izq", x: 75, y: 70, estado: "BUENO" }
-            ]
-          },
-          perfil_der: {
-            nombreVista: "VISTA LADO DERECHO",
-            fotoBase64: null,
-            partes: [
-              { id: "a9", nombre: "Espejo Lateral Derecho", x: 30, y: 40, estado: "BUENO" },
-              { id: "a10", nombre: "Tapa de Tanque de Combustible", x: 80, y: 50, estado: "BUENO" }
-            ]
-          },
-          posterior: {
-            nombreVista: "VISTA POSTERIOR / TRASERA",
-            fotoBase64: null,
-            partes: [
-              { id: "a11", nombre: "Maletero Posterior", x: 50, y: 45, estado: "BUENO" },
-              { id: "a12", nombre: "Faros Posteriores", x: 25, y: 50, estado: "BUENO" },
-              { id: "a13", nombre: "Placa de Rodaje", x: 50, y: 65, estado: "BUENO" }
-            ]
-          }
-        }
-      }
-    ]
-  };
+  // LISTA OFICIAL PNP SEGÚN ACTA DE SITUACIÓN VEHICULAR
+  const ITEMS_EXTERIOR = [
+    "FARO GRANDE DELT", "INTERMITENTES", "FAROS POSTERIORES", "BISELES",
+    "LIMPIA PARABRISA", "PARABRISAS", "LUNAS", "ESPEJO EXTERIOR",
+    "ANTENAS", "PARACHOQUES", "LLANTAS", "LLANTAS DE REPUESTO"
+  ];
 
-  let estadoActualVehiculo = null;
-  let vistaActiva = 'frente';
+  const ITEMS_INTERIOR = [
+    "TABLERO", "CHAPA CONTACTO", "RADIO MUSICAL", "ENCENDEDOR",
+    "PISOS", "MANIJAS", "CENICEROS", "VASOS",
+    "PARASOLES", "CHAPAS", "CODERAS", "GATA",
+    "LLAVE DE RUEDA", "PARLANTES", "ESPEJO INTERIOR", "ASIENTOS"
+  ];
 
-  function cambiarCategoria() {
-    const cat = document.getElementById('sel_categoria').value;
-    const selModelo = document.getElementById('sel_modelo');
-    selModelo.innerHTML = "";
-    
-    BASE_VEHICULOS[cat].forEach(item => {
-      selModelo.innerHTML += `<option value="${item.id}">${item.nombre}</option>`;
-    });
+  const ITEMS_MOTOR = [
+    "BATERIA", "RADIADOR", "ARRANCADOR", "ALTERNADOR",
+    "CARBURADOR", "PURIFICADOR", "DISTRIBUIDOR", "BOBINA",
+    "TAPA DE ACEITE", "BUJÍAS", "CHICOTES", "VARILLA ACEITE"
+  ];
 
-    cargarVehiculoModelo();
+  document.addEventListener('DOMContentLoaded', () => {
+    cargarDatosGenerales();
+    renderizarSeccion('sec_exterior', ITEMS_EXTERIOR, 'ext');
+    renderizarSeccion('sec_interior', ITEMS_INTERIOR, 'int');
+    renderizarSeccion('sec_motor', ITEMS_MOTOR, 'mot');
+    restaurarEstadoSV();
+  });
+
+  function cargarDatosGenerales() {
+    const rawDatos = localStorage.getItem('pnp_datos_generales');
+    const rawVeh = localStorage.getItem('pnp_lista_vehiculos');
+    const rawInt = localStorage.getItem('pnp_lista_intervenidos');
+
+    let datos = {}, veh = {}, int = {};
+
+    try { if (rawDatos) datos = JSON.parse(rawDatos); } catch(e){}
+    try { if (rawVeh) { const list = JSON.parse(rawVeh); if (list.length > 0) veh = list[0]; } } catch(e){}
+    try { if (rawInt) { const list = JSON.parse(rawInt); if (list.length > 0) int = list[0]; } } catch(e){}
+
+    document.getElementById('lbl_placa').innerText = veh.placa || datos.placa || 'NO REGISTRA';
+    document.getElementById('lbl_clase').innerText = veh.clase_vehiculo || datos.clase_vehiculo || 'TRIMOVIL';
+    document.getElementById('lbl_marca_modelo').innerText = `${veh.marca || datos.marca || 'S/M'} / ${veh.modelo || datos.modelo || 'S/M'}`;
+    document.getElementById('lbl_color').innerText = veh.color || datos.color || 'NO REGISTRA';
+    document.getElementById('lbl_motor').innerText = veh.num_motor || datos.num_motor || 'NO REGISTRA';
+    document.getElementById('lbl_chasis').innerText = veh.num_chasis || datos.num_chasis || 'NO REGISTRA';
+    document.getElementById('lbl_conductor').innerText = int.nombre || datos.conductor_nombre || 'PERSONA EN PROCESO DE IDENTIFICACIÓN';
+    document.getElementById('lbl_dni_licencia').innerText = `DNI: ${int.dni || datos.conductor_dni || 'S/D'} | L/C: ${int.licencia || datos.conductor_licencia || 'S/L'}`;
   }
 
-  function cargarVehiculoModelo() {
-    const cat = document.getElementById('sel_categoria').value;
-    const modeloId = document.getElementById('sel_modelo').value;
-    const modeloBase = BASE_VEHICULOS[cat].find(m => m.id === modeloId);
+  function renderizarSeccion(contenedorId, listaItems, prefijo) {
+    const cont = document.getElementById(contenedorId);
+    cont.innerHTML = "";
 
-    estadoActualVehiculo = JSON.parse(JSON.stringify(modeloBase));
-    vistaActiva = 'frente';
-    renderizarVistasTabs();
-    
-    const obsGuardadas = localStorage.getItem('pnp_obs_vehiculo_texto');
-    if (obsGuardadas && document.getElementById('txt_observaciones_vehiculo')) {
-      document.getElementById('txt_observaciones_vehiculo').value = obsGuardadas;
-    }
-
-    renderizarPantalla();
-  }
-
-  function renderizarVistasTabs() {
-    const btns = document.querySelectorAll('.btn-tab');
-    btns.forEach(btn => btn.classList.remove('active'));
-    
-    const mapaIndices = { frente: 0, perfil_izq: 1, perfil_der: 2, posterior: 3 };
-    if (btns[mapaIndices[vistaActiva]]) {
-      btns[mapaIndices[vistaActiva]].classList.add('active');
-    }
-  }
-
-  function cambiarVista(nombreVista) {
-    vistaActiva = nombreVista;
-    renderizarVistasTabs();
-    renderizarPantalla();
-  }
-
-  function renderizarPantalla() {
-    const datosVista = estadoActualVehiculo.vistas[vistaActiva];
-    const imgElem = document.getElementById('img_vehiculo');
-    const placeholderText = document.getElementById('placeholder_text');
-    const labelEstado = document.getElementById('label_foto_estado');
-
-    if (datosVista.fotoBase64) {
-      imgElem.src = datosVista.fotoBase64;
-      imgElem.style.display = 'block';
-      placeholderText.style.display = 'none';
-      labelEstado.innerText = "✅ Foto registrada";
-      labelEstado.style.color = "#16a34a";
-    } else {
-      imgElem.style.display = 'none';
-      placeholderText.style.display = 'block';
-      labelEstado.innerText = "(Sin foto real)";
-      labelEstado.style.color = "#64748b";
-    }
-
-    const layer = document.getElementById('hotspots_layer');
-    const lista = document.getElementById('lista_componentes');
-    layer.innerHTML = "";
-    lista.innerHTML = "";
-
-    datosVista.partes.forEach((parte, index) => {
-      const hs = document.createElement('div');
-      hs.className = `hotspot ${parte.estado}`;
-      hs.style.left = `${parte.x}%`;
-      hs.style.top = `${parte.y}%`;
-      hs.innerText = index + 1;
-      hs.title = `${parte.nombre}: ${parte.estado}`;
-      hs.onclick = () => rotarEstadoParte(parte.id);
-      layer.appendChild(hs);
-
-      lista.innerHTML += `
-        <div class="item-row">
-          <span><strong>${index + 1}.</strong> ${parte.nombre}</span>
-          <button type="button" class="badge-btn ${parte.estado}" onclick="rotarEstadoParte('${parte.id}')">
-            ${parte.estado}
-          </button>
+    listaItems.forEach((item, index) => {
+      const fieldId = `sv_${prefijo}_${index}`;
+      const html = `
+        <div class="check-item">
+          <label for="${fieldId}">${item}:</label>
+          <select id="${fieldId}" class="select-estado bueno" onchange="actualizarColorSelect(this)">
+            <option value="BUENO" class="bueno" selected>BUENO</option>
+            <option value="REGULAR" class="bueno">REGULAR</option>
+            <option value="MALO" class="malo">MALO</option>
+            <option value="FALTA" class="falta">FALTA</option>
+          </select>
         </div>
       `;
+      cont.insertAdjacentHTML('beforeend', html);
     });
-
-    actualizarNarrativaTexto();
   }
 
-  function procesarFotoSubida(input) {
-    if (!input.files || !input.files[0]) return;
-    const file = input.files[0];
-    const reader = new FileReader();
+  function actualizarColorSelect(selectElem) {
+    selectElem.className = 'select-estado';
+    const val = selectElem.value;
+    if (val.includes('BUENO') || val.includes('REGULAR')) selectElem.classList.add('bueno');
+    else if (val.includes('MALO')) selectElem.classList.add('malo');
+    else if (val.includes('FALTA')) selectElem.classList.add('falta');
+  }
 
-    reader.onload = function(e) {
-      estadoActualVehiculo.vistas[vistaActiva].fotoBase64 = e.target.result;
-      renderizarPantalla();
+  function notificarRegreso() {
+    localStorage.setItem('pnp_retorno_etapa_vehiculo', 'true');
+  }
+
+  function guardarSituacionVehicular() {
+    const novedadesExterior = [];
+    const novedadesInterior = [];
+    const novedadesMotor = [];
+
+    const recopilarDatosGroup = (listaItems, prefijo, listaDestino) => {
+      listaItems.forEach((item, index) => {
+        const el = document.getElementById(`sv_${prefijo}_${index}`);
+        if (el && el.value !== 'BUENO') {
+          listaDestino.push(`${item}: ${el.value}`);
+        }
+      });
     };
-    reader.readAsDataURL(file);
-  }
 
-  function rotarEstadoParte(parteId) {
-    const datosVista = estadoActualVehiculo.vistas[vistaActiva];
-    const parte = datosVista.partes.find(p => p.id === parteId);
-    if (!parte) return;
+    recopilarDatosGroup(ITEMS_EXTERIOR, 'ext', novedadesExterior);
+    recopilarDatosGroup(ITEMS_INTERIOR, 'int', novedadesInterior);
+    recopilarDatosGroup(ITEMS_MOTOR, 'mot', novedadesMotor);
 
-    if (parte.estado === "BUENO") parte.estado = "MALO";
-    else if (parte.estado === "MALO") parte.estado = "FALTANTE";
-    else parte.estado = "BUENO";
+    const nivelGas = document.getElementById('combustible_nivel').value;
+    const obsText = document.getElementById('observaciones_situacion').value.trim();
 
-    renderizarPantalla();
-  }
+    let resultadoFinalTexto = `NIVEL DE COMBUSTIBLE: ${nivelGas}.\n\n`;
 
-  function actualizarNarrativaTexto() {
-    let todas = [];
-    let desglosePorVista = "";
-
-    for (let key in estadoActualVehiculo.vistas) {
-      const v = estadoActualVehiculo.vistas[key];
-      todas = todas.concat(v.partes);
-
-      const bVista = v.partes.filter(p => p.estado === "BUENO").map(p => p.nombre);
-      const mVista = v.partes.filter(p => p.estado === "MALO").map(p => p.nombre);
-      const fVista = v.partes.filter(p => p.estado === "FALTANTE").map(p => p.nombre);
-
-      desglosePorVista += `\n* ${v.nombreVista}:\n`;
-      desglosePorVista += `  - En buen estado: ${bVista.join(', ') || 'NINGUNO'}\n`;
-      if (mVista.length > 0) desglosePorVista += `  - Dañados/Deteriorados: ${mVista.join(', ')}\n`;
-      if (fVista.length > 0) desglosePorVista += `  - Faltantes/Inexistentes: ${fVista.join(', ')}\n`;
+    if (novedadesExterior.length > 0) {
+      resultadoFinalTexto += `I. PARTE EXTERIOR (NOVEDADES):\n- ` + novedadesExterior.join('\n- ') + `\n\n`;
+    } else {
+      resultadoFinalTexto += `I. PARTE EXTERIOR: En buen estado de conservación.\n\n`;
     }
 
-    const buenos = todas.filter(p => p.estado === "BUENO").map(p => p.nombre);
-    const malos = todas.filter(p => p.estado === "MALO").map(p => p.nombre);
-    const faltantes = todas.filter(p => p.estado === "FALTANTE").map(p => p.nombre);
-
-    const txtObsElem = document.getElementById('txt_observaciones_vehiculo');
-    const obsManuales = txtObsElem ? txtObsElem.value.trim() : "";
-
-    let texto = `A. SÍNTESIS GENERAL DE ACCESORIOS:\n`;
-    texto += `1. BUEN ESTADO CONSERVACIÓN: ${buenos.join(', ') || 'NINGUNO'}.\n`;
-    texto += `2. DAÑADOS / DETERIORADOS: ${malos.join(', ') || 'NINGUNO'}.\n`;
-    texto += `3. FALTANTES / INEXISTENTES: ${faltantes.join(', ') || 'NINGUNO'}.\n\n`;
-
-    texto += `B. DETALLE DESCRIPTIVO POR VISTAS FOTOGRÁFICAS (4 ÁNGULOS):${desglosePorVista}\n`;
-    texto += `C. OBSERVACIONES Y OTROS DETALLES:\n${obsManuales || 'SIN OBSERVACIONES ADICIONALES.'}`;
-
-    document.getElementById('salida_narrativa').innerText = texto;
-  }
-
-  function ejecutarAnalisisIA() {
-    let fotosCargadas = 0;
-    for (let key in estadoActualVehiculo.vistas) {
-      if (estadoActualVehiculo.vistas[key].fotoBase64) fotosCargadas++;
+    if (novedadesInterior.length > 0) {
+      resultadoFinalTexto += `II. PARTE INTERIOR (NOVEDADES):\n- ` + novedadesInterior.join('\n- ') + `\n\n`;
+    } else {
+      resultadoFinalTexto += `II. PARTE INTERIOR: En buen estado de conservación.\n\n`;
     }
 
-    if (fotosCargadas === 0) {
-      alert("⚠️ Primero debes tomar o subir al menos 01 foto en cualquiera de las pestañas.");
-      return;
+    if (obsText) {
+      resultadoFinalTexto += `III. OTROS / OBSERVACIONES:\n${obsText}\n\n`;
+    } else {
+      resultadoFinalTexto += `III. OTROS: Sin observaciones adicionales.\n\n`;
     }
 
-    alert(`🤖 Gemini Vision API: Analizando ${fotosCargadas} foto(s) enviada(s)...`);
-    
-    const datosVista = estadoActualVehiculo.vistas[vistaActiva];
-    if (datosVista.partes[0]) datosVista.partes[0].estado = "MALO";
-    if (datosVista.partes[1]) datosVista.partes[1].estado = "FALTANTE";
+    if (novedadesMotor.length > 0) {
+      resultadoFinalTexto += `IV. MOTOR (NOVEDADES):\n- ` + novedadesMotor.join('\n- ');
+    } else {
+      resultadoFinalTexto += `IV. MOTOR: Componentes completos y en buen estado.`;
+    }
 
-    renderizarPantalla();
-    alert("✅ ¡Análisis completado! Se actualizó la narrativa consolidada.");
-  }
+    // Guardar resultado y banderilla de retorno en localStorage
+    localStorage.setItem('pnp_acta_situacion_vehicular_resultado', resultadoFinalTexto);
+    localStorage.setItem('pnp_retorno_etapa_vehiculo', 'true');
 
-  function guardarYRetornar() {
-    const narrativa = document.getElementById('salida_narrativa').innerText;
-    const obsTxt = document.getElementById('txt_observaciones_vehiculo') ? document.getElementById('txt_observaciones_vehiculo').value : "";
-    
-    localStorage.setItem('pnp_acta_situacion_vehicular_resultado', narrativa);
-    localStorage.setItem('pnp_obs_vehiculo_texto', obsTxt);
-    
-    alert("💾 ¡Situación vehicular guardada correctamente!");
+    // Guardar estado individual de cada combo para restaurar en futuras ediciones
+    const estadoFormSV = {};
+    document.querySelectorAll('select[id^="sv_"]').forEach(sel => {
+      estadoFormSV[sel.id] = sel.value;
+    });
+    estadoFormSV['combustible_nivel'] = nivelGas;
+    estadoFormSV['observaciones_situacion'] = obsText;
+    localStorage.setItem('pnp_sv_estado_formulario', JSON.stringify(estadoFormSV));
+
+    alert("✅ Inspección del Acta de Situación Vehicular guardada con éxito.");
     window.location.href = 'formulario.html';
   }
 
-  // Inicialización
-  cambiarCategoria();
+  function restaurarEstadoSV() {
+    const raw = localStorage.getItem('pnp_sv_estado_formulario');
+    if (!raw) return;
+    try {
+      const estado = JSON.parse(raw);
+      for (let key in estado) {
+        const el = document.getElementById(key);
+        if (el) {
+          el.value = estado[key];
+          if (el.tagName === 'SELECT' && key !== 'combustible_nivel') {
+            actualizarColorSelect(el);
+          }
+        }
+      }
+    } catch(e){}
+  }
 </script>
-
 </body>
 </html>
