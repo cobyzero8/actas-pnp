@@ -51,11 +51,11 @@
       box-shadow: 0 2px 4px rgba(0, 51, 102, 0.3);
     }
     .wizard-step-badge.disabled {
-      display: none !important; /* Esconde los pasos no requeridos por el delito/actas */
+      display: none !important;
     }
 
     .etapa-card {
-      display: none; /* Se visualiza únicamente la etapa activa por JS */
+      display: none;
     }
     .etapa-card.active {
       display: block;
@@ -286,6 +286,42 @@
       </button>
       <button type="button" class="btn btn-success" onclick="guardarEspecieModal()" style="width: auto; padding: 8px 14px; font-size: 12px;">
         💾 Guardar Hallazgo
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PARA SELECCIÓN / CONFIRMACIÓN DE HORARIOS DE ACTAS -->
+<div id="modalHoras" class="modal-overlay">
+  <div class="modal-content">
+    <h3 id="modalHorasTitulo" style="margin-top: 0; color: #003366; font-size: 16px;">
+      ⏰ Horario de Acta
+    </h3>
+    <p id="modalHorasSubtitulo" style="font-size: 13px; color: #475569; margin-bottom: 15px;">
+      Especifique la hora de inicio y término para la diligencia:
+    </p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+      <div>
+        <label style="font-size: 12px; font-weight: bold; color: #333; display: block; margin-bottom: 4px;">
+          Hora Inicio:
+        </label>
+        <input type="time" id="modalHoraInicio" style="width: 100%; box-sizing: border-box; padding: 8px; font-size: 14px; border: 1.5px solid #003366; border-radius: 4px; font-weight: bold;">
+      </div>
+      <div>
+        <label style="font-size: 12px; font-weight: bold; color: #333; display: block; margin-bottom: 4px;">
+          Hora Término:
+        </label>
+        <input type="time" id="modalHoraTermino" style="width: 100%; box-sizing: border-box; padding: 8px; font-size: 14px; border: 1.5px solid #003366; border-radius: 4px; font-weight: bold;">
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+      <button type="button" class="btn btn-secondary" onclick="cancelarProcesoHoras()" style="width: auto; padding: 8px 12px; font-size: 12px;">
+        ❌ Cancelar
+      </button>
+      <button type="button" id="btnSiguienteHora" onclick="confirmarHoraActaActual()" class="btn btn-primary" style="width: auto; padding: 8px 16px; font-size: 12px;">
+        Siguiente ➡️
       </button>
     </div>
   </div>
@@ -831,7 +867,6 @@
       if (msgElem) msgElem.style.display = 'block';
     }
 
-    // RETORNO DE SITUACIÓN VEHICULAR: Si la bandera existe, posiciona directamente en Etapa 5
     const vieneDeVehiculos = localStorage.getItem('pnp_retorno_etapa_vehiculo');
     if (vieneDeVehiculos === 'true') {
       localStorage.removeItem('pnp_retorno_etapa_vehiculo');
@@ -849,7 +884,6 @@
     }
   }
 
-  // GESTIÓN DE WIZARD POR ETAPAS
   function adaptarEtapasPorActas(actasConfiguradas, delitoTexto) {
     const texto = delitoTexto.toUpperCase();
     const requiereVehiculos = actasConfiguradas.some(id => 
@@ -913,7 +947,6 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // VENTANA FLOTANTE EMERGENTE (MODAL ESPECIES)
   function abrirEspecieModal(fieldId, fieldLabel) {
     campoEspecieActual = fieldId;
     nombreEspecieActual = fieldLabel;
@@ -983,7 +1016,6 @@
     }
   }
 
-  // FUNCIONES AUXILIARES DE FORMULARIO
   function formatearNombreInvertido(nombre) {
     if (!nombre) return "S/N";
     nombre = nombre.trim();
@@ -1582,7 +1614,6 @@
     txt.focus();
   }
 
-  // MODELOS OFICIALES PNP DE PLANTILLAS
   function cargarModelo01HurtoAgravado() {
     document.getElementById('cant_secciones').value = 3; construirSeccionesNarrativa();
     const hora = getVal('hora_intervencion', '11:20');
