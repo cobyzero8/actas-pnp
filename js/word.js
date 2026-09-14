@@ -372,19 +372,22 @@ function obtenerListaIntervenidosForm() {
   }
 
   const getValSafe = (id) => document.getElementById(id) ? document.getElementById(id).value.trim() : "";
+  const nom = getValSafe('intervenido_nombre') || getValSafe('intervenido_nombre_1');
+  const dniVal = getValSafe('intervenido_dni') || getValSafe('intervenido_dni_1');
+
   return [{
-    nombre: getValSafe('intervenido_nombre') || getValSafe('intervenido_nombre_1'),
-    dni: getValSafe('intervenido_dni') || getValSafe('intervenido_dni_1'),
+    nombre: nom || "PERSONA EN PROCESO DE IDENTIFICACIÓN",
+    dni: dniVal || "S/D",
     licencia: getValSafe('licencia') || getValSafe('licencia_1') || "________",
     categoria_licencia: getValSafe('categoria_licencia') || getValSafe('categoria_licencia_1') || "____",
-    edad: getValSafe('edad') || getValSafe('edad_1'),
-    estado_civil: getValSafe('estado_civil') || getValSafe('estado_civil_1'),
-    natural: getValSafe('natural') || getValSafe('natural_1'),
-    celular: getValSafe('celular1') || getValSafe('celular1_1'),
-    papa: getValSafe('papa') || getValSafe('papa_1'),
-    mama: getValSafe('mama') || getValSafe('mama_1'),
-    ocupacion: getValSafe('ocupacion') || getValSafe('ocupacion_1'),
-    domicilio: getValSafe('domicilio') || getValSafe('domicilio_1'),
+    edad: getValSafe('edad') || getValSafe('edad_1') || "--",
+    estado_civil: getValSafe('estado_civil') || getValSafe('estado_civil_1') || "SOLTERO(A)",
+    natural: getValSafe('natural') || getValSafe('natural_1') || "PERUANA",
+    celular: getValSafe('celular1') || getValSafe('celular1_1') || "S/N",
+    papa: getValSafe('papa') || getValSafe('papa_1') || "S/D",
+    mama: getValSafe('mama') || getValSafe('mama_1') || "S/D",
+    ocupacion: getValSafe('ocupacion') || getValSafe('ocupacion_1') || "NO ESPECIFICA",
+    domicilio: getValSafe('domicilio') || getValSafe('domicilio_1') || "NO ESPECIFICA",
     asistido_confianza: getValSafe('asistido_confianza') || getValSafe('asistido_confianza_1'),
     asistido_confianza_registro: getValSafe('asistido_confianza_registro') || getValSafe('asistido_confianza_registro_1')
   }];
@@ -466,9 +469,9 @@ function generarBloqueCierreYFirmas(horaFin, lista) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  delitoConfigurado = localStorage.getItem('pnp_delito_seleccionado') || "CONTROL DE IDENTIDAD POLICIAL";
+  delitoConfigurado = localStorage.getItem('pnp_delito_seleccionado') || "DILIGENCIA POLICIAL INDEPENDIENTE";
   const actasJSON = localStorage.getItem('pnp_actas_seleccionadas');
-  idsActasConfiguradas = actasJSON ? JSON.parse(actasJSON) : ["acta_registro_personal"];
+  idsActasConfiguradas = actasJSON ? JSON.parse(actasJSON) : ["acta_constatacion"];
 
   const actasManualesGuardadas = localStorage.getItem('pnp_actas_manuales_custom');
   if (actasManualesGuardadas) {
@@ -642,7 +645,7 @@ function mostrarModalHoraActa(index, horaSugeridaInicio) {
   if (btnSiguiente) {
     const quedanMasConHora = actasAProcesarSecuencia.slice(index + 1).some(a => a.id !== "acta_buen_trato" && a.llevaHora !== false);
     if (!quedanMasConHora) {
-      btnSiguiente.innerHTML = "📦 Generar Expediente";
+      btnSiguiente.innerHTML = "📦 Generar Documento(s)";
       btnSiguiente.className = "btn btn-success";
     } else {
       btnSiguiente.innerHTML = "Siguiente ➡️";
@@ -822,7 +825,7 @@ async function ejecutarGeneracionFinalExpediente() {
       const client = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
       if (client && typeof client.from === 'function') {
         const { data, error } = await client.from('intervenciones').insert([{
-          tipo_delito: datosFinalesBase.delito || "CONTROL DE IDENTIDAD POLICIAL",
+          tipo_delito: datosFinalesBase.delito || "DILIGENCIA POLICIAL INDEPENDIENTE",
           fecha: datosFinalesBase.fecha,
           hora: datosFinalesBase.hora1,
           lugar: datosFinalesBase.lugar,
@@ -982,7 +985,7 @@ async function ejecutarGeneracionFinalExpediente() {
 
     if (statusMsg) {
       statusMsg.className = "alert-msg alert-success";
-      statusMsg.innerText = "✅ ¡Expediente generado exitosamente!";
+      statusMsg.innerText = "✅ ¡Documentos generados exitosamente!";
     }
 
   } catch (err) {
