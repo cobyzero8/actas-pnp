@@ -468,102 +468,105 @@ document.addEventListener('DOMContentLoaded', () => {
   if (hora1Input && !hora1Input.value) hora1Input.value = new Date().toTimeString().slice(0, 5);
 });
 
-document.getElementById('expedienteForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
+const formExpediente = document.getElementById('expedienteForm');
+if (formExpediente) {
+  formExpediente.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-  actasAProcesarSecuencia = [];
-  
-  idsActasConfiguradas.forEach(idSel => {
-    const idLimpio = (typeof idSel === 'object' && idSel !== null) ? idSel.id : idSel;
+    actasAProcesarSecuencia = [];
     
-    let coincide = CATALOGO_ACTAS.find(acta => 
-      acta.id === idLimpio || acta.aliases.includes(idLimpio)
-    );
+    idsActasConfiguradas.forEach(idSel => {
+      const idLimpio = (typeof idSel === 'object' && idSel !== null) ? idSel.id : idSel;
+      
+      let coincide = CATALOGO_ACTAS.find(acta => 
+        acta.id === idLimpio || acta.aliases.includes(idLimpio)
+      );
 
-    if (!coincide) {
-      const nombreArchivo = `${idLimpio}.docx`;
-      coincide = {
-        id: idLimpio,
-        aliases: [idLimpio],
-        titulo: (typeof idSel === 'object' && idSel.titulo) ? idSel.titulo : `Acta de ${idLimpio}`,
-        archivo: `plantilla/${nombreArchivo}`,
-        llevaHora: true,
-        esIndividual: true,
-        esVehicular: idLimpio.includes('vehicular') || idLimpio.includes('s_v')
-      };
+      if (!coincide) {
+        const nombreArchivo = `${idLimpio}.docx`;
+        coincide = {
+          id: idLimpio,
+          aliases: [idLimpio],
+          titulo: (typeof idSel === 'object' && idSel.titulo) ? idSel.titulo : `Acta de ${idLimpio}`,
+          archivo: `plantilla/${nombreArchivo}`,
+          llevaHora: true,
+          esIndividual: true,
+          esVehicular: idLimpio.includes('vehicular') || idLimpio.includes('s_v')
+        };
+      }
+
+      actasAProcesarSecuencia.push(coincide);
+    });
+
+    if (actasAProcesarSecuencia.length === 0) {
+      alert(`⚠️ No se encontraron coincidencias para las actas seleccionadas.`);
+      return;
     }
 
-    actasAProcesarSecuencia.push(coincide);
+    const fechaRaw = document.getElementById('fecha').value;
+    const listaEfectivosPNP = obtenerListaEfectivosPNPForm();
+    const pnpPrincipal = listaEfectivosPNP[0] || { grado: "S3", nombre: "ARMANDO VIVANCO CURO", cip: "31425556" };
+
+    const listaVehiculos = obtenerListaVehiculosForm();
+    const vehPrincipal = listaVehiculos[0] || { placa: "NO REGISTRA", clase_vehiculo: "TRIMOVIL", marca: "NO REGISTRA", modelo: "NO REGISTRA", color: "NO REGISTRA" };
+
+    datosFormularioBase = {
+      delito: delitoConfigurado,
+      distrito: document.getElementById('distrito') ? document.getElementById('distrito').value : "Huanta",
+      provincia: document.getElementById('provincia') ? document.getElementById('provincia').value : "Huanta",
+      region: document.getElementById('region') ? document.getElementById('region').value : "Ayacucho",
+      fecha: formatearFechaPolicial(fechaRaw),
+      lugar: document.getElementById('lugar') ? document.getElementById('lugar').value : "",
+
+      agraviado: document.getElementById('agraviado') ? document.getElementById('agraviado').value.trim() : "EL ESTADO",
+      motivo_justificatorio: document.getElementById('motivo_justificatorio') ? document.getElementById('motivo_justificatorio').value : "",
+      unidad_policial: document.getElementById('unidad_policial') ? document.getElementById('unidad_policial').value : "UTSEVI PNP HUANTA",
+      unidad_disposicion: document.getElementById('unidad_disposicion') ? document.getElementById('unidad_disposicion').value : "SIAT-COM PNP HUANTA",
+
+      resultado_esinpol: document.getElementById('resultado_esinpol') ? document.getElementById('resultado_esinpol').value : "NEGATIVO",
+      tipo_requisitoria: document.getElementById('tipo_requisitoria') ? document.getElementById('tipo_requisitoria').value : "",
+      motivo_requisitoria: document.getElementById('motivo_requisitoria') ? document.getElementById('motivo_requisitoria').value : "",
+      juzgado_requisitoria: document.getElementById('juzgado_requisitoria') ? document.getElementById('juzgado_requisitoria').value : "",
+      documento_requisitoria: document.getElementById('documento_requisitoria') ? document.getElementById('documento_requisitoria').value : "",
+      fecha_requisitoria: document.getElementById('fecha_requisitoria') ? formatearFechaPolicial(document.getElementById('fecha_requisitoria').value) : "",
+      situacion_requisitoria: document.getElementById('situacion_requisitoria') ? document.getElementById('situacion_requisitoria').value : "",
+
+      placa_vehiculo: vehPrincipal.placa,
+      clase_vehiculo: vehPrincipal.clase_vehiculo,
+      marca_vehiculo: vehPrincipal.marca,
+      modelo_vehiculo: vehPrincipal.modelo,
+      color_vehiculo: vehPrincipal.color,
+      anio_fab_vehiculo: vehPrincipal.anio_fab || "NO REGISTRA",
+      num_motor_vehiculo: vehPrincipal.num_motor || "NO REGISTRA",
+      num_chasis_vehiculo: vehPrincipal.num_chasis || "NO REGISTRA",
+      vehiculos_resumen: construirTextoVehiculosResumen(listaVehiculos),
+
+      drogas: document.getElementById('drogas') ? document.getElementById('drogas').value : "NEGATIVO",
+      moneda: document.getElementById('moneda') ? document.getElementById('moneda').value : "NEGATIVO",
+      joyas: document.getElementById('joyas') ? document.getElementById('joyas').value : "NEGATIVO",
+      municion: document.getElementById('municion') ? document.getElementById('municion').value : "NEGATIVO",
+      otros: document.getElementById('otros') ? document.getElementById('otros').value : "NEGATIVO",
+      narrar_positivo: document.getElementById('narrar_positivo') ? document.getElementById('narrar_positivo').value : "NINGUNO",
+      
+      tipo_embalaje: obtenerTipoEmbalajeFinal(),
+      forma_lacrado: (document.getElementById('forma_lacrado') && document.getElementById('forma_lacrado').value.trim() !== "") ? document.getElementById('forma_lacrado').value.trim() : "cinta adhesiva de seguridad y sellado térmico",
+      constancia_testigo: obtenerConstanciaTestigoFinal(),
+
+      detalle_hallazgo: (document.getElementById('detalle_hallazgo') && document.getElementById('detalle_hallazgo').value.trim() !== "") ? document.getElementById('detalle_hallazgo').value.trim() : "un (01) bien u objeto no especificado",
+      circunstancia_hallazgo: (document.getElementById('circunstancia_hallazgo') && document.getElementById('circunstancia_hallazgo').value.trim() !== "") ? document.getElementById('circunstancia_hallazgo').value.trim() : "se procedió a la verificación del lugar de los hechos",
+
+      personal_interviniente: pnpPrincipal.nombre,
+      grado: pnpPrincipal.grado,
+      cip: pnpPrincipal.cip
+    };
+
+    indiceActaActual = 0;
+    horariosPorActa = {};
+
+    const horaInicialBase = document.getElementById('hora1') ? document.getElementById('hora1').value : "08:00";
+    avanzarAoSaltarAQuienLleveHora(horaInicialBase || "08:00");
   });
-
-  if (actasAProcesarSecuencia.length === 0) {
-    alert(`⚠️ No se encontraron coincidencias para las actas seleccionadas.`);
-    return;
-  }
-
-  const fechaRaw = document.getElementById('fecha').value;
-  const listaEfectivosPNP = obtenerListaEfectivosPNPForm();
-  const pnpPrincipal = listaEfectivosPNP[0] || { grado: "S3", nombre: "ARMANDO VIVANCO CURO", cip: "31425556" };
-
-  const listaVehiculos = obtenerListaVehiculosForm();
-  const vehPrincipal = listaVehiculos[0] || { placa: "NO REGISTRA", clase_vehiculo: "TRIMOVIL", marca: "NO REGISTRA", modelo: "NO REGISTRA", color: "NO REGISTRA" };
-
-  datosFormularioBase = {
-    delito: delitoConfigurado,
-    distrito: document.getElementById('distrito') ? document.getElementById('distrito').value : "Huanta",
-    provincia: document.getElementById('provincia') ? document.getElementById('provincia').value : "Huanta",
-    region: document.getElementById('region') ? document.getElementById('region').value : "Ayacucho",
-    fecha: formatearFechaPolicial(fechaRaw),
-    lugar: document.getElementById('lugar') ? document.getElementById('lugar').value : "",
-
-    agraviado: document.getElementById('agraviado') ? document.getElementById('agraviado').value.trim() : "EL ESTADO",
-    motivo_justificatorio: document.getElementById('motivo_justificatorio') ? document.getElementById('motivo_justificatorio').value : "",
-    unidad_policial: document.getElementById('unidad_policial') ? document.getElementById('unidad_policial').value : "UTSEVI PNP HUANTA",
-    unidad_disposicion: document.getElementById('unidad_disposicion') ? document.getElementById('unidad_disposicion').value : "SIAT-COM PNP HUANTA",
-
-    resultado_esinpol: document.getElementById('resultado_esinpol') ? document.getElementById('resultado_esinpol').value : "NEGATIVO",
-    tipo_requisitoria: document.getElementById('tipo_requisitoria') ? document.getElementById('tipo_requisitoria').value : "",
-    motivo_requisitoria: document.getElementById('motivo_requisitoria') ? document.getElementById('motivo_requisitoria').value : "",
-    juzgado_requisitoria: document.getElementById('juzgado_requisitoria') ? document.getElementById('juzgado_requisitoria').value : "",
-    documento_requisitoria: document.getElementById('documento_requisitoria') ? document.getElementById('documento_requisitoria').value : "",
-    fecha_requisitoria: document.getElementById('fecha_requisitoria') ? formatearFechaPolicial(document.getElementById('fecha_requisitoria').value) : "",
-    situacion_requisitoria: document.getElementById('situacion_requisitoria') ? document.getElementById('situacion_requisitoria').value : "",
-
-    placa_vehiculo: vehPrincipal.placa,
-    clase_vehiculo: vehPrincipal.clase_vehiculo,
-    marca_vehiculo: vehPrincipal.marca,
-    modelo_vehiculo: vehPrincipal.modelo,
-    color_vehiculo: vehPrincipal.color,
-    anio_fab_vehiculo: vehPrincipal.anio_fab || "NO REGISTRA",
-    num_motor_vehiculo: vehPrincipal.num_motor || "NO REGISTRA",
-    num_chasis_vehiculo: vehPrincipal.num_chasis || "NO REGISTRA",
-    vehiculos_resumen: construirTextoVehiculosResumen(listaVehiculos),
-
-    drogas: document.getElementById('drogas') ? document.getElementById('drogas').value : "NEGATIVO",
-    moneda: document.getElementById('moneda') ? document.getElementById('moneda').value : "NEGATIVO",
-    joyas: document.getElementById('joyas') ? document.getElementById('joyas').value : "NEGATIVO",
-    municion: document.getElementById('municion') ? document.getElementById('municion').value : "NEGATIVO",
-    otros: document.getElementById('otros') ? document.getElementById('otros').value : "NEGATIVO",
-    narrar_positivo: document.getElementById('narrar_positivo') ? document.getElementById('narrar_positivo').value : "NINGUNO",
-    
-    tipo_embalaje: obtenerTipoEmbalajeFinal(),
-    forma_lacrado: (document.getElementById('forma_lacrado') && document.getElementById('forma_lacrado').value.trim() !== "") ? document.getElementById('forma_lacrado').value.trim() : "cinta adhesiva de seguridad y sellado térmico",
-    constancia_testigo: obtenerConstanciaTestigoFinal(),
-
-    detalle_hallazgo: (document.getElementById('detalle_hallazgo') && document.getElementById('detalle_hallazgo').value.trim() !== "") ? document.getElementById('detalle_hallazgo').value.trim() : "un (01) bien u objeto no especificado",
-    circunstancia_hallazgo: (document.getElementById('circunstancia_hallazgo') && document.getElementById('circunstancia_hallazgo').value.trim() !== "") ? document.getElementById('circunstancia_hallazgo').value.trim() : "se procedió a la verificación del lugar de los hechos",
-
-    personal_interviniente: pnpPrincipal.nombre,
-    grado: pnpPrincipal.grado,
-    cip: pnpPrincipal.cip
-  };
-
-  indiceActaActual = 0;
-  horariosPorActa = {};
-
-  const horaInicialBase = document.getElementById('hora1') ? document.getElementById('hora1').value : "08:00";
-  avanzarAoSaltarAQuienLleveHora(horaInicialBase || "08:00");
-});
+}
 
 function avanzarAoSaltarAQuienLleveHora(horaSugeridaInicio) {
   while (indiceActaActual < actasAProcesarSecuencia.length) {
@@ -586,7 +589,6 @@ function avanzarAoSaltarAQuienLleveHora(horaSugeridaInicio) {
 function mostrarModalHoraActa(index, horaSugeridaInicio) {
   const modalElem = document.getElementById('modalHoras');
   
-  // Salvaguarda: si por alguna razón no existe el modal en el HTML, avanza automáticamente
   if (!modalElem) {
     const acta = actasAProcesarSecuencia[index];
     const horaTerminoSugerida = sumarMinutosAHora(horaSugeridaInicio, 5);
@@ -603,23 +605,28 @@ function mostrarModalHoraActa(index, horaSugeridaInicio) {
   const acta = actasAProcesarSecuencia[index];
   const total = actasAProcesarSecuencia.length;
 
-  document.getElementById('modalHorasTitulo').innerText = `⏰ Horario (${index + 1}/${total}): ${acta.titulo}`;
-  document.getElementById('modalHorasSubtitulo').innerText = `Especifique hora de inicio y término para "${acta.titulo}":`;
+  const titElem = document.getElementById('modalHorasTitulo');
+  const subElem = document.getElementById('modalHorasSubtitulo');
+  if (titElem) titElem.innerText = `⏰ Horario (${index + 1}/${total}): ${acta.titulo}`;
+  if (subElem) subElem.innerText = `Especifique hora de inicio y término para "${acta.titulo}":`;
 
   const horaTerminoSugerida = sumarMinutosAHora(horaSugeridaInicio, 5);
 
-  document.getElementById('modalHoraInicio').value = horaSugeridaInicio;
-  document.getElementById('modalHoraTermino').value = horaTerminoSugerida;
+  const hIniElem = document.getElementById('modalHoraInicio');
+  const hFinElem = document.getElementById('modalHoraTermino');
+  if (hIniElem) hIniElem.value = horaSugeridaInicio;
+  if (hFinElem) hFinElem.value = horaTerminoSugerida;
 
   const btnSiguiente = document.getElementById('btnSiguienteHora');
-  const quedanMasConHora = actasAProcesarSecuencia.slice(index + 1).some(a => a.id !== "acta_buen_trato" && a.llevaHora !== false);
-
-  if (!quedanMasConHora) {
-    btnSiguiente.innerHTML = "📦 Generar Expediente";
-    btnSiguiente.className = "btn btn-success";
-  } else {
-    btnSiguiente.innerHTML = "Siguiente ➡️";
-    btnSiguiente.className = "btn btn-primary";
+  if (btnSiguiente) {
+    const quedanMasConHora = actasAProcesarSecuencia.slice(index + 1).some(a => a.id !== "acta_buen_trato" && a.llevaHora !== false);
+    if (!quedanMasConHora) {
+      btnSiguiente.innerHTML = "📦 Generar Expediente";
+      btnSiguiente.className = "btn btn-success";
+    } else {
+      btnSiguiente.innerHTML = "Siguiente ➡️";
+      btnSiguiente.className = "btn btn-primary";
+    }
   }
 
   modalElem.style.display = 'flex';
@@ -631,8 +638,8 @@ function cancelarProcesoHoras() {
 }
 
 async function confirmarHoraActaActual() {
-  const hInicio = document.getElementById('modalHoraInicio').value;
-  const hTermino = document.getElementById('modalHoraTermino').value;
+  const hInicio = document.getElementById('modalHoraInicio') ? document.getElementById('modalHoraInicio').value : "";
+  const hTermino = document.getElementById('modalHoraTermino') ? document.getElementById('modalHoraTermino').value : "";
 
   if (!hInicio || !hTermino) {
     alert("⚠️ Debe ingresar ambas horas (inicio y término).");
@@ -787,24 +794,34 @@ async function ejecutarGeneracionFinalExpediente() {
       hora_detencion: horaDetencionVal
     };
 
+    // INTENTO DE REGISTRO EN SUPABASE (Aislado para no bloquear descargas en caso de error)
     try {
-      if (typeof supabaseClient !== 'undefined' && supabaseClient.from) {
-        await supabaseClient.from('intervenciones').insert([{
-          tipo_delito: datosFinalesBase.delito,
+      const client = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
+      if (client && typeof client.from === 'function') {
+        const { data, error } = await client.from('intervenciones').insert([{
+          tipo_delito: datosFinalesBase.delito || "CONTROL DE IDENTIDAD POLICIAL",
           fecha: datosFinalesBase.fecha,
           hora: datosFinalesBase.hora1,
           lugar: datosFinalesBase.lugar,
-          intervenido_nombre: listaIntervenidos[0].nombre,
-          intervenido_dni: listaIntervenidos[0].dni,
+          intervenido_nombre: listaIntervenidos[0]?.nombre || "SIN NOMBRE",
+          intervenido_dni: listaIntervenidos[0]?.dni || "S/D",
           efectivo_cargo: `${datosFinalesBase.grado} ${datosFinalesBase.personal_interviniente}`,
           datos_json: datosFinalesBase
         }]);
+
+        if (error) {
+          console.warn("⚠️ No se pudo registrar en Supabase:", error.message);
+        } else {
+          console.log("✅ Datos de intervención registrados en Supabase.");
+        }
       }
     } catch (errSupabase) {
-      console.warn("Supabase offline o no disponible. Continuando generación local.");
+      console.warn("⚠️ Supabase offline o error de red:", errSupabase.message);
     }
 
     const JSZipLib = window.JSZip || (typeof JSZip !== 'undefined' ? JSZip : null);
+    if (!JSZipLib) throw new Error("La librería JSZip no está cargada en el navegador.");
+
     const zip = new JSZipLib();
     let archivosAgregados = 0;
 
@@ -821,15 +838,15 @@ async function ejecutarGeneracionFinalExpediente() {
           licencia: listaIntervenidos.map(i => i.licencia || "________").join(' / '),
           categoria_licencia: listaIntervenidos.map(i => i.categoria_licencia || "____").join(' / '),
           edad: listaIntervenidos.map(i => i.edad).join(' / '),
-          estado_civil: listaIntervenidos[0].estado_civil,
-          natural: listaIntervenidos[0].natural,
-          celular1: listaIntervenidos[0].celular,
-          papa: listaIntervenidos[0].papa,
-          mama: listaIntervenidos[0].mama,
-          ocupacion: listaIntervenidos[0].ocupacion,
-          domicilio: listaIntervenidos[0].domicilio,
-          asistido_confianza: listaIntervenidos[0].asistido_confianza,
-          asistido_confianza_registro: listaIntervenidos[0].asistido_confianza_registro,
+          estado_civil: listaIntervenidos[0]?.estado_civil || "",
+          natural: listaIntervenidos[0]?.natural || "",
+          celular1: listaIntervenidos[0]?.celular || "S/N",
+          papa: listaIntervenidos[0]?.papa || "S/D",
+          mama: listaIntervenidos[0]?.mama || "S/D",
+          ocupacion: listaIntervenidos[0]?.ocupacion || "",
+          domicilio: listaIntervenidos[0]?.domicilio || "",
+          asistido_confianza: listaIntervenidos[0]?.asistido_confianza || "",
+          asistido_confianza_registro: listaIntervenidos[0]?.asistido_confianza_registro || "",
           hora1: hor.horaInicio || datosFinalesBase.hora1,
           hora2: hor.horaTermino || datosFinalesBase.hora2
         };
@@ -918,6 +935,8 @@ async function ejecutarGeneracionFinalExpediente() {
     } else if (archivosAgregados > 0) {
       const zipContent = await zip.generateAsync({ type: "blob" });
       saveAs(zipContent, `Expediente_PNP_${datosFinalesBase.distrito}_${datosFinalesBase.fecha}.zip`);
+    } else {
+      throw new Error("No se pudo compilar ninguna de las actas seleccionadas.");
     }
 
     if (statusMsg) {
@@ -930,6 +949,7 @@ async function ejecutarGeneracionFinalExpediente() {
       statusMsg.className = "alert-msg alert-danger";
       statusMsg.innerText = "❌ Error al procesar expediente: " + err.message;
     }
+    console.error("Error global en generación:", err);
   }
 }
 
@@ -937,23 +957,36 @@ async function generarDocumentoWord(rutaPlantilla, datos) {
   const PizZipLib = window.PizZip || (typeof PizZip !== 'undefined' ? PizZip : null);
   const DocxLib = window.docxtemplater || window.Docxtemplater || (typeof docxtemplater !== 'undefined' ? docxtemplater : null);
 
-  if (!PizZipLib) throw new Error("No se pudo cargar PizZip.");
-  if (!DocxLib) throw new Error("No se pudo cargar Docxtemplater.");
+  if (!PizZipLib) throw new Error("No se pudo cargar la librería PizZip en el navegador.");
+  if (!DocxLib) throw new Error("No se pudo cargar la librería Docxtemplater en el navegador.");
 
   const urlAntiCache = `${rutaPlantilla}?t=${new Date().getTime()}`;
   const response = await fetch(urlAntiCache);
-  if (!response.ok) throw new Error(`Plantilla no encontrada en ruta: ${rutaPlantilla}`);
+  
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: No se encontró la plantilla en '${rutaPlantilla}'`);
+  }
 
   const arrayBuffer = await response.arrayBuffer();
-  const zip = new PizZipLib(arrayBuffer);
+  
+  let zip;
+  try {
+    zip = new PizZipLib(arrayBuffer);
+  } catch (e) {
+    throw new Error(`El archivo descargado desde '${rutaPlantilla}' no es un documento Word (.docx) válido: ${e.message}`);
+  }
 
-  const doc = new DocxLib(zip, { 
-    paragraphLoop: true, 
-    linebreaks: true,
-    nullGetter: function() { return ""; }
-  });
-
-  doc.render(datos);
+  let doc;
+  try {
+    doc = new DocxLib(zip, { 
+      paragraphLoop: true, 
+      linebreaks: true,
+      nullGetter: function() { return ""; }
+    });
+    doc.render(datos);
+  } catch (e) {
+    throw new Error(`Error al compilar etiquetas docxtemplater en '${rutaPlantilla}': ${e.message}`);
+  }
 
   return doc.getZip().generate({
     type: "blob",
