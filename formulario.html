@@ -10,11 +10,10 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   
   <!-- Librerías para generación de Word y compresión ZIP -->
-  
-<script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
-<script src="https://unpkg.com/pizzip@3.1.4/dist/pizzip.js"></script>
-<script src="https://unpkg.com/docxtemplater@3.37.11/build/docxtemplater.js"></script>
-<script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://unpkg.com/pizzip@3.1.4/dist/pizzip.js"></script>
+  <script src="https://unpkg.com/docxtemplater@3.37.11/build/docxtemplater.js"></script>
+  <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 
   <style>
     .wizard-header {
@@ -757,6 +756,7 @@
               <button type="button" class="preset-btn" onclick="cargarModelo12Extorsion()" style="background: #6b21a8;">🔴 12. Extorsión</button>
               <hr style="margin: 8px 0; border: 0; border-top: 1px dashed #cbd5e1;">
               <button type="button" class="preset-btn" onclick="cargarModeloControlIdentidad()" style="background: #475569;">🪪 13. Control de Identidad</button>
+              <button type="button" class="preset-btn" onclick="cargarModelo14Ocurrencia()" style="background: #0d9488;">📋 14. Acta de Ocurrencia (Accidente)</button>
             </details>
 
             <details id="details_fichas" open style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 10px; border-radius: 8px;">
@@ -1856,6 +1856,53 @@
 
     document.getElementById('titulo_sec_3').value = "III. PUESTA A DISPOSICIÓN Y CIERRE DE DILIGENCIA:";
     document.getElementById('agregar_intervencion_3').value = `--- Que la persona intervenida es puesta a disposición de la ${unidadDisp}, con las actas instruidas, para posteriormente ser puesto a disposición de la autoridad competente.\n\n--- Siendo las ${horaFin} horas del mismo día se dio por concluido la presente diligencia, firmando todos los participantes presentes en señal de conformidad.\nSe adjunta:`;
+
+    minimizarPlantillas();
+  }
+
+  function cargarModelo14Ocurrencia() {
+    document.getElementById('cant_secciones').value = 3; 
+    construirSeccionesNarrativa();
+
+    const hora = getVal('hora_intervencion', '11:15');
+    const fechaFormateada = getVal('fecha');
+    const lugar = getVal('lugar', 'Av. Ejército N.° 712');
+    const region = getVal('region', 'Arequipa');
+    const provincia = getVal('provincia', 'Arequipa');
+    const distrito = getVal('distrito', 'Yanahuara');
+    const unidadPol = getVal('unidad_policial', 'Comisaría PNP Yanahuara');
+    const unidadDisp = getVal('unidad_disposicion', 'Comisaría PNP Yanahuara');
+    const fiscal = getVal('fiscal', 'Dr. Gonzalo Pérez Ramírez (Fiscal Provincial de Turno de Arequipa)');
+    const horaFin = getVal('hora2', '12:00');
+
+    const listaPNP = obtenerListaEfectivosPNP();
+    const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "VARGAS ROJAS, Luis Alberto", cip: "32098412" };
+    const pnpNomInv = formatearNombreInvertido(pnpPrincipal.nombre);
+    const pnpPlaca = getVal('placa_policial_1', 'PL-21049');
+
+    const listaInt = obtenerListaIntervenidos();
+    const persona = listaInt[0] || { nombre: "MENDOZA CASTRO, Víctor Manuel", edad: "38", dni: "41829304" };
+    const personaNomInv = formatearNombreInvertido(persona.nombre);
+
+    const listaVeh = obtenerListaVehiculos();
+    const v1 = listaVeh[0] || { clase_vehiculo: "AUTO", marca: "Toyota", modelo: "Yaris", color: "Gris Metálico", placa: "V1A-234" };
+    const v2 = listaVeh[1] || { clase_vehiculo: "CAMIONETA", marca: "Nissan", modelo: "Frontier", color: "Negro", placa: "B5C-891" };
+
+    document.getElementById('titulo_sec_1').value = "1. MOTIVO DE LA INTERVENCIÓN / DILIGENCIA:";
+    document.getElementById('agregar_intervencion_1').value = `--- Que, encontrándose el personal policial a bordo de la UUMM ${pnpPlaca} en cumplimiento de labores de patrullaje integrado por el sector, se tomó conocimiento o se intervino directamente en el lugar la ocurrencia de incidencia policial.`;
+
+    document.getElementById('titulo_sec_2').value = "2. DETALLE Y DESARROLLO DE LA OCURRENCIA:";
+    document.getElementById('agregar_intervencion_2').value = `--- Llegados al lugar de la ocurrencia, se constató de manera objetiva los siguientes hechos:\nSe intervino un accidente de tránsito (choque por alcance con daños materiales) entre dos vehículos particulares, producto de una maniobra intempestiva y frenado intempestivo en vía concurrida.\n\nParticipante(s) / Intervenido(s): ${personaNomInv} (DNI N.° ${persona.dni}, ${persona.edad} años).\n\nVehículo(s) Involucrado(s): Auto ${v1.marca} ${v1.modelo}, color ${v1.color}, placa ${v1.placa}, y Camioneta ${v2.marca} ${v2.modelo}, color ${v2.color}, placa ${v2.placa}.\n\nVerificación Documentaria RNT: Licencia de conducir A-I vigente, SOAT electrónico activo (La Positiva) y Certificado de Inspección Técnica Vehicular al día.\n\nHallazgos / Especies / Detalle: Conforme / Daños materiales leves en el parachoque posterior del vehículo impactado; sin registrarse lesionados ni heridos de consideración.`;
+
+    document.getElementById('titulo_sec_3').value = "3. ACCIONES ADOPTADAS Y PUESTA A DISPOSICIÓN:";
+    document.getElementById('agregar_intervencion_3').value = `--- Se procedió a prestar auxilio, aislar y garantizar la seguridad en la zona. Asimismo, de los hechos descritos se comunicó al RMP ${fiscal}, trasladando la intervención y actuados a la ${unidadDisp} para el trámite de ley y diligencias correspondientes.`;
+
+    if (document.getElementById('detalle_hallazgo')) {
+      document.getElementById('detalle_hallazgo').value = "Conforme / Daños materiales leves en el parachoque posterior del vehículo impactado; sin registrarse lesionados ni heridos de consideración.";
+    }
+    if (document.getElementById('motivo_justificatorio')) {
+      document.getElementById('motivo_justificatorio').value = "Se contó con la presencia del ciudadano intervenido, quien colaboró con la identificación y diligencias sin presentar oposición.";
+    }
 
     minimizarPlantillas();
   }
