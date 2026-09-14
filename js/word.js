@@ -973,11 +973,11 @@ async function ejecutarGeneracionFinalExpediente() {
 }
 
 async function generarDocumentoWord(rutaPlantilla, datos) {
-  const PizZipLib = window.PizZip || (typeof PizZip !== 'undefined' ? PizZip : null);
-  const DocxLib = window.docxtemplater || window.Docxtemplater || (typeof docxtemplater !== 'undefined' ? docxtemplater : null);
+  const PizZipLib = window.PizZip || window.pizzip || (window.PizZip && window.PizZip.default) || (typeof PizZip !== 'undefined' ? PizZip : null);
+  const DocxLib = window.docxtemplater || window.Docxtemplater || (window.docxtemplater && window.docxtemplater.default) || (typeof docxtemplater !== 'undefined' ? docxtemplater : null);
 
-  if (!PizZipLib) throw new Error("No se cargó PizZip en el navegador.");
-  if (!DocxLib) throw new Error("No se cargó Docxtemplater en el navegador.");
+  if (!PizZipLib) throw new Error("No se cargó la librería PizZip en el navegador. Revisa las etiquetas <script> en el HTML.");
+  if (!DocxLib) throw new Error("No se cargó la librería Docxtemplater en el navegador. Revisa las etiquetas <script> en el HTML.");
 
   const urlAntiCache = `${rutaPlantilla}?t=${new Date().getTime()}`;
   const response = await fetch(urlAntiCache);
@@ -1004,7 +1004,7 @@ async function generarDocumentoWord(rutaPlantilla, datos) {
     });
     doc.render(datos);
   } catch (e) {
-    throw new Error(`Etiqueta o formato inválido en '${rutaPlantilla}': ${e.message}`);
+    throw new Error(`Etiqueta o formato en '${rutaPlantilla}' inválido: ${e.message}`);
   }
 
   return doc.getZip().generate({
