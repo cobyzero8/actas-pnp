@@ -138,9 +138,6 @@ let indiceActaActual = 0;
 let datosFormularioBase = {};
 let horariosPorActa = {};
 
-/**
- * SELECCIÓN INTELECTA Y DINÁMICA DE PLANTILLA VEHICULAR (MAYOR vs MENOR)
- */
 function obtenerRutaArchivoActa(acta, vehiculo) {
   const idLimpio = (acta.id || '').toLowerCase();
   const esSituacionVehicular = idLimpio.includes('situacion_vehicular') || idLimpio.includes('s_v');
@@ -160,9 +157,6 @@ function obtenerRutaArchivoActa(acta, vehiculo) {
   return acta.archivo;
 }
 
-/**
- * REGISTRAR ACTA CUSTOM O MANUAL
- */
 function registrarActaManual(nuevaActa) {
   if (!nuevaActa.id || !nuevaActa.titulo) {
     console.error("⚠️ El acta manual requiere al menos 'id' y 'titulo'.");
@@ -188,9 +182,6 @@ function registrarActaManual(nuevaActa) {
   }
 }
 
-/**
- * FORMATEADORES Y AUXILIARES DE TEXTO
- */
 function formatearFechaPolicial(fechaCadena) {
   if (!fechaCadena) return "";
 
@@ -291,8 +282,6 @@ function procesarDocumentosRNT() {
 
   return hallazgos.length > 0 ? hallazgos.join(', ') : "NO PRESENTA DOCUMENTACIÓN / EN PROCESO DE VERIFICACIÓN";
 }
-
-/* ================= OBTENCIÓN DE LISTAS DINÁMICAS (PNP, INTERVENIDOS, VEHÍCULOS) ================= */
 
 function obtenerListaEfectivosPNPForm() {
   if (typeof obtenerListaEfectivosPNP === 'function') {
@@ -455,9 +444,6 @@ function generarBloqueCierreYFirmas(horaFin, lista) {
   return textoCierre;
 }
 
-/**
- * INICIALIZACIÓN
- */
 document.addEventListener('DOMContentLoaded', () => {
   delitoConfigurado = localStorage.getItem('pnp_delito_seleccionado') || "CONTROL DE IDENTIDAD POLICIAL";
   const actasJSON = localStorage.getItem('pnp_actas_seleccionadas');
@@ -476,16 +462,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (resDelito) resDelito.innerText = delitoConfigurado;
   if (resCant) resCant.innerText = `📄 ${idsActasConfiguradas.length} acta(s) seleccionada(s) para generar`;
 
-  // Asignar fecha y hora inicial solo si los campos están vacíos
   const fechaInput = document.getElementById('fecha');
   const hora1Input = document.getElementById('hora1');
   if (fechaInput && !fechaInput.value) fechaInput.value = new Date().toISOString().split('T')[0];
   if (hora1Input && !hora1Input.value) hora1Input.value = new Date().toTimeString().slice(0, 5);
 });
 
-/**
- * MANEJO DEL SUBMIT DEL FORMULARIO
- */
 document.getElementById('expedienteForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -603,7 +585,20 @@ function avanzarAoSaltarAQuienLleveHora(horaSugeridaInicio) {
 
 function mostrarModalHoraActa(index, horaSugeridaInicio) {
   const modalElem = document.getElementById('modalHoras');
-  if (!modalElem) return;
+  
+  // Salvaguarda: si por alguna razón no existe el modal en el HTML, avanza automáticamente
+  if (!modalElem) {
+    const acta = actasAProcesarSecuencia[index];
+    const horaTerminoSugerida = sumarMinutosAHora(horaSugeridaInicio, 5);
+    horariosPorActa[acta.id] = {
+      horaInicio: horaSugeridaInicio,
+      horaTermino: horaTerminoSugerida
+    };
+    indiceActaActual++;
+    const siguienteSugerida = sumarMinutosAHora(horaTerminoSugerida, 1);
+    avanzarAoSaltarAQuienLleveHora(siguienteSugerida);
+    return;
+  }
 
   const acta = actasAProcesarSecuencia[index];
   const total = actasAProcesarSecuencia.length;
@@ -662,9 +657,6 @@ async function confirmarHoraActaActual() {
   }
 }
 
-/**
- * GENERACIÓN Y COMPILACIÓN FINAL DEL EXPEDIENTE (.DOCX / .ZIP)
- */
 async function ejecutarGeneracionFinalExpediente() {
   const statusMsg = document.getElementById('statusMsg');
   if (statusMsg) {
@@ -725,12 +717,10 @@ async function ejecutarGeneracionFinalExpediente() {
       }
     }
 
-    // LISTAS PRINCIPALES DE ENTRADA
     const listaEfectivosPNP = obtenerListaEfectivosPNPForm();
     const listaIntervenidos = obtenerListaIntervenidosForm();
     const listaVehiculos = obtenerListaVehiculosForm();
 
-    // SINTAXIS Y TEXTOS DINÁMICOS
     let textoIntervenidosColectivo = "";
     if (listaIntervenidos.length === 1) {
       textoIntervenidosColectivo = `${listaIntervenidos[0].nombre} (${listaIntervenidos[0].edad} años), DNI N° ${listaIntervenidos[0].dni}`;
@@ -746,16 +736,13 @@ async function ejecutarGeneracionFinalExpediente() {
     const horaPruebaG = sumarMinutosAHora(horaIntVal, 15);
     const bloqueFirmasG = generarBloqueCierreYFirmas(horaTerminoTotal, listaIntervenidos);
 
-    // RESULTADO COMPLETO DEL MÓDULO GRÁFICO DE SITUACIÓN VEHICULAR (SI EXISTE)
     const resultadoSituacionVehicular = localStorage.getItem('pnp_acta_situacion_vehicular_resultado') || "NO REGISTRA INSPECCIÓN GRÁFICA";
 
-    // OBJETO DE DATOS BASE COMPLETO
     const datosFinalesBase = {
       ...datosFormularioBase,
       ...vehiculosPNPObj,
       ...seccionesObj,
       
-      // VARIABLES DE PRIMER INTERVENIDO (DATOS BASE TOP-LEVEL)
       intervenido_nombre: listaIntervenidos[0]?.nombre || "",
       intervenido_dni: listaIntervenidos[0]?.dni || "",
       licencia: listaIntervenidos[0]?.licencia || "________",
@@ -771,11 +758,9 @@ async function ejecutarGeneracionFinalExpediente() {
       asistido_confianza: listaIntervenidos[0]?.asistido_confianza || "",
       asistido_confianza_registro: listaIntervenidos[0]?.asistido_confianza_registro || "",
 
-      // VARIABLES MULTI-EFECTIVO PNP
       efectivos_intervinientes_texto: obtenerTextoEfectivosNarrativa(listaEfectivosPNP),
       firmas_pnp: generarBloqueFirmasPNP(listaEfectivosPNP),
 
-      // VARIABLES MAESTRAS DE LAS PLANTILLAS
       filiacion_intervenidos: filiacionCompleta,
       resumen_intervenidos: textoIntervenidosColectivo,
       resumen_vehiculos: textoVehiculosColectivo,
@@ -802,7 +787,6 @@ async function ejecutarGeneracionFinalExpediente() {
       hora_detencion: horaDetencionVal
     };
 
-    // GUARDA EL ESTADO REUTILIZABLE EN SUPABASE
     try {
       if (typeof supabaseClient !== 'undefined' && supabaseClient.from) {
         await supabaseClient.from('intervenciones').insert([{
@@ -824,14 +808,12 @@ async function ejecutarGeneracionFinalExpediente() {
     const zip = new JSZipLib();
     let archivosAgregados = 0;
 
-    // GENERACIÓN DE DOCUMENTOS (COLECTIVOS vs INDIVIDUALES)
     for (let acta of actasAProcesarSecuencia) {
       const hor = horariosPorActa[acta.id] || { horaInicio: "", horaTermino: "" };
       const esActaColectiva = (acta.esIndividual === false || acta.id === 'acta_intervencion' || acta.id === 'acta_hallazgo_recojo' || acta.id === 'acta_ocurrencia');
       const esActaVehicular = (acta.esVehicular === true || acta.id === 'acta_registro_vehicular' || acta.id === 'acta_inmovilizacion' || acta.id === 'acta_situacion_vehicular');
 
       if (esActaColectiva) {
-        // CASO A: ACTA ÚNICA Y COLECTIVA
         const datosDocIntervencion = {
           ...datosFinalesBase,
           intervenido_nombre: textoIntervenidosColectivo,
@@ -861,7 +843,6 @@ async function ejecutarGeneracionFinalExpediente() {
         }
 
       } else if (esActaVehicular) {
-        // CASO B: ACTAS VEHICULARES INDIVIDUALES (EVALUACIÓN AUTOMÁTICA DE PLANTILLA MAYOR / MENOR)
         for (let idxV = 0; idxV < listaVehiculos.length; idxV++) {
           const veh = listaVehiculos[idxV];
           const rutaPlantillaFinal = obtenerRutaArchivoActa(acta, veh);
@@ -893,7 +874,6 @@ async function ejecutarGeneracionFinalExpediente() {
         }
 
       } else {
-        // CASO C: ACTAS PERSONALES INDIVIDUALES (REPLICADAS POR CADA DETENIDO)
         for (let idx = 0; idx < listaIntervenidos.length; idx++) {
           const persona = listaIntervenidos[idx];
 
@@ -931,7 +911,6 @@ async function ejecutarGeneracionFinalExpediente() {
       }
     }
 
-    // DESCARGA FINAL (.ZIP O .DOCX)
     if (archivosAgregados === 1 && listaIntervenidos.length === 1 && listaVehiculos.length === 1) {
       const soloFicheroKey = Object.keys(zip.files)[0];
       const blobUnico = await zip.file(soloFicheroKey).async("blob");
@@ -954,14 +933,12 @@ async function ejecutarGeneracionFinalExpediente() {
   }
 }
 
-/**
- * RENDERIZADOR DOCXTEMPLATER ANTI-CACHE
- */
 async function generarDocumentoWord(rutaPlantilla, datos) {
   const PizZipLib = window.PizZip || (typeof PizZip !== 'undefined' ? PizZip : null);
-  const DocxLib = window.docxtemplater || (typeof docxtemplater !== 'undefined' ? docxtemplater : null);
+  const DocxLib = window.docxtemplater || window.Docxtemplater || (typeof docxtemplater !== 'undefined' ? docxtemplater : null);
 
   if (!PizZipLib) throw new Error("No se pudo cargar PizZip.");
+  if (!DocxLib) throw new Error("No se pudo cargar Docxtemplater.");
 
   const urlAntiCache = `${rutaPlantilla}?t=${new Date().getTime()}`;
   const response = await fetch(urlAntiCache);
