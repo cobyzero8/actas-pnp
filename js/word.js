@@ -137,6 +137,7 @@ let actasAProcesarSecuencia = [];
 let indiceActaActual = 0;
 let datosFormularioBase = {};
 let horariosPorActa = {};
+let datosFinalesCompilados = {};
 
 function obtenerRutaArchivoActa(acta, vehiculo) {
   const idLimpio = (acta.id || '').toLowerCase();
@@ -468,10 +469,6 @@ function generarBloqueCierreYFirmas(horaFin, lista) {
   return textoCierre;
 }
 
-/**
- * Mapea las respuestas guardadas de Situación Vehicular hacia las etiquetas individuales del Word.
- * Convierte valores "BUENO", "MALO", "REGULAR", "FALTA" en sus códigos "B", "M", "R", "F".
- */
 function obtenerDatosMapeadosSituacionVehicular() {
   const rawSV = localStorage.getItem('pnp_sv_estado_formulario');
   const datosMapeados = {};
@@ -490,7 +487,6 @@ function obtenerDatosMapeadosSituacionVehicular() {
       else if (valorTexto.includes("REGULAR")) codigoEstado = "R";
       else if (valorTexto.includes("FALTA")) codigoEstado = "F";
 
-      // Limpia tildes, caracteres especiales y convierte a snake_case
       const claveEtiqueta = "sv_" + itemNombre.toLowerCase()
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
         .replace(/[^a-z0-9]/g, "_")
@@ -649,7 +645,7 @@ function avanzarAoSaltarAQuienLleveHora(horaSugeridaInicio) {
 
   const modal = document.getElementById('modalHoras');
   if (modal) modal.style.display = 'none';
-  ejecutarGeneracionFinalExpediente();
+  prepararYMostrarVistaPrevia();
 }
 
 function mostrarModalHoraActa(index, horaSugeridaInicio) {
@@ -687,7 +683,7 @@ function mostrarModalHoraActa(index, horaSugeridaInicio) {
   if (btnSiguiente) {
     const quedanMasConHora = actasAProcesarSecuencia.slice(index + 1).some(a => a.id !== "acta_buen_trato" && a.llevaHora !== false);
     if (!quedanMasConHora) {
-      btnSiguiente.innerHTML = "📦 Generar Documento(s)";
+      btnSiguiente.innerHTML = "👁️ Ver Vista Previa";
       btnSiguiente.className = "btn btn-success";
     } else {
       btnSiguiente.innerHTML = "Siguiente ➡️";
@@ -726,8 +722,289 @@ async function confirmarHoraActaActual() {
   } else {
     const modal = document.getElementById('modalHoras');
     if (modal) modal.style.display = 'none';
-    await ejecutarGeneracionFinalExpediente();
+    prepararYMostrarVistaPrevia();
   }
+}
+
+/**
+ * Prepara todos los datos del expediente y muestra el Modal de Vista Previa
+ */
+function prepararYMostrarVistaPrevia() {
+  const regPersonal = horariosPorActa['acta_registro_personal'] || { horaInicio: "08:00", horaTermino: "08:05" };
+  const lecturaDerechos = horariosPorActa['acta_lectura_derechos'] || { horaInicio: "08:06", horaTermino: "08:11" };
+  const detencionHorario = horariosPorActa['acta_detencion'] || { horaInicio: "08:12", horaTermino: "08:17" };
+
+  const hora5Val = detencionHorario.horaInicio || sumarMinutosAHora(lecturaDerechos.horaTermino, 1);
+  const hora6Val = detencionHorario.horaTermino || sumarMinutosAHora(hora5Val, 5);
+  const horaDetencionVal = sumarMinutosAHora(hora6Val, 2);
+
+  const horaIntElem = document.getElementById('hora_intervencion');
+  const horaIntVal = horaIntElem ? horaIntElem.value : regPersonal.horaInicio;
+
+  const fiscalElem = document.getElementById('fiscal');
+  const fiscalVal = fiscalElem ? (fiscalElem.value.trim() || "RMP NO ESPECIFICADO") : "RMP NO ESPECIFICADO";
+
+  const agraviadoElem = document.getElementById('agraviado');
+  const agraviadoVal = agraviadoElem ? (agraviadoElem.value.trim() || "EL ESTADO") : "EL ESTADO";
+
+  const tipoActElem = document.getElementById('tipo_actividad');
+  const tipoActVal = tipoActElem ? tipoActElem.value : 'PATRULLAJE DE RUTINA';
+  const nomOpElem = document.getElementById('nombre_operativo');
+  const nomOpVal = nomOpElem ? nomOpElem.value.trim() : '';
+  const actividadTexto = tipoActVal === 'OPERATIVO POLICIAL' ? `el O/P ${nomOpVal}` : `Patrullaje de Rutina`;
+
+  const cantVehElem = document.getElementById('cant_vehiculos_pnp');
+  const cantVeh = cantVehElem ? (parseInt(cantVehElem.value, 10) || 1) : 1;
+  const vehiculosPNPObj = {};
+  for (let i = 1; i <= cantVeh; i++) {
+    const inputElem = document.getElementById(`placa_policial_${i}`);
+    vehiculosPNPObj[`placa_policial${i}`] = inputElem ? (inputElem.value.trim() || "S/P") : "S/P";
+  }
+
+  const cantSecElem = document.getElementById('cant_secciones');
+  const cantSec = cantSecElem ? (parseInt(cantSecElem.value, 10) || 1) : 1;
+  const seccionesObj = {};
+  let bloquesNarrativaLista = [];
+
+  for (let i = 1; i <= cantSec; i++) {
+    const titInputElem = document.getElementById(`titulo_sec_${i}`);
+    const tituloFinal = titInputElem ? (titInputElem.value.trim() || `SECCIÓN ${i}:`) : `SECCIÓN ${i}:`;
+    
+    const txtAreaElem = document.getElementById(`agregar_intervencion_${i}`);
+    const contenido = txtAreaElem ? txtAreaElem.value : '';
+    
+    seccionesObj[`titulo_intervencion${i}`] = tituloFinal;
+    seccionesObj[`agregar_intervencion${i}`] = `${tituloFinal}\n${contenido}`;
+    
+    if (contenido.trim()) {
+      bloquesNarrativaLista.push(`${tituloFinal}\n${contenido}`);
+    }
+  }
+
+  const listaEfectivosPNP = obtenerListaEfectivosPNPForm();
+  const listaIntervenidos = obtenerListaIntervenidosForm();
+  const listaVehiculos = obtenerListaVehiculosForm();
+
+  let textoIntervenidosColectivo = "";
+  if (listaIntervenidos.length === 1) {
+    textoIntervenidosColectivo = `${listaIntervenidos[0].nombre} (${listaIntervenidos[0].edad} años), DNI N° ${listaIntervenidos[0].dni}`;
+  } else {
+    const partes = listaIntervenidos.map(item => `${item.nombre} (${item.edad} años), DNI N° ${item.dni}`);
+    const ultimo = partes.pop();
+    textoIntervenidosColectivo = `${partes.join(', ')} y ${ultimo}`;
+  }
+
+  const textoVehiculosColectivo = construirTextoVehiculosResumen(listaVehiculos);
+  const filiacionCompleta = obtenerTextoFiliacionCompletaMultiples(listaIntervenidos);
+  const horaTerminoTotal = horariosPorActa['acta_intervencion']?.horaTermino || datosFormularioBase.hora2 || "08:30";
+  const horaPruebaG = sumarMinutosAHora(horaIntVal, 15);
+  const bloqueFirmasG = generarBloqueCierreYFirmas(horaTerminoTotal, listaIntervenidos);
+
+  const resultadoSituacionVehicular = localStorage.getItem('pnp_acta_situacion_vehicular_resultado') || "NO REGISTRA INSPECCIÓN GRÁFICA";
+
+  datosFinalesCompilados = {
+    ...datosFormularioBase,
+    ...vehiculosPNPObj,
+    ...seccionesObj,
+    
+    vehiculos_policiales_texto: obtenerTextoVehiculosPoliciales(),
+
+    intervenido_nombre: listaIntervenidos[0]?.nombre || "",
+    intervenido_dni: listaIntervenidos[0]?.dni || "",
+    licencia: listaIntervenidos[0]?.licencia || "________",
+    categoria_licencia: listaIntervenidos[0]?.categoria_licencia || "____",
+    edad: listaIntervenidos[0]?.edad || "",
+    estado_civil: listaIntervenidos[0]?.estado_civil || "",
+    natural: listaIntervenidos[0]?.natural || "",
+    celular1: listaIntervenidos[0]?.celular || "S/N",
+    papa: listaIntervenidos[0]?.papa || "S/D",
+    mama: listaIntervenidos[0]?.mama || "S/D",
+    ocupacion: listaIntervenidos[0]?.ocupacion || "",
+    domicilio: listaIntervenidos[0]?.domicilio || "",
+    asistido_confianza: listaIntervenidos[0]?.asistido_confianza || "",
+    asistido_confianza_registro: listaIntervenidos[0]?.asistido_confianza_registro || "",
+
+    efectivos_intervinientes_texto: obtenerTextoEfectivosNarrativa(listaEfectivosPNP),
+    firmas_pnp: generarBloqueFirmasPNP(listaEfectivosPNP),
+
+    filiacion_intervenidos: filiacionCompleta,
+    resumen_intervenidos: textoIntervenidosColectivo,
+    resumen_vehiculos: textoVehiculosColectivo,
+    secciones_narrativa: bloquesNarrativaLista.join('\n\n'),
+    calidad_detenido: listaIntervenidos.length > 1 ? "DETENIDOS" : "DETENIDO",
+    bloque_firmas: bloqueFirmasG,
+    hora_prueba: horaPruebaG,
+    hora_termino: horaTerminoTotal,
+    acta_situacion_vehicular_resultado: resultadoSituacionVehicular,
+
+    intervenidos_resumen: textoIntervenidosColectivo,
+    vehiculos_resumen: textoVehiculosColectivo,
+    hora_intervencion: horaIntVal,
+    fiscal: fiscalVal,
+    agraviado: agraviadoVal,
+    actividad_realizada: actividadTexto,
+    documentos_retran: procesarDocumentosRNT(),
+    hora1: regPersonal.horaInicio,
+    hora2: regPersonal.horaTermino,
+    hora3: lecturaDerechos.horaInicio,
+    hora4: lecturaDerechos.horaTermino,
+    hora5: hora5Val,
+    hora6: hora6Val,
+    hora_detencion: horaDetencionVal,
+
+    _listaEfectivos: listaEfectivosPNP,
+    _listaIntervenidos: listaIntervenidos,
+    _listaVehiculos: listaVehiculos
+  };
+
+  mostrarModalVistaPrevia();
+}
+
+/**
+ * Crea e inyecta dinámicamente el modal de Vista Previa en el DOM si no existe
+ */
+function asegurarModalVistaPreviaDOM() {
+  if (document.getElementById('modalVistaPrevia')) return;
+
+  const modalHTML = `
+    <div id="modalVistaPrevia" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(3px);">
+      <div style="background:#fff; width:90%; max-width:900px; max-height:90vh; border-radius:10px; box-shadow:0 10px 25px rgba(0,0,0,0.3); display:flex; flex-direction:column; overflow:hidden;">
+        
+        <!-- Header -->
+        <div style="background:#003366; color:#fff; padding:15px 20px; display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="margin:0; font-size:16px;">👁️ VISTA PREVIA DEL EXPEDIENTE POLICIAL</h3>
+          <button type="button" onclick="cerrarModalVistaPrevia()" style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer;">✖</button>
+        </div>
+
+        <!-- Body Scrollable -->
+        <div id="contenidoVistaPreviaBody" style="padding:20px; overflow-y:auto; flex:1; font-size:13px; color:#334155; line-height:1.5;">
+          <!-- Se llena dinámicamente -->
+        </div>
+
+        <!-- Footer -->
+        <div style="background:#f1f5f9; padding:15px 20px; border-top:1px solid #cbd5e1; display:flex; justify-content:space-between; align-items:center;">
+          <button type="button" onclick="cerrarModalVistaPrevia()" style="padding:10px 18px; background:#64748b; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">
+            ✏️ Volver a Editar
+          </button>
+          <button type="button" onclick="confirmarYGenerarExpedienteDesdePrevia()" style="padding:10px 22px; background:#166534; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:14px;">
+            📦 Confirmar y Descargar (.zip / .docx)
+          </button>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function mostrarModalVistaPrevia() {
+  asegurarModalVistaPreviaDOM();
+
+  const bodyElem = document.getElementById('contenidoVistaPreviaBody');
+  const d = datosFinalesCompilados;
+
+  let htmlActas = "";
+  actasAProcesarSecuencia.forEach((acta, idx) => {
+    const hor = horariosPorActa[acta.id] || { horaInicio: "-", horaTermino: "-" };
+    htmlActas += `
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:10px; border-radius:6px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <strong style="color:#0369a1;">📄 ${acta.titulo}</strong><br>
+          <span style="font-size:11px; color:#64748b;">Modalidad: ${acta.esIndividual === false ? 'Colectiva' : (acta.esVehicular ? 'Por Vehículo' : 'Por Intervenido')}</span>
+        </div>
+        <div style="text-align:right; font-weight:bold; color:#0f172a; font-size:12px;">
+          ⏰ ${hor.horaInicio || 'S/H'} - ${hor.horaTermino || 'S/H'}
+        </div>
+      </div>
+    `;
+  });
+
+  let htmlIntervenidos = "";
+  d._listaIntervenidos.forEach((i, idx) => {
+    htmlIntervenidos += `
+      <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:8px 12px; border-radius:6px; margin-bottom:6px; font-size:12px;">
+        <strong>👤 Intervenido ${idx + 1}:</strong> ${i.nombre} | <strong>DNI:</strong> ${i.dni} | <strong>Edad:</strong> ${i.edad} años | <strong>L/C:</strong> ${i.licencia || 'S/L'}
+      </div>
+    `;
+  });
+
+  let htmlVehiculos = "";
+  d._listaVehiculos.forEach((v, idx) => {
+    htmlVehiculos += `
+      <div style="background:#fefce8; border:1px solid #fef08a; padding:8px 12px; border-radius:6px; margin-bottom:6px; font-size:12px;">
+        <strong>🚗 Vehículo ${idx + 1}:</strong> Placa ${v.placa} | Clase: ${v.clase_vehiculo} | Marca: ${v.marca} | Modelo: ${v.modelo} | Color: ${v.color}
+      </div>
+    `;
+  });
+
+  const datosMapeadosSV = obtenerDatosMapeadosSituacionVehicular();
+  let htmlSVDetails = "";
+  if (Object.keys(datosMapeadosSV).length > 0) {
+    const itemsNovedades = [];
+    for (let k in datosMapeadosSV) {
+      if (k.startsWith('sv_') && k !== 'sv_observaciones' && k !== 'sv_combustible' && datosMapeadosSV[k] !== 'B') {
+        const nombreLindo = k.replace('sv_', '').replace(/_/g, ' ').toUpperCase();
+        itemsNovedades.push(`<li><strong>${nombreLindo}:</strong> <span style="color:#991b1b; font-weight:bold;">${datosMapeadosSV[k]}</span></li>`);
+      }
+    }
+    if (itemsNovedades.length > 0) {
+      htmlSVDetails = `<ul style="margin:5px 0; padding-left:20px; font-size:11px;">${itemsNovedades.join('')}</ul>`;
+    } else {
+      htmlSVDetails = `<span style="color:#166534; font-size:11px; font-weight:bold;">✅ Todos los componentes registrados en BUENO (B).</span>`;
+    }
+  } else {
+    htmlSVDetails = `<span style="color:#64748b; font-size:11px;">No se ha registrado inspección gráfica para este expediente.</span>`;
+  }
+
+  bodyElem.innerHTML = `
+    <!-- DATOS GENERALES -->
+    <div style="background:#f1f5f9; border-left:4px solid #003366; padding:10px 14px; margin-bottom:15px; border-radius:0 6px 6px 0;">
+      <h4 style="margin:0 0 8px 0; color:#003366; text-transform:uppercase; font-size:13px;">📌 Resumen General de Intervención</h4>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:8px;">
+        <div><strong>Delito / Motivo:</strong> ${d.delito}</div>
+        <div><strong>Fecha / Hora Int.:</strong> ${d.fecha} (${d.hora_intervencion} Hrs)</div>
+        <div><strong>Lugar:</strong> ${d.lugar}, ${d.distrito}</div>
+        <div><strong>Fiscal:</strong> ${d.fiscal}</div>
+        <div><strong>Agraviado:</strong> ${d.agraviado}</div>
+        <div><strong>Unidad PNP:</strong> ${d.unidad_policial}</div>
+      </div>
+    </div>
+
+    <!-- DOCUMENTOS / ACTAS A GENERAR -->
+    <h4 style="margin:15px 0 8px 0; color:#0369a1; text-transform:uppercase; font-size:13px;">📑 Actas Seleccionadas y Cronograma de Horarios (${actasAProcesarSecuencia.length})</h4>
+    ${htmlActas}
+
+    <!-- INTERVENIDOS -->
+    <h4 style="margin:15px 0 8px 0; color:#1e40af; text-transform:uppercase; font-size:13px;">👥 Personal Intervenido</h4>
+    ${htmlIntervenidos}
+
+    <!-- VEHÍCULOS -->
+    <h4 style="margin:15px 0 8px 0; color:#854d0e; text-transform:uppercase; font-size:13px;">🚘 Vehículos e Inspección Técnica (SV)</h4>
+    ${htmlVehiculos}
+    <div style="background:#fff; border:1px solid #cbd5e1; padding:10px; border-radius:6px; margin-top:5px;">
+      <strong style="font-size:12px;">📊 Novedades de Inspección Vehicular:</strong>
+      ${htmlSVDetails}
+    </div>
+
+    <!-- PERSONAL PNP INTERVINIENTE -->
+    <h4 style="margin:15px 0 8px 0; color:#166534; text-transform:uppercase; font-size:13px;">👮 Personal Policial Interviniente</h4>
+    <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:8px 12px; border-radius:6px; font-size:12px;">
+      ${d.efectivos_intervinientes_texto}
+    </div>
+  `;
+
+  document.getElementById('modalVistaPrevia').style.display = 'flex';
+}
+
+function cerrarModalVistaPrevia() {
+  const modal = document.getElementById('modalVistaPrevia');
+  if (modal) modal.style.display = 'none';
+}
+
+async function confirmarYGenerarExpedienteDesdePrevia() {
+  cerrarModalVistaPrevia();
+  await ejecutarGeneracionFinalExpediente();
 }
 
 async function ejecutarGeneracionFinalExpediente() {
@@ -739,128 +1016,11 @@ async function ejecutarGeneracionFinalExpediente() {
   }
 
   try {
-    const regPersonal = horariosPorActa['acta_registro_personal'] || { horaInicio: "08:00", horaTermino: "08:05" };
-    const lecturaDerechos = horariosPorActa['acta_lectura_derechos'] || { horaInicio: "08:06", horaTermino: "08:11" };
-    const detencionHorario = horariosPorActa['acta_detencion'] || { horaInicio: "08:12", horaTermino: "08:17" };
-
-    const hora5Val = detencionHorario.horaInicio || sumarMinutosAHora(lecturaDerechos.horaTermino, 1);
-    const hora6Val = detencionHorario.horaTermino || sumarMinutosAHora(hora5Val, 5);
-    const horaDetencionVal = sumarMinutosAHora(hora6Val, 2);
-
-    const horaIntElem = document.getElementById('hora_intervencion');
-    const horaIntVal = horaIntElem ? horaIntElem.value : regPersonal.horaInicio;
-
-    const fiscalElem = document.getElementById('fiscal');
-    const fiscalVal = fiscalElem ? (fiscalElem.value.trim() || "RMP NO ESPECIFICADO") : "RMP NO ESPECIFICADO";
-
-    const agraviadoElem = document.getElementById('agraviado');
-    const agraviadoVal = agraviadoElem ? (agraviadoElem.value.trim() || "EL ESTADO") : "EL ESTADO";
-
-    const tipoActElem = document.getElementById('tipo_actividad');
-    const tipoActVal = tipoActElem ? tipoActElem.value : 'PATRULLAJE DE RUTINA';
-    const nomOpElem = document.getElementById('nombre_operativo');
-    const nomOpVal = nomOpElem ? nomOpElem.value.trim() : '';
-    const actividadTexto = tipoActVal === 'OPERATIVO POLICIAL' ? `el O/P ${nomOpVal}` : `Patrullaje de Rutina`;
-
-    const cantVehElem = document.getElementById('cant_vehiculos_pnp');
-    const cantVeh = cantVehElem ? (parseInt(cantVehElem.value, 10) || 1) : 1;
-    const vehiculosPNPObj = {};
-    for (let i = 1; i <= cantVeh; i++) {
-      const inputElem = document.getElementById(`placa_policial_${i}`);
-      vehiculosPNPObj[`placa_policial${i}`] = inputElem ? (inputElem.value.trim() || "S/P") : "S/P";
-    }
-
-    const cantSecElem = document.getElementById('cant_secciones');
-    const cantSec = cantSecElem ? (parseInt(cantSecElem.value, 10) || 1) : 1;
-    const seccionesObj = {};
-    let bloquesNarrativaLista = [];
-
-    for (let i = 1; i <= cantSec; i++) {
-      const titInputElem = document.getElementById(`titulo_sec_${i}`);
-      const tituloFinal = titInputElem ? (titInputElem.value.trim() || `SECCIÓN ${i}:`) : `SECCIÓN ${i}:`;
-      
-      const txtAreaElem = document.getElementById(`agregar_intervencion_${i}`);
-      const contenido = txtAreaElem ? txtAreaElem.value : '';
-      
-      seccionesObj[`titulo_intervencion${i}`] = tituloFinal;
-      seccionesObj[`agregar_intervencion${i}`] = `${tituloFinal}\n${contenido}`;
-      
-      if (contenido.trim()) {
-        bloquesNarrativaLista.push(`${tituloFinal}\n${contenido}`);
-      }
-    }
-
-    const listaEfectivosPNP = obtenerListaEfectivosPNPForm();
-    const listaIntervenidos = obtenerListaIntervenidosForm();
-    const listaVehiculos = obtenerListaVehiculosForm();
-
-    let textoIntervenidosColectivo = "";
-    if (listaIntervenidos.length === 1) {
-      textoIntervenidosColectivo = `${listaIntervenidos[0].nombre} (${listaIntervenidos[0].edad} años), DNI N° ${listaIntervenidos[0].dni}`;
-    } else {
-      const partes = listaIntervenidos.map(item => `${item.nombre} (${item.edad} años), DNI N° ${item.dni}`);
-      const ultimo = partes.pop();
-      textoIntervenidosColectivo = `${partes.join(', ')} y ${ultimo}`;
-    }
-
-    const textoVehiculosColectivo = construirTextoVehiculosResumen(listaVehiculos);
-    const filiacionCompleta = obtenerTextoFiliacionCompletaMultiples(listaIntervenidos);
-    const horaTerminoTotal = horariosPorActa['acta_intervencion']?.horaTermino || datosFormularioBase.hora2 || "08:30";
-    const horaPruebaG = sumarMinutosAHora(horaIntVal, 15);
-    const bloqueFirmasG = generarBloqueCierreYFirmas(horaTerminoTotal, listaIntervenidos);
-
-    const resultadoSituacionVehicular = localStorage.getItem('pnp_acta_situacion_vehicular_resultado') || "NO REGISTRA INSPECCIÓN GRÁFICA";
-
-    const datosFinalesBase = {
-      ...datosFormularioBase,
-      ...vehiculosPNPObj,
-      ...seccionesObj,
-      
-      vehiculos_policiales_texto: obtenerTextoVehiculosPoliciales(),
-
-      intervenido_nombre: listaIntervenidos[0]?.nombre || "",
-      intervenido_dni: listaIntervenidos[0]?.dni || "",
-      licencia: listaIntervenidos[0]?.licencia || "________",
-      categoria_licencia: listaIntervenidos[0]?.categoria_licencia || "____",
-      edad: listaIntervenidos[0]?.edad || "",
-      estado_civil: listaIntervenidos[0]?.estado_civil || "",
-      natural: listaIntervenidos[0]?.natural || "",
-      celular1: listaIntervenidos[0]?.celular || "S/N",
-      papa: listaIntervenidos[0]?.papa || "S/D",
-      mama: listaIntervenidos[0]?.mama || "S/D",
-      ocupacion: listaIntervenidos[0]?.ocupacion || "",
-      domicilio: listaIntervenidos[0]?.domicilio || "",
-      asistido_confianza: listaIntervenidos[0]?.asistido_confianza || "",
-      asistido_confianza_registro: listaIntervenidos[0]?.asistido_confianza_registro || "",
-
-      efectivos_intervinientes_texto: obtenerTextoEfectivosNarrativa(listaEfectivosPNP),
-      firmas_pnp: generarBloqueFirmasPNP(listaEfectivosPNP),
-
-      filiacion_intervenidos: filiacionCompleta,
-      resumen_intervenidos: textoIntervenidosColectivo,
-      resumen_vehiculos: textoVehiculosColectivo,
-      secciones_narrativa: bloquesNarrativaLista.join('\n\n'),
-      calidad_detenido: listaIntervenidos.length > 1 ? "DETENIDOS" : "DETENIDO",
-      bloque_firmas: bloqueFirmasG,
-      hora_prueba: horaPruebaG,
-      hora_termino: horaTerminoTotal,
-      acta_situacion_vehicular_resultado: resultadoSituacionVehicular,
-
-      intervenidos_resumen: textoIntervenidosColectivo,
-      vehiculos_resumen: textoVehiculosColectivo,
-      hora_intervencion: horaIntVal,
-      fiscal: fiscalVal,
-      agraviado: agraviadoVal,
-      actividad_realizada: actividadTexto,
-      documentos_retran: procesarDocumentosRNT(),
-      hora1: regPersonal.horaInicio,
-      hora2: regPersonal.horaTermino,
-      hora3: lecturaDerechos.horaInicio,
-      hora4: lecturaDerechos.horaTermino,
-      hora5: hora5Val,
-      hora6: hora6Val,
-      hora_detencion: horaDetencionVal
-    };
+    const datosFinalesBase = datosFinalesCompilados;
+    const listaIntervenidos = datosFinalesBase._listaIntervenidos || [];
+    const listaVehiculos = datosFinalesBase._listaVehiculos || [];
+    const listaEfectivosPNP = datosFinalesBase._listaEfectivos || [];
+    const textoIntervenidosColectivo = datosFinalesBase.resumen_intervenidos || "";
 
     // REGISTRO EN SUPABASE (Aislado)
     try {
