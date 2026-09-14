@@ -16,14 +16,15 @@
       <button onclick="cerrarSesion()" class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size: 11px;">Salir</button>
     </div>
 
-    <!-- PASO 1: SELECCIONAR DELITO -->
+    <!-- PASO 1: SELECCIONAR DELITO O MODO DILIGENCIA INDEPENDIENTE -->
     <div style="margin-bottom: 20px;">
       <label for="delito_input" style="color: var(--primary); font-size: 14px; font-weight: bold;">
-        1. Busque y seleccione el Presunto Delito:
+        1. Busque el Presunto Delito (Opcional si es Acta Independiente):
       </label>
-      <input list="delitos_lista" id="delito_input" placeholder="Escribe para buscar (Ej: Conducción, Lesiones, Robos...)" style="border: 2px solid var(--primary); font-weight: bold; width: 100%; padding: 10px; box-sizing: border-box; margin-top: 5px;">
+      <input list="delitos_lista" id="delito_input" placeholder="Escribe para buscar delito O deja en blanco para Acta Independiente..." style="border: 2px solid var(--primary); font-weight: bold; width: 100%; padding: 10px; box-sizing: border-box; margin-top: 5px;">
       
       <datalist id="delitos_lista">
+        <option value="DILIGENCIA POLICIAL INDEPENDIENTE (S/D)">
         <!-- DELITOS CONTRA LA VIDA, EL CUERPO Y LA SALUD -->
         <option value="HOMICIDIO SIMPLE (ART. 106 CP)">
         <option value="PARRICIDIO (ART. 107 CP)">
@@ -478,11 +479,7 @@
   }
 
   function continuarAlFormulario() {
-    const delitoTexto = document.getElementById('delito_input').value.trim();
-    if (!delitoTexto) {
-      alert("⚠️ Por favor escribe o selecciona el Presunto Delito antes de continuar.");
-      return;
-    }
+    let delitoTexto = document.getElementById('delito_input').value.trim();
 
     const actasElegidas = [];
     CATALOGO_ACTAS.forEach(acta => {
@@ -493,6 +490,11 @@
     if (actasElegidas.length === 0) {
       alert("⚠️ Debes seleccionar al menos una (01) acta para generar.");
       return;
+    }
+
+    // Si no se escribió delito, asigna la categoría de Diligencia Independiente
+    if (!delitoTexto) {
+      delitoTexto = "DILIGENCIA POLICIAL INDEPENDIENTE";
     }
 
     const delitoTextoCompleto = MAPA_DELITOS_COMPLETOS[delitoTexto] || delitoTexto;
