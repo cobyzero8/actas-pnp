@@ -16,7 +16,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
   <style>
-    /* Estilos de la Barra de Navegación por Pasos/Etapas */
     .wizard-header {
       display: flex;
       justify-content: space-between;
@@ -42,24 +41,16 @@
       transition: all 0.2s ease;
       user-select: none;
     }
-    .wizard-step-badge:hover {
-      background: #cbd5e1;
-    }
+    .wizard-step-badge:hover { background: #cbd5e1; }
     .wizard-step-badge.active {
       background: #003366;
       color: #ffffff;
       box-shadow: 0 2px 4px rgba(0, 51, 102, 0.3);
     }
-    .wizard-step-badge.disabled {
-      display: none !important;
-    }
+    .wizard-step-badge.disabled { display: none !important; }
 
-    .etapa-card {
-      display: none;
-    }
-    .etapa-card.active {
-      display: block;
-    }
+    .etapa-card { display: none; }
+    .etapa-card.active { display: block; }
 
     .wizard-buttons {
       display: flex;
@@ -185,9 +176,7 @@
       text-align: left;
       transition: opacity 0.2s ease;
     }
-    .preset-btn:hover {
-      opacity: 0.9;
-    }
+    .preset-btn:hover { opacity: 0.9; }
 
     .narrativa-textarea {
       width: 100%;
@@ -303,15 +292,11 @@
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
       <div>
-        <label style="font-size: 12px; font-weight: bold; color: #333; display: block; margin-bottom: 4px;">
-          Hora Inicio:
-        </label>
+        <label style="font-size: 12px; font-weight: bold; color: #333; display: block; margin-bottom: 4px;">Hora Inicio:</label>
         <input type="time" id="modalHoraInicio" style="width: 100%; box-sizing: border-box; padding: 8px; font-size: 14px; border: 1.5px solid #003366; border-radius: 4px; font-weight: bold;">
       </div>
       <div>
-        <label style="font-size: 12px; font-weight: bold; color: #333; display: block; margin-bottom: 4px;">
-          Hora Término:
-        </label>
+        <label style="font-size: 12px; font-weight: bold; color: #333; display: block; margin-bottom: 4px;">Hora Término:</label>
         <input type="time" id="modalHoraTermino" style="width: 100%; box-sizing: border-box; padding: 8px; font-size: 14px; border: 1.5px solid #003366; border-radius: 4px; font-weight: bold;">
       </div>
     </div>
@@ -887,7 +872,7 @@
   function adaptarEtapasPorActas(actasConfiguradas, delitoTexto) {
     const texto = delitoTexto.toUpperCase();
     const requiereVehiculos = actasConfiguradas.some(id => 
-      ["acta_registro_vehicular", "acta_inmovilizacion", "acta_s_v_vehiculo_mayor", "acta_s_v_vehiculo_menor"].includes(id)
+      ["acta_registro_vehicular", "acta_inmovilizacion", "acta_situacion_vehicular"].includes(id)
     ) || texto.includes("EBRIEDAD") || texto.includes("TRÁNSITO") || texto.includes("CULPOSAS");
 
     const requiereEvidencia = actasConfiguradas.some(id => 
@@ -1476,11 +1461,6 @@
         { titulo: `${prefijo}N° Chasis`, val: `N° chasis ${veh.num_chasis}` }
       );
     });
-
-    const actaVehicularGuardada = localStorage.getItem('pnp_acta_situacion_vehicular_resultado');
-    if (actaVehicularGuardada) {
-      categorias[1].items.push({ titulo: "📄 Acta Completa de Situación Vehicular", val: actaVehicularGuardada });
-    }
 
     const opcConstancia = getVal('opcion_constancia_testigo');
     let resumenConstanciaChip = "Realizado en la Dependencia Policial";
