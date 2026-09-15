@@ -254,14 +254,14 @@
   <div class="modal-content" style="max-width: 850px; max-height: 90vh; display: flex; flex-direction: column;">
     <div style="display: flex; justify-content: space-between; align-items: center; background: #003366; color: white; padding: 12px 16px; border-top-left-radius: 8px; border-top-right-radius: 8px;">
       <h3 style="margin: 0; font-size: 16px;">👁️ Vista Previa del Expediente</h3>
-      <button type="button" onclick="cerrarVistaPrevia()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">&times;</button>
+      <button type="button" onclick="cerrarModalVistaPrevia()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">&times;</button>
     </div>
-    <div id="contenidoVistaPrevia" style="padding: 15px; overflow-y: auto; flex: 1; font-family: monospace; font-size: 12px; white-space: pre-wrap; background: #f8fafc; border: 1px solid #e2e8f0; margin: 10px 0; border-radius: 6px;">
-      <!-- Se inyecta la vista previa -->
+    <div id="contenidoVistaPreviaBody" style="padding: 15px; overflow-y: auto; flex: 1; font-size: 12px; background: #f8fafc; border: 1px solid #e2e8f0; margin: 10px 0; border-radius: 6px;">
+      <!-- Se inyecta la vista previa dinámicamente -->
     </div>
     <div style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0;">
-      <button type="button" class="btn btn-secondary" onclick="cerrarVistaPrevia()">Cerrar</button>
-      <button type="button" class="btn btn-success" onclick="cerrarVistaPrevia(); document.getElementById('expedienteForm').requestSubmit();">
+      <button type="button" class="btn btn-secondary" onclick="cerrarModalVistaPrevia()">Cerrar</button>
+      <button type="button" class="btn btn-success" onclick="confirmarYGenerarExpedienteDesdePrevia()">
         📦 Confirmar y Generar ZIP
       </button>
     </div>
@@ -801,7 +801,7 @@
           <button type="button" class="btn btn-secondary" onclick="navegarEtapa(-1)">⬅️ Etapa Anterior</button>
           
           <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <button type="button" class="btn" onclick="generarVistaPrevia()" style="background: #0284c7; color: white; font-weight: bold; padding: 10px 16px;">
+            <button type="button" class="btn" onclick="prepararYMostrarVistaPrevia()" style="background: #0284c7; color: white; font-weight: bold; padding: 10px 16px;">
               👁️ Vista Previa
             </button>
             <button type="submit" form="expedienteForm" class="btn btn-success" style="font-size: 15px; padding: 10px 20px;">
@@ -893,10 +893,6 @@
       mostrarEtapa(1);
     }
   });
-
-  /* ==========================================================================
-     NUEVAS FUNCIONALIDADES: GPS Y DICTADO POR VOZ
-     ========================================================================== */
 
   async function obtenerUbicacionGPS(idInputLugar, idBoton) {
     if (!navigator.geolocation) {
@@ -1037,57 +1033,6 @@
     };
 
     rec.start();
-  }
-
-  /* ==========================================================================
-     LÓGICA GENERAL DEL EXPEDIENTE
-     ========================================================================== */
-
-  function generarVistaPrevia() {
-    guardarEstadoFormulario();
-    const estado = JSON.parse(localStorage.getItem('pnp_formulario_estado_guardado') || '{}');
-    
-    let txt = `========================================================\n`;
-    txt += `       VISTA PREVIA DE DATOS DEL EXPEDIENTE POLICIAL\n`;
-    txt += `========================================================\n\n`;
-    
-    txt += `📍 LUGAR Y TIEMPO:\n`;
-    txt += `   • Fecha: ${estado.fecha || 'S/F'} | Hora Intervención: ${estado.hora_intervencion || 'S/H'}\n`;
-    txt += `   • Ubicación: ${estado.lugar || 'S/L'}, ${estado.distrito || ''} - ${estado.provincia || ''} (${estado.region || ''})\n\n`;
-
-    txt += `⚖️ UNIDADES Y FISCALÍA:\n`;
-    txt += `   • Unidad Interviniente: ${estado.unidad_policial || 'S/N'}\n`;
-    txt += `   • Unidad Disposición: ${estado.unidad_disposicion || 'S/N'}\n`;
-    txt += `   • Fiscal RMP: ${estado.fiscal || 'S/N'}\n`;
-    txt += `   • Agraviado: ${estado.agraviado || 'S/N'}\n\n`;
-
-    txt += `👥 INTERVENIDOS (${(estado.intervenidos || []).length}):\n`;
-    (estado.intervenidos || []).forEach((i, idx) => {
-      txt += `   ${idx + 1}. ${formatearNombreInvertido(i.nombre)} - DNI: ${i.dni} | Edad: ${i.edad} | Cel: ${i.celular || 'S/N'}\n`;
-    });
-    txt += `\n`;
-
-    txt += `🚘 VEHÍCULOS (${(estado.vehiculos || []).length}):\n`;
-    (estado.vehiculos || []).forEach((v, idx) => {
-      txt += `   ${idx + 1}. Placa: ${v.placa || 'S/P'} | Clase: ${v.clase_vehiculo} | Marca/Modelo: ${v.marca} ${v.modelo}\n`;
-    });
-    txt += `\n`;
-
-    txt += `📝 REDACCIÓN Y SECCIONES DEL ACTA:\n`;
-    (estado.seccionesNarrativa || []).forEach((sec, idx) => {
-      txt += `\n--- ${sec.titulo || `SECCIÓN ${idx + 1}`} ---\n`;
-      txt += `${sec.contenido || '[Sin contenido]'}\n`;
-    });
-
-    const cont = document.getElementById('contenidoVistaPrevia');
-    if (cont) cont.textContent = txt;
-    const modal = document.getElementById('modalVistaPrevia');
-    if (modal) modal.style.display = 'flex';
-  }
-
-  function cerrarVistaPrevia() {
-    const modal = document.getElementById('modalVistaPrevia');
-    if (modal) modal.style.display = 'none';
   }
 
   function evaluarTipoActividad() {
@@ -1910,7 +1855,7 @@
     document.getElementById('agregar_intervencion_1').value = `--- Siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv}, en patrullaje motorizado a bordo de la unidad ${pnp1}, procedieron a la intervención de: ${personaNomInv} (${persona.edad} años), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, conductor del vehículo de ${formatearDetalleVehiculo(veh)}.\n\n01. Circunstancias Precedentes: El personal policial advirtió que el vehículo antes mencionado realizaba maniobras temerarias y desplazamientos en zigzag, poniendo en peligro inminente la integridad de los peatones y conductores de la zona.\n\n02. Circunstancias Concomitantes: Al intervenir el vehículo y solicitar la documentación correspondiente al conductor, se percibió un fuerte aliento alcohólico, incoherencia al hablar y signos evidentes de ebriedad (ojo congestivo, desorientación).\n\n03. Circunstancias Posteriores: Al intervenido luego de hacerle de conocimiento el motivo de la intervención policial, de conformidad a las normativas vigentes y al Art. 307.2 del RETRAN, se procedió la Ejecución de pruebas de equilibrio y coordinación (Test de Hogan y Romberg).`;
 
     document.getElementById('titulo_sec_2').value = "II. PRUEBAS DE COORDINACIÓN Y/O EQUILIBRIO (RETRAN):";
-    document.getElementById('agregar_intervencion_2').value = `--- Con relación al Acta de Intervención Policial, y en aplicación al Art. 307.4 del RETRAN, se procede a realizar las siguiente (s) prueba (s) de equilibrio y/o coordinación:\n\n1. Andar con los ojos vendados o cerrados y los brazos en alto, poniendo un pie justo delante de otro, sobre una línea recta: [ NO PASÓ (X) ]\n2. Juntar los dedos índices de cada mano, a la altura de la barbilla, estando los ojos cerrados y partiendo de los brazos extendidos hacia abajo: [ NO PASÓ (X) ]\n3. Juntar el dedo índice de una mano con la nariz, estando con los ojos cerrados y partiendo de los brazos extendidos hacia abajo: [ NO PASÓ (X) ]\n4. Situar el individuo de pie con los pies juntos, las manos extendidas hacia adelante y con los ojos cerrados (PRUEBA DE ROMBERG): [ NO PASÓ (X) ]\n\n--- Asimismo, le dio a conocer sus derechos previstos en el Artículo 71 del CPP, se procedió a su traslado a la oficina de la ${unidadPol} para las diligencias correspondientes, dejando constancia que el intervenido ha recibido buen trato físico y psicológico. Los datos consultados en E-SINPOL PNP dieron resultado “NEGATIVO” para requisitorias. La persona intervenida es puesta a disposición de la ${unidadDisp} en calidad de DETENIDO.`;
+    document.getElementById('agregar_intervencion_2').value = `--- Con relación al Acta de Intervención Policial, y en aplicación al Art. 307.4 del RETRAN, se procede a realizar las siguiente (s) prueba (s) de equilibrio y/o coordinación:\n\n1. Andar con los ojos vendados o cerrados y los brazos en alto, poniendo un pie justo delante de otro, sobre una línea recta: [ NO PASÓ (X) ]\n2. Juntar los dedos índices de cada mano, a la altura de la barbilla, estando los ojos cerrados y partiendo de los brazos extendidos hacia abajo: [ NO PASÓ (X) ]\n3. Juntar el dedo índice de una mano con la nariz, estando con los ojos cerrados y partiendo de los brazos extendidos hacia abajo: [ NO PASÓ (X) ]\n4. Situar el individuo de pie con los pies juntos, las hands extendidas hacia adelante y con los ojos cerrados (PRUEBA DE ROMBERG): [ NO PASÓ (X) ]\n\n--- Asimismo, le dio a conocer sus derechos previstos en el Artículo 71 del CPP, se procedió a su traslado a la oficina de la ${unidadPol} para las diligencias correspondientes, dejando constancia que el intervenido ha recibido buen trato físico y psicológico. Los datos consultados en E-SINPOL PNP dieron resultado “NEGATIVO” para requisitorias. La persona intervenida es puesta a disposición de la ${unidadDisp} en calidad de DETENIDO.`;
 
     document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
     document.getElementById('agregar_intervencion_3').value = `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}.\n\n--- Siendo las ${horaFin} horas del mismo día se dio por concluida la diligencia.\nSe adjunta:`;
