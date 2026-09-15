@@ -401,7 +401,12 @@
             </div>
             <div class="full">
               <label>Lugar Exacto de Intervención</label>
-              <input type="text" id="lugar" placeholder="Ej: Av. San Martín Cdra. 2" required>
+              <div style="display: flex; gap: 8px; margin-top: 4px;">
+                <input type="text" id="lugar" placeholder="Ej: Av. San Martín Cdra. 2" required style="flex: 1;">
+                <button type="button" id="btn_gps" onclick="obtenerUbicacionGPS('lugar', 'btn_gps')" class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 11px; white-space: nowrap;">
+                  📍 Obtener Ubicación GPS
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -822,6 +827,7 @@
   let contadorEfectivosPNP = 0;
   let contadorIntervenidos = 0;
   let contadorVehiculos = 0;
+  let reconocimientosActivos = {};
 
   const MESES_ESPANOL = [
     "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
@@ -887,6 +893,155 @@
       mostrarEtapa(1);
     }
   });
+
+  /* ==========================================================================
+     NUEVAS FUNCIONALIDADES: GPS Y DICTADO POR VOZ
+     ========================================================================== */
+
+  async function obtenerUbicacionGPS(idInputLugar, idBoton) {
+    if (!navigator.geolocation) {
+      alert("⚠️ La geolocalización no está soportada por su navegador o dispositivo.");
+      return;
+    }
+
+    const btn = document.getElementById(idBoton);
+    const inputLugar = document.getElementById(idInputLugar);
+    const textoOriginalBtn = btn.innerText;
+
+    btn.disabled = true;
+    btn.innerText = "⏳ Obteniendo coordenadas...";
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+
+        btn.innerText = "⏳ Traduciendo dirección...";
+
+        try {
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`, {
+            headers: {
+              'User-Agent': 'SistemaGestionExpedientesPNP/1.0'
+            }
+          });
+
+          if (!response.ok) throw new Error("No se pudo obtener la dirección.");
+
+          const data = await response.json();
+          const address = data.address || {};
+
+          const via = address.road || address.pedestrian || address.suburb || address.neighbourhood || "Vía no nombrada";
+          const numero = address.house_number ? ` N° ${address.house_number}` : '';
+          const ciudad = address.city || address.town || address.village || '';
+
+          const direccionTexto = `${via}${numero} (${lat.toFixed(5)}, ${lon.toFixed(5)})`;
+          
+          inputLugar.value = direccionTexto;
+
+          const inputDistrito = document.getElementById('distrito');
+          if (inputDistrito && ciudad) {
+            inputDistrito.value = ciudad;
+          }
+
+        } catch (error) {
+          console.warn("Error en Geocodificación Inversa:", error);
+          inputLugar.value = `Coordenadas GPS: ${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+        } finally {
+          btn.disabled = false;
+          btn.innerText = textoOriginalBtn;
+        }
+      },
+      (error) => {
+        btn.disabled = false;
+        btn.innerText = textoOriginalBtn;
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            alert("⚠️ Permiso de ubicación denegado por el usuario.");
+            break;
+          case error.POSITION_UNAVAILABLE:
+            alert("⚠️ La información de ubicación no está disponible.");
+            break;
+          case error.TIMEOUT:
+            alert("⚠️ Tiempo de espera agotado al consultar la ubicación.");
+            break;
+          default:
+            alert("⚠️ Error desconocido al obtener la ubicación GPS.");
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  }
+
+  function alternarDictadoVoz(idTextarea, idBoton) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("⚠️ Su navegador no soporta el reconocimiento de voz (se recomienda Google Chrome en PC o Android).");
+      return;
+    }
+
+    const btn = document.getElementById(idBoton);
+    const textarea = document.getElementById(idTextarea);
+
+    if (reconocimientosActivos[idBoton]) {
+      reconocimientosActivos[idBoton].stop();
+      delete reconocimientosActivos[idBoton];
+      btn.innerHTML = "🎤 Dictar por Voz";
+      btn.style.background = "";
+      btn.style.color = "";
+      return;
+    }
+
+    const rec = new SpeechRecognition();
+    rec.lang = 'es-PE';
+    rec.continuous = true;
+    rec.interimResults = false;
+
+    rec.onstart = () => {
+      reconocimientosActivos[idBoton] = rec;
+      btn.innerHTML = "🔴 Escuchando...";
+      btn.style.background = "#dc2626";
+      btn.style.color = "#ffffff";
+    };
+
+    rec.onresult = (event) => {
+      let textoTranscrito = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          textoTranscrito += event.results[i][0].transcript + " ";
+        }
+      }
+      
+      const textoActual = textarea.value.trim();
+      textarea.value = textoActual ? `${textoActual} ${textoTranscrito}` : textoTranscrito;
+    };
+
+    rec.onerror = (event) => {
+      console.error("Error de voz:", event.error);
+      if (event.error !== 'no-speech') {
+        alert(`⚠️ Error en dictado de voz: ${event.error}`);
+      }
+    };
+
+    rec.onend = () => {
+      if (reconocimientosActivos[idBoton]) {
+        delete reconocimientosActivos[idBoton];
+        btn.innerHTML = "🎤 Dictar por Voz";
+        btn.style.background = "";
+        btn.style.color = "";
+      }
+    };
+
+    rec.start();
+  }
+
+  /* ==========================================================================
+     LÓGICA GENERAL DEL EXPEDIENTE
+     ========================================================================== */
 
   function generarVistaPrevia() {
     guardarEstadoFormulario();
@@ -1640,10 +1795,15 @@
           </label>
           <input type="text" id="titulo_sec_${i}" list="titulos_pnp_list" value="${tituloSugerido}" placeholder="Ej: I. INTERVENCION POLICIAL:" style="width: 100%; padding: 8px 10px; font-weight: bold; font-size: 13px; border: 1.5px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; margin-bottom: 10px; color: #003366;">
 
-          <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px; color: #475569;">
-            Contenido ({agregar_intervencion${i}}):
-          </label>
-          <textarea id="agregar_intervencion_${i}" class="narrativa-textarea" rows="8" onfocus="textareaActivoId='agregar_intervencion_${i}'" placeholder="Redacte los hechos correspondientes a esta sección...">${contenidoPrevio}</textarea>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <label style="font-size: 12px; font-weight: bold; color: #475569;">
+              Contenido ({agregar_intervencion${i}}):
+            </label>
+            <button type="button" id="btn_mic_${i}" onclick="alternarDictadoVoz('agregar_intervencion_${i}', 'btn_mic_${i}')" class="btn btn-secondary" style="width: auto; padding: 3px 8px; font-size: 11px;">
+              🎤 Dictar por Voz
+            </button>
+          </div>
+          <textarea id="agregar_intervencion_${i}" class="narrativa-textarea" rows="8" onfocus="textareaActivoId='agregar_intervencion_${i}'" placeholder="Redacte o dicte los hechos correspondientes a esta sección...">${contenidoPrevio}</textarea>
         </div>
       `;
     }
