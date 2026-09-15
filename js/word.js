@@ -924,7 +924,13 @@ function asegurarModalVistaPreviaDOM() {
 function mostrarModalVistaPrevia() {
   asegurarModalVistaPreviaDOM();
 
-  const bodyElem = document.getElementById('contenidoVistaPreviaBody');
+  const bodyElem = document.getElementById('contenidoVistaPreviaBody') || document.getElementById('contenidoVistaPrevia');
+  
+  if (!bodyElem) {
+    console.error("⚠️ No se encontró el contenedor de la vista previa en el DOM.");
+    return;
+  }
+
   const d = datosFinalesCompilados;
 
   let htmlActas = "";
@@ -944,7 +950,7 @@ function mostrarModalVistaPrevia() {
   });
 
   let htmlIntervenidos = "";
-  d._listaIntervenidos.forEach((i, idx) => {
+  (d._listaIntervenidos || []).forEach((i, idx) => {
     htmlIntervenidos += `
       <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:8px 12px; border-radius:6px; margin-bottom:6px; font-size:12px;">
         <strong>👤 Intervenido ${idx + 1}:</strong> ${i.nombre} | <strong>DNI:</strong> ${i.dni} | <strong>Edad:</strong> ${i.edad} años | <strong>L/C:</strong> ${i.licencia || 'S/L'}
@@ -953,7 +959,7 @@ function mostrarModalVistaPrevia() {
   });
 
   let htmlVehiculos = "";
-  d._listaVehiculos.forEach((v, idx) => {
+  (d._listaVehiculos || []).forEach((v, idx) => {
     htmlVehiculos += `
       <div style="background:#fefce8; border:1px solid #fef08a; padding:8px 12px; border-radius:6px; margin-bottom:6px; font-size:12px;">
         <strong>🚗 Vehículo ${idx + 1}:</strong> Placa ${v.placa} | Clase: ${v.clase_vehiculo} | Marca: ${v.marca} | Modelo: ${v.modelo} | Color: ${v.color}
@@ -1017,7 +1023,8 @@ function mostrarModalVistaPrevia() {
     </div>
   `;
 
-  document.getElementById('modalVistaPrevia').style.display = 'flex';
+  const modalVista = document.getElementById('modalVistaPrevia');
+  if (modalVista) modalVista.style.display = 'flex';
 }
 
 function cerrarModalVistaPrevia() {
