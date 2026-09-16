@@ -375,7 +375,6 @@
       font-family: inherit;
     }
 
-    /* CARD DE QR Y SINCRONIZACIÓN */
     .qr-card {
       background: #eff6ff;
       border: 2px dashed #0284c7;
@@ -495,8 +494,47 @@
     </div>
 
     <div class="sticky-panel">
-      <!-- QR Y SINCRONIZACIÓN -->
-      <div class="qr-card">
+      <!-- INSPECCIÓN ASISTIDA POR IA Y ACTIVACIÓN -->
+      <div class="ia-card">
+        <h4>🤖 Inspección Asistida por IA</h4>
+
+        <!-- ESTADO 1: PASO INICIAL - CONECTAR API KEY -->
+        <div id="box_conexion_gemini">
+          <p style="font-size: 11px; color: #166534; margin: 0 0 10px 0;">
+            Carga tu API Key para activar la inspección con IA y habilitar la comunicación QR con el celular.
+          </p>
+          <div class="api-key-box">
+            <label for="input_gemini_key">🔑 API Key Gemini:</label>
+            <input type="password" id="input_gemini_key" class="api-key-input" placeholder="Pega tu clave AIzaSy...">
+          </div>
+          <button type="button" onclick="conectarGeminiKey()" class="btn-action btn-ia" style="background:#0284c7;">
+            ⚡ Cargar / Conectar API Key de Gemini
+          </button>
+        </div>
+
+        <!-- ESTADO 2: PANEL ACTIVO CON SUBIDA DE FOTOS -->
+        <div id="box_panel_activo" style="display: none;">
+          <div style="background: #dcfce7; border: 1px solid #16a34a; padding: 8px 10px; border-radius: 6px; margin-bottom: 12px; font-size: 11px; color: #15803d; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
+            <span>🟢 Gemini IA Conectado</span>
+            <a href="#" onclick="desconectarGeminiKey(); return false;" style="font-size: 10px; color: #b91c1c; text-decoration: underline;">Cambiar Key</a>
+          </div>
+
+          <p style="font-size: 11px; color: #166534; margin: 0 0 8px 0;">
+            Sube fotos para auto-evaluar <strong>TODAS</strong> las partes del acta.
+          </p>
+
+          <input type="file" id="input_foto_ia" accept="image/*" multiple style="display:none;" onchange="procesarFotosConIAReal(this.files)">
+          <button type="button" id="btn_ia_trigger" onclick="document.getElementById('input_foto_ia').click()" class="btn-action btn-ia">
+            📷 Subir Fotos Localmente y Escanear con IA
+          </button>
+          
+          <div id="preview_contenedor" class="preview-thumbs"></div>
+          <span id="lbl_status_ia" style="font-size: 10px; color: #15803d; display: block; margin-top: 8px; font-weight: bold;"></span>
+        </div>
+      </div>
+
+      <!-- QR Y SINCRONIZACIÓN (ACTIVADO TRAS CONECTAR GEMINI) -->
+      <div class="qr-card" id="card_qr_sincronizacion" style="display: none;">
         <h4>📱 Sincronización Móvil (Colega)</h4>
         <p style="font-size: 11px; color: #0369a1; margin: 0 0 6px 0;">
           Escanea para enviar fotos desde el celular en tiempo real:
@@ -521,36 +559,6 @@
           <strong id="lbl_zona_nombre">ZONA DEL VEHÍCULO</strong>
           <span id="lbl_zona_desc">Seleccione una pieza en el formulario para localizar su posición técnica en el esquema.</span>
         </div>
-      </div>
-
-      <div class="ia-card">
-        <h4>🤖 Inspección Asistida por IA</h4>
-        <p style="font-size: 11px; color: #166534; margin: 0 0 8px 0;">
-          Sube fotos (Frontal, Tablero, Laterales) para auto-evaluar <strong>TODAS</strong> las partes del acta.
-        </p>
-
-        <div class="api-key-box">
-          <label for="input_gemini_key">🔑 API Key Gemini:</label>
-          <input type="password" id="input_gemini_key" class="api-key-input" placeholder="AIzaSy..." onchange="guardarApiKeyLocal(this.value)">
-        </div>
-
-        <div class="api-key-box">
-          <label for="input_supabase_url">🌐 Supabase URL:</label>
-          <input type="text" id="input_supabase_url" class="api-key-input" placeholder="https://xyz.supabase.co" onchange="guardarSupabaseCreds()">
-        </div>
-
-        <div class="api-key-box">
-          <label for="input_supabase_key">🔑 Supabase Anon Key:</label>
-          <input type="password" id="input_supabase_key" class="api-key-input" placeholder="eyJhbGci..." onchange="guardarSupabaseCreds()">
-        </div>
-
-        <input type="file" id="input_foto_ia" accept="image/*" multiple style="display:none;" onchange="procesarFotosConIAReal(this.files)">
-        <button type="button" id="btn_ia_trigger" onclick="document.getElementById('input_foto_ia').click()" class="btn-action btn-ia">
-          📷 Subir Fotos Localmente y Escanear con IA
-        </button>
-        
-        <div id="preview_contenedor" class="preview-thumbs"></div>
-        <span id="lbl_status_ia" style="font-size: 10px; color: #15803d; display: block; margin-top: 8px; font-weight: bold;"></span>
       </div>
     </div>
   </div>
@@ -692,8 +700,6 @@
   let supabaseClient = null;
 
   document.addEventListener('DOMContentLoaded', () => {
-    cargarApiKeyGuardada();
-    cargarSupabaseCreds();
     const claseDetectada = cargarDatosGenerales().toUpperCase();
     
     let tipoInicial = 'MAYOR';
@@ -707,39 +713,55 @@
     cambiarFormatoTipoVehiculo(tipoInicial);
     restaurarEstadoSV();
 
-    generarQRSincronizacion();
-    inicializarSupabaseRealtime();
+    // Revisa si la clave de Gemini ya existe antes de activar
+    verificarEstadoInicialGemini();
   });
 
-  function cargarApiKeyGuardada() {
-    const key = localStorage.getItem('pnp_gemini_api_key') || (typeof CONFIG !== 'undefined' ? CONFIG.GEMINI_API_KEY : '') || '';
-    if (key) document.getElementById('input_gemini_key').value = key;
+  function verificarEstadoInicialGemini() {
+    const key = localStorage.getItem('pnp_gemini_api_key') || (typeof CONFIG !== 'undefined' ? CONFIG.GEMINI_API_KEY : '');
+    if (key && key.trim() !== '') {
+      document.getElementById('input_gemini_key').value = key;
+      activarPanelSincronizacion(key.trim());
+    } else {
+      desactivarPanelSincronizacion();
+    }
   }
 
-  function guardarApiKeyLocal(val) {
-    localStorage.setItem('pnp_gemini_api_key', val.trim());
+  function conectarGeminiKey() {
+    const val = document.getElementById('input_gemini_key').value.trim();
+    if (!val) {
+      alert("⚠️ Ingresa tu API Key de Gemini para activar la inspección y la sincronización.");
+      return;
+    }
+    localStorage.setItem('pnp_gemini_api_key', val);
+    activarPanelSincronizacion(val);
+  }
+
+  function desconectarGeminiKey() {
+    localStorage.removeItem('pnp_gemini_api_key');
+    if (typeof CONFIG !== 'undefined') CONFIG.GEMINI_API_KEY = '';
+    desactivarPanelSincronizacion();
+  }
+
+  function activarPanelSincronizacion(key) {
+    document.getElementById('box_conexion_gemini').style.display = 'none';
+    document.getElementById('box_panel_activo').style.display = 'block';
+    document.getElementById('card_qr_sincronizacion').style.display = 'block';
+
+    generarQRSincronizacion();
+    inicializarSupabaseRealtime();
+  }
+
+  function desactivarPanelSincronizacion() {
+    document.getElementById('box_conexion_gemini').style.display = 'block';
+    document.getElementById('box_panel_activo').style.display = 'none';
+    document.getElementById('card_qr_sincronizacion').style.display = 'none';
   }
 
   function obtenerSupabaseCreds() {
     const url = localStorage.getItem('pnp_supabase_url') || (typeof CONFIG !== 'undefined' ? CONFIG.SUPABASE_URL : '') || '';
     const key = localStorage.getItem('pnp_supabase_anon_key') || (typeof CONFIG !== 'undefined' ? CONFIG.SUPABASE_ANON_KEY : '') || '';
     return { url, key };
-  }
-
-  function cargarSupabaseCreds() {
-    const { url, key } = obtenerSupabaseCreds();
-    if (url) document.getElementById('input_supabase_url').value = url;
-    if (key) document.getElementById('input_supabase_key').value = key;
-  }
-
-  function guardarSupabaseCreds() {
-    const url = document.getElementById('input_supabase_url').value.trim();
-    const key = document.getElementById('input_supabase_key').value.trim();
-    if (url) localStorage.setItem('pnp_supabase_url', url);
-    if (key) localStorage.setItem('pnp_supabase_anon_key', key);
-    
-    generarQRSincronizacion();
-    inicializarSupabaseRealtime();
   }
 
   // Genera un QR limpio y rápido de escanear
@@ -1037,12 +1059,11 @@
     const statusLabel = document.getElementById('lbl_status_ia');
     const previewContainer = document.getElementById('preview_contenedor');
     const btnTrigger = document.getElementById('btn_ia_trigger');
-    const apiKey = document.getElementById('input_gemini_key').value.trim() || (typeof CONFIG !== 'undefined' ? CONFIG.GEMINI_API_KEY : '');
+    const apiKey = localStorage.getItem('pnp_gemini_api_key') || (typeof CONFIG !== 'undefined' ? CONFIG.GEMINI_API_KEY : '');
 
     if (!apiKey) {
-      alert("⚠️ Por favor ingresa tu API Key de Google Gemini.");
+      alert("⚠️ Falta la API Key de Gemini.");
       statusLabel.innerText = "❌ Falta la API Key de Gemini.";
-      document.getElementById('input_gemini_key').focus();
       return;
     }
 
