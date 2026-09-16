@@ -389,11 +389,13 @@
 
   <div class="main-layout">
     <div>
+      <!-- SELECTOR CON 3 CATEGORÍAS SEPARADAS -->
       <div class="tipo-vehiculo-selector">
         <label for="select_tipo_formato">📌 Formato de Inspección:</label>
         <select id="select_tipo_formato" onchange="cambiarFormatoTipoVehiculo(this.value)">
-          <option value="MAYOR">VEHÍCULO MAYOR (Automóvil, Camioneta, Camión, SUV, etc.)</option>
-          <option value="MENOR">VEHÍCULO MENOR (Trimovil, Motocicleta, Mototaxi, Motocar, etc.)</option>
+          <option value="MAYOR">VEHÍCULO MAYOR (Automóvil, Camioneta, SUV, Camión)</option>
+          <option value="MOTOTAXI">VEHÍCULO MENOR: Mototaxi / Trimovil / Motocar (3 Ruedas)</option>
+          <option value="MOTOCICLETA">VEHÍCULO MENOR: Motocicleta / Moto Lineal (2 Ruedas)</option>
         </select>
       </div>
 
@@ -473,7 +475,7 @@
 </div>
 
 <script>
-  // Mapeo completo de coordenadas SVG y descripciones técnicas
+  // 1. VEHÍCULO MAYOR
   const MAPA_UBICACIONES_MAYOR = {
     "FARO GRANDE DELT": { x: 260, y: 50, zona: "Máscara Frontal", desc: "Faros principales en el frente exterior del auto." },
     "INTERMITENTES": { x: 270, y: 35, zona: "Esquinas Frontales", desc: "Luces de señalización de giro delanteras." },
@@ -517,41 +519,80 @@
     "VARILLA ACEITE": { x: 245, y: 100, zona: "Medidor de Aceite", desc: "Varilla de nivel de aceite de motor." }
   };
 
-  const MAPA_UBICACIONES_MENOR = {
-    "VELOCÍMETRO": { x: 190, y: 45, zona: "Manubrio / Consola", desc: "Reloj indicador de velocidad." },
-    "TACÓMETRO": { x: 195, y: 40, zona: "Manubrio / Consola", desc: "Medidor de revoluciones por minuto." },
-    "PALANCA DE CAMBIOS": { x: 160, y: 65, zona: "Mandos Manuales/Pedal", desc: "Selector de marchas." },
-    "FRENO DELANTERO": { x: 210, y: 45, zona: "Manubrio Derecho", desc: "Manija de freno delantero." },
-    "EMPUÑADURA DEL ACELERADOR": { x: 210, y: 55, zona: "Manubrio Derecho", desc: "Puño del acelerador." },
-    "INTERRUPTOR CONTROL DE FARO": { x: 180, y: 50, zona: "Comando Manubrio", desc: "Switch de luces alta/baja." },
-    "PEDAL DEL FRENO TRASERO": { x: 140, y: 125, zona: "Piso Derecho", desc: "Pedal de freno posterior." },
-    "PEDAL DE ARRANQUE": { x: 110, y: 115, zona: "Motor Lateral", desc: "Palanca de arranque por patada." },
-    "PALANCA DE EMBRAGUE": { x: 175, y: 40, zona: "Manubrio Izquierdo", desc: "Manija de embrague/clutch." },
-    "COMUNICADOR DE SEÑALES": { x: 180, y: 55, zona: "Comando Direccionales", desc: "Interruptor de luces direccionales." },
-    "PULSADOR DE LA BOCINA": { x: 178, y: 60, zona: "Comando Claxon", desc: "Botonera del claxon." },
-    "PALANCA": { x: 150, y: 80, zona: "Reversa / Freno", desc: "Palanca de reversa o parqueo." },
-    "FARO DELANTERO": { x: 240, y: 50, zona: "Máscara Frontal", desc: "Faro principal de iluminación." },
-    "LUCES DE PELIGRO": { x: 230, y: 38, zona: "Frente Superior", desc: "Luces intermitentes de emergencia." },
-    "DIRECCIONAL DERECHO": { x: 245, y: 35, zona: "Esquina Frontal Der.", desc: "Luz direccional derecha." },
-    "DIRECCIONAL IZQUIERDO": { x: 245, y: 65, zona: "Esquina Frontal Izq.", desc: "Luz direccional izquierda." },
-    "LUCES AUXILIARES": { x: 235, y: 70, zona: "Defensa Frontal", desc: "Neblineros o luces adicionales." },
-    "ESPEJO RETROVISOR": { x: 195, y: 25, zona: "Manubrio Espejos", desc: "Espejos retrovisores de manubrio." },
-    "RADIO": { x: 140, y: 35, zona: "Cabina Superior", desc: "Equipo de sonido en cabina." },
-    "CAJITA DE CD": { x: 135, y: 45, zona: "Interior Guantera", desc: "Compartimento porta CDS/documentos." },
-    "BATERÍA": { x: 100, y: 95, zona: "Bajo Asiento / Lateral", desc: "Batería de 12V." },
-    "CHUPÓN DE BUJÍA": { x: 120, y: 105, zona: "Bloque de Motor", desc: "Capuchón aislado de bujía." },
-    "BUJÍAS": { x: 125, y: 100, zona: "Culata Motor", desc: "Bujía de encendido." },
-    "CARBURADOR": { x: 130, y: 95, zona: "Admisión Motor", desc: "Carburador de mezcla de combustible." },
-    "TAPA DE ACEITE": { x: 115, y: 110, zona: "Cárter de Motor", desc: "Tapón de medición de lubricante." },
-    "CADENAS": { x: 80, y: 125, zona: "Transmisión", desc: "Cadena de arrastre de piñón y catalina." },
-    "TAPA DEL DEPÓSITO DE COMBUSTIBLE": { x: 155, y: 70, zona: "Tanque Gasolina", desc: "Tapa del depósito de combustible." },
-    "PEDAL DE CAMBIOS": { x: 130, y: 125, zona: "Piso Izquierdo", desc: "Pedal de selección de marchas." },
-    "LLANTAS": { x: 60, y: 135, zona: "Ruedas Traseras/Delant.", desc: "Neumáticos con aros instalados." },
-    "TOLDO": { x: 110, y: 20, zona: "Techo Cabina", desc: "Lona o cobertura protectora superior." },
-    "ASIENTOS": { x: 100, y: 65, zona: "Habitáculo Pasajeros", desc: "Asientos de conductor y pasajeros." },
-    "TAPAS LATERALES": { x: 95, y: 85, zona: "Carrocería Lateral", desc: "Carenado o tapas protectoras de fibra." },
-    "TAPABARRO DELANTERO": { x: 235, y: 85, zona: "Rueda Delantera", desc: "Guardabarros de llanta frontal." },
-    "TAPABARRO TRASERO": { x: 50, y: 110, zona: "Ruedas Traseras", desc: "Guardabarros de ruedas posteriores." }
+  // 2. MOTOTAXI / TRIMOVIL (3 Ruedas con Cabina)
+  const MAPA_UBICACIONES_MOTOTAXI = {
+    "VELOCÍMETRO": { x: 200, y: 90, zona: "Manubrio Central", desc: "Reloj velocímetro en tablero del chofer." },
+    "TACÓMETRO": { x: 205, y: 80, zona: "Manubrio Central", desc: "Medidor de RPM de motor." },
+    "PALANCA DE CAMBIOS": { x: 175, y: 115, zona: "Pedal Izquierdo Chofer", desc: "Selector manual/pedal de marchas." },
+    "FRENO DELANTERO": { x: 225, y: 70, zona: "Manubrio Derecho", desc: "Manija de freno delantero." },
+    "EMPUÑADURA DEL ACELERADOR": { x: 225, y: 80, zona: "Manubrio Derecho", desc: "Puño del acelerador." },
+    "INTERRUPTOR CONTROL DE FARO": { x: 195, y: 75, zona: "Comando Manubrio", desc: "Switch de luces alta/baja." },
+    "PEDAL DEL FRENO TRASERO": { x: 165, y: 65, zona: "Piso Derecho Chofer", desc: "Pedal de freno posterior." },
+    "PEDAL DE ARRANQUE": { x: 120, y: 120, zona: "Motor / Cárter", desc: "Palanca de arranque por patada (crank)." },
+    "PALANCA DE EMBRAGUE": { x: 215, y: 110, zona: "Manubrio Izquierdo", desc: "Manija de embrague / clutch." },
+    "COMUNICADOR DE SEÑALES": { x: 200, y: 105, zona: "Comando Direccionales", desc: "Interruptor de luces direccionales." },
+    "PULSADOR DE LA BOCINA": { x: 195, y: 110, zona: "Comando Claxon", desc: "Botonera de claxon." },
+    "PALANCA": { x: 160, y: 90, zona: "Consola de Reversa", desc: "Palanca de cambio de marcha atrás." },
+    "FARO DELANTERO": { x: 260, y: 90, zona: "Frente de la Máscara", desc: "Faro principal frontal de iluminación." },
+    "LUCES DE PELIGRO": { x: 245, y: 60, zona: "Frente Superior", desc: "Luces de emergencia intermitentes." },
+    "DIRECCIONAL DERECHO": { x: 255, y: 55, zona: "Esquina Frontal Der.", desc: "Luz direccional delantera derecha." },
+    "DIRECCIONAL IZQUIERDO": { x: 255, y: 125, zona: "Esquina Frontal Izq.", desc: "Luz direccional delantera izquierda." },
+    "LUCES AUXILIARES": { x: 250, y: 130, zona: "Defensa Frontal", desc: "Neblineros inferiores." },
+    "ESPEJO RETROVISOR": { x: 210, y: 45, zona: "Soporte de Manubrio", desc: "Espejos retrovisores de cabina." },
+    "RADIO": { x: 140, y: 40, zona: "Toldo / Cabina Superior", desc: "Equipo de radio o reproductor multimedia." },
+    "CAJITA DE CD": { x: 130, y: 50, zona: "Guantera Interior", desc: "Guantera porta documentos." },
+    "BATERÍA": { x: 105, y: 120, zona: "Bajo Asiento Chofer", desc: "Batería de 12V del sistema eléctrico." },
+    "CHUPÓN DE BUJÍA": { x: 115, y: 100, zona: "Bloque de Motor", desc: "Capuchón aislado de alta tensión." },
+    "BUJÍAS": { x: 120, y: 95, zona: "Culata del Motor", desc: "Bujía de encendido." },
+    "CARBURADOR": { x: 130, y: 90, zona: "Admisión Motor", desc: "Carburador de mezcla de combustible." },
+    "TAPA DE ACEITE": { x: 110, y: 105, zona: "Cárter del Motor", desc: "Tapón de nivel de aceite de motor." },
+    "CADENAS": { x: 75, y: 125, zona: "Eje Transmisión Posterior", desc: "Cadena / piñón / catalina de arrastre." },
+    "TAPA DEL DEPÓSITO DE COMBUSTIBLE": { x: 170, y: 90, zona: "Tanque Gasolina", desc: "Tapa del tanque de gasolina." },
+    "PEDAL DE CAMBIOS": { x: 155, y: 120, zona: "Piso Izquierdo", desc: "Pedal selector de marchas." },
+    "LLANTAS": { x: 60, y: 135, zona: "Ruedas Traseras/Delant.", desc: "Aros y neumáticos de 3 ruedas." },
+    "TOLDO": { x: 100, y: 35, zona: "Estructura Techo Cabina", desc: "Lona o cobertura protectora de pasajeros." },
+    "ASIENTOS": { x: 80, y: 90, zona: "Banca de Pasajeros", desc: "Asientos de chofer y pasajeros." },
+    "TAPAS LATERALES": { x: 90, y: 130, zona: "Carrocería Lateral Fibra", desc: "Carenado lateral de fibra o plástico." },
+    "TAPABARRO DELANTERO": { x: 245, y: 90, zona: "Horquilla Rueda Delantera", desc: "Guardabarros de la rueda frontal." },
+    "TAPABARRO TRASERO": { x: 45, y: 125, zona: "Ruedas Traseras", desc: "Guardabarros de las ruedas posteriores." }
+  };
+
+  // 3. MOTOCICLETA / MOTO LINEAL (2 Ruedas Alineadas)
+  const MAPA_UBICACIONES_MOTOCICLETA = {
+    "VELOCÍMETRO": { x: 205, y: 90, zona: "Relojes Manubrio", desc: "Tacómetro/Velocímetro central de la moto." },
+    "TACÓMETRO": { x: 205, y: 80, zona: "Relojes Manubrio", desc: "Medidor de revoluciones por minuto." },
+    "PALANCA DE CAMBIOS": { x: 130, y: 125, zona: "Pedal Izquierdo", desc: "Pedal selector de cambios de marcha." },
+    "FRENO DELANTERO": { x: 220, y: 65, zona: "Manija Manubrio Der.", desc: "Palanca de freno de rueda delantera." },
+    "EMPUÑADURA DEL ACELERADOR": { x: 220, y: 75, zona: "Puño Derecho", desc: "Acelerador rotativo de mano." },
+    "INTERRUPTOR CONTROL DE FARO": { x: 195, y: 70, zona: "Comando Izquierdo", desc: "Switch cambio de luces alta/baja." },
+    "PEDAL DEL FRENO TRASERO": { x: 130, y: 55, zona: "Pedal Derecho", desc: "Pedal de freno de rueda posterior." },
+    "PEDAL DE ARRANQUE": { x: 110, y: 55, zona: "Cárter Motor Derecho", desc: "Palanca de arranque por patada." },
+    "PALANCA DE EMBRAGUE": { x: 220, y: 115, zona: "Manija Manubrio Izq.", desc: "Manija de embrague / clutch." },
+    "COMUNICADOR DE SEÑALES": { x: 200, y: 115, zona: "Comando Izquierdo", desc: "Switch de luces direccionales." },
+    "PULSADOR DE LA BOCINA": { x: 195, y: 120, zona: "Comando Izquierdo", desc: "Botonera de claxon." },
+    "PALANCA": { x: 145, y: 90, zona: "Chapa / Mandos", desc: "Mandos o palanca auxiliar." },
+    "FARO DELANTERO": { x: 260, y: 90, zona: "Faro Frontal", desc: "Faro principal de iluminación." },
+    "LUCES DE PELIGRO": { x: 245, y: 70, zona: "Frente Superior", desc: "Luces de emergencia intermitentes." },
+    "DIRECCIONAL DERECHO": { x: 245, y: 55, zona: "Esquina Frontal Der.", desc: "Direccional delantera derecha." },
+    "DIRECCIONAL IZQUIERDO": { x: 245, y: 125, zona: "Esquina Frontal Izq.", desc: "Direccional delantera izquierda." },
+    "LUCES AUXILIARES": { x: 250, y: 90, zona: "Telespacio Frontal", desc: "Exploradoras o neblineros." },
+    "ESPEJO RETROVISOR": { x: 210, y: 45, zona: "Espejos de Manubrio", desc: "Espejos retrovisores de manubrio." },
+    "RADIO": { x: 190, y: 90, zona: "Manubrio / Consola", desc: "Sistema de sonido adaptado." },
+    "CAJITA DE CD": { x: 90, y: 90, zona: "Caja Maletero Posterior", desc: "Maletero / Baúl posterior portaequipaje." },
+    "BATERÍA": { x: 115, y: 90, zona: "Bajo la Montura / Asiento", desc: "Batería de 12V bajo el asiento." },
+    "CHUPÓN DE BUJÍA": { x: 140, y: 105, zona: "Motor Central", desc: "Capuchón y cable de bujía." },
+    "BUJÍAS": { x: 145, y: 100, zona: "Culata del Motor", desc: "Bujía de encendido." },
+    "CARBURADOR": { x: 125, y: 90, zona: "Detrás del Cilindro", desc: "Carburador de combustible." },
+    "TAPA DE ACEITE": { x: 120, y: 65, zona: "Tapa Cárter Derecho", desc: "Tapón de llenado y medición de aceite." },
+    "CADENAS": { x: 65, y: 115, zona: "Transmisión Izquierda", desc: "Cadena de arrastre de piñón a catalina." },
+    "TAPA DEL DEPÓSITO DE COMBUSTIBLE": { x: 170, y: 90, zona: "Tanque Gasolina Central", desc: "Tapón del tanque superior." },
+    "PEDAL DE CAMBIOS": { x: 130, y: 125, zona: "Pedal Izquierdo", desc: "Pedal de selección de marchas." },
+    "LLANTAS": { x: 40, y: 90, zona: "Rueda Posterior / Delantera", desc: "Llantas delantera y trasera de la moto." },
+    "TOLDO": { x: 100, y: 90, zona: "No Aplica a Moto Lineal", desc: "Sin toldo en motocicleta estándar." },
+    "ASIENTOS": { x: 100, y: 90, zona: "Asiento / Montura Longitud", desc: "Asiento para piloto y copiloto." },
+    "TAPAS LATERALES": { x: 115, y: 115, zona: "Tapas Carenado Bajo Asiento", desc: "Tapas plásticas laterales del chasis." },
+    "TAPABARRO DELANTERO": { x: 245, y: 90, zona: "Rueda Delantera", desc: "Guardabarros de llanta frontal." },
+    "TAPABARRO TRASERO": { x: 45, y: 90, zona: "Rueda Posterior", desc: "Guardabarros de llanta posterior." }
   };
 
   const MAYOR_SEC_1 = ["FARO GRANDE DELT", "INTERMITENTES", "FAROS POSTERIORES", "BISELES", "LIMPIA PARABRISA", "PARABRISAS", "LUNAS", "ESPEJO EXTERIOR", "ANTENAS", "PARACHOQUES", "LLANTAS", "LLANTAS DE REPUESTO"];
@@ -563,13 +604,19 @@
   const MENOR_SEC_3 = ["CHUPÓN DE BUJÍA", "BUJÍAS", "CARBURADOR", "TAPA DE ACEITE", "CADENAS"];
   const MENOR_SEC_4 = ["TAPA DEL DEPÓSITO DE COMBUSTIBLE", "PEDAL DE CAMBIOS", "LLANTAS", "TOLDO", "ASIENTOS", "TAPAS LATERALES", "TAPABARRO DELANTERO", "TAPABARRO TRASERO"];
 
-  const PALABRAS_VEHICULO_MENOR = ['TRIMOVIL', 'MOTOCICLETA', 'MOTOTAXI', 'MOTOCAR', 'MOTO', 'CUATRIMOTO', 'TRICICLO'];
+  const PALABRAS_MOTOTAXI = ['TRIMOVIL', 'MOTOTAXI', 'MOTOCAR', 'TRICICLO'];
+  const PALABRAS_MOTOCICLETA = ['MOTOCICLETA', 'MOTO', 'CUATRIMOTO'];
 
   document.addEventListener('DOMContentLoaded', () => {
     cargarApiKeyGuardada();
-    const claseDetectada = cargarDatosGenerales();
-    const esMenor = PALABRAS_VEHICULO_MENOR.some(tipo => claseDetectada.toUpperCase().includes(tipo));
-    const tipoInicial = esMenor ? 'MENOR' : 'MAYOR';
+    const claseDetectada = cargarDatosGenerales().toUpperCase();
+    
+    let tipoInicial = 'MAYOR';
+    if (PALABRAS_MOTOTAXI.some(tipo => claseDetectada.includes(tipo))) {
+      tipoInicial = 'MOTOTAXI';
+    } else if (PALABRAS_MOTOCICLETA.some(tipo => claseDetectada.includes(tipo))) {
+      tipoInicial = 'MOTOCICLETA';
+    }
 
     document.getElementById('select_tipo_formato').value = tipoInicial;
     cambiarFormatoTipoVehiculo(tipoInicial);
@@ -615,7 +662,7 @@
     const tit3 = document.getElementById('tit_sec_3');
     const tit4 = document.getElementById('tit_sec_4');
 
-    if (tipo === 'MENOR') {
+    if (tipo === 'MOTOTAXI' || tipo === 'MOTOCICLETA') {
       tit1.innerText = "🕹️ I. CONTROLES Y MANUBRIO";
       tit2.innerText = "💡 II. LUCES Y SISTEMA ELÉCTRICO";
       tit3.innerText = "⚙️ III. MOTOR Y TRANSMISIÓN";
@@ -662,6 +709,7 @@
     });
   }
 
+  // RENDERIZADO DE 3 CROQUIS SVG INDEPENDIENTES
   function renderizarSVGDiagrama(tipoFormato, targetCoords) {
     const svg = document.getElementById('svg_diagrama_vehicular');
     
@@ -685,38 +733,32 @@
     }
 
     if (tipoFormato === 'MAYOR') {
+      // Auto / Camioneta
       svg.innerHTML = `
-        <!-- Marcas de los 4 Lados del Vehículo -->
         <text x="150" y="15" font-size="8" font-weight="bold" fill="#64748b" text-anchor="middle">▲ LADO DERECHO</text>
         <text x="150" y="175" font-size="8" font-weight="bold" fill="#64748b" text-anchor="middle">▼ LADO IZQUIERDO</text>
         <text x="12" y="95" font-size="8" font-weight="bold" fill="#ef4444" text-anchor="middle" transform="rotate(-90 12,95)">◄ POSTERIOR</text>
         <text x="288" y="95" font-size="8" font-weight="bold" fill="#0369a1" text-anchor="middle" transform="rotate(90 288,95)">FRONTERA / DELANTE ►</text>
 
-        <!-- Indicador de Zona Activa -->
         <rect x="75" y="22" width="150" height="16" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1" />
         <text x="150" y="33" font-size="8.5" font-weight="bold" fill="#0369a1" text-anchor="middle">${indicadorVista}</text>
 
-        <!-- Carrocería Automóvil -->
         <path d="M 40,90 Q 40,55 70,50 L 180,50 Q 220,50 250,65 L 270,78 Q 280,90 270,102 L 250,115 Q 220,130 180,130 L 70,130 Q 40,125 40,90 Z" fill="#e2e8f0" stroke="#0f172a" stroke-width="2" />
-        <!-- Techo y Parabrisas -->
         <path d="M 85,60 L 170,60 Q 200,60 215,72 L 215,108 Q 200,120 170,120 L 85,120 Z" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
         <path d="M 180,62 L 210,74 L 210,106 L 180,118 Z" fill="#bae6fd" opacity="0.6" />
-        <!-- Llantas -->
         <rect x="60" y="38" width="32" height="10" rx="2" fill="#334155" />
         <rect x="195" y="38" width="32" height="10" rx="2" fill="#334155" />
         <rect x="60" y="132" width="32" height="10" rx="2" fill="#334155" />
         <rect x="195" y="132" width="32" height="10" rx="2" fill="#334155" />
-        <!-- Faros Frontales -->
         <ellipse cx="265" cy="68" rx="4" ry="7" fill="#fef08a" stroke="#ca8a04" />
         <ellipse cx="265" cy="112" rx="4" ry="7" fill="#fef08a" stroke="#ca8a04" />
-        <!-- Faros Traseros -->
         <rect x="38" y="60" width="4" height="12" rx="1" fill="#ef4444" />
         <rect x="38" y="108" width="4" height="12" rx="1" fill="#ef4444" />
         ${targetSvgHTML}
       `;
-    } else {
+    } else if (tipoFormato === 'MOTOTAXI') {
+      // Mototaxi / Trimovil (3 Ruedas)
       svg.innerHTML = `
-        <!-- Marcas para Vehículo Menor / Mototaxi -->
         <text x="150" y="15" font-size="8" font-weight="bold" fill="#64748b" text-anchor="middle">▲ LADO DERECHO</text>
         <text x="150" y="175" font-size="8" font-weight="bold" fill="#64748b" text-anchor="middle">▼ LADO IZQUIERDO</text>
         <text x="12" y="95" font-size="8" font-weight="bold" fill="#ef4444" text-anchor="middle" transform="rotate(-90 12,95)">◄ POSTERIOR</text>
@@ -725,13 +767,41 @@
         <rect x="75" y="22" width="150" height="16" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1" />
         <text x="150" y="33" font-size="8.5" font-weight="bold" fill="#0369a1" text-anchor="middle">${indicadorVista}</text>
 
+        <!-- Cabina y Estructura de 3 Ruedas -->
         <path d="M 45,55 L 160,55 Q 210,55 240,78 L 240,102 Q 210,125 160,125 L 45,125 Z" fill="#e2e8f0" stroke="#0f172a" stroke-width="2" />
         <rect x="65" y="62" width="95" height="56" rx="5" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
         <path d="M 195,90 L 230,90 M 210,72 L 210,108" stroke="#334155" stroke-width="2.5" />
-        <rect x="220" y="83" width="25" height="14" rx="3" fill="#334155" />
-        <rect x="58" y="40" width="35" height="12" rx="2" fill="#334155" />
-        <rect x="58" y="128" width="35" height="12" rx="2" fill="#334155" />
+        <rect x="220" y="83" width="25" height="14" rx="3" fill="#334155" /> <!-- Rueda Frontal -->
+        <rect x="58" y="40" width="35" height="12" rx="2" fill="#334155" /> <!-- Rueda Der -->
+        <rect x="58" y="128" width="35" height="12" rx="2" fill="#334155" /> <!-- Rueda Izq -->
         <circle cx="238" cy="90" r="6" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5" />
+        ${targetSvgHTML}
+      `;
+    } else {
+      // Motocicleta / Moto Lineal (2 Ruedas Alineadas)
+      svg.innerHTML = `
+        <text x="150" y="15" font-size="8" font-weight="bold" fill="#64748b" text-anchor="middle">▲ LADO DERECHO</text>
+        <text x="150" y="175" font-size="8" font-weight="bold" fill="#64748b" text-anchor="middle">▼ LADO IZQUIERDO</text>
+        <text x="12" y="95" font-size="8" font-weight="bold" fill="#ef4444" text-anchor="middle" transform="rotate(-90 12,95)">◄ POSTERIOR</text>
+        <text x="288" y="95" font-size="8" font-weight="bold" fill="#0369a1" text-anchor="middle" transform="rotate(90 288,95)">FRONTERA / DELANTE ►</text>
+
+        <rect x="75" y="22" width="150" height="16" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1" />
+        <text x="150" y="33" font-size="8.5" font-weight="bold" fill="#0369a1" text-anchor="middle">${indicadorVista}</text>
+
+        <!-- Chasis y 2 Ruedas Alineadas al Centro -->
+        <path d="M 40,90 L 250,90" stroke="#0f172a" stroke-width="4" />
+        <!-- Rueda Trasera -->
+        <rect x="30" y="80" width="38" height="20" rx="4" fill="#334155" stroke="#0f172a" stroke-width="1.5" />
+        <!-- Rueda Delantera -->
+        <rect x="225" y="80" width="38" height="20" rx="4" fill="#334155" stroke="#0f172a" stroke-width="1.5" />
+        <!-- Tanque de Gasolina Central -->
+        <ellipse cx="165" cy="90" rx="25" ry="14" fill="#0284c7" stroke="#0f172a" stroke-width="1.5" />
+        <!-- Asiento Piloto y Copiloto -->
+        <rect x="85" y="80" width="55" height="20" rx="6" fill="#1e293b" />
+        <!-- Manubrio / Horquilla -->
+        <path d="M 205,65 L 205,115 M 195,90 L 225,90" stroke="#475569" stroke-width="3" />
+        <!-- Faro Frontal -->
+        <circle cx="258" cy="90" r="7" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5" />
         ${targetSvgHTML}
       `;
     }
@@ -740,7 +810,10 @@
   function resaltarUbicacionItem(nombreItem) {
     document.getElementById('lbl_item_actual').innerText = nombreItem;
     const tipo = document.getElementById('select_tipo_formato').value;
-    const mapa = (tipo === 'MENOR') ? MAPA_UBICACIONES_MENOR : MAPA_UBICACIONES_MAYOR;
+    
+    let mapa = MAPA_UBICACIONES_MAYOR;
+    if (tipo === 'MOTOTAXI') mapa = MAPA_UBICACIONES_MOTOTAXI;
+    if (tipo === 'MOTOCICLETA') mapa = MAPA_UBICACIONES_MOTOCICLETA;
 
     const info = mapa[nombreItem] || { x: 150, y: 90, zona: "Estructura del Vehículo", desc: `Inspección física correspondiente a ${nombreItem}.` };
     
@@ -807,7 +880,7 @@
       }
 
       const promptText = `Eres un perito de inspección técnica vehicular de la Policía Nacional del Perú (PNP).
-Analiza las fotos de este ${tipoFormato === 'MENOR' ? 'VEHÍCULO MENOR (Mototaxi/Moto)' : 'VEHÍCULO MAYOR (Automóvil/Camioneta)'}.
+Analiza las fotos de este vehículo del tipo: ${tipoFormato}.
 
 EVALÚA CADA UNA DE LAS SIGUIENTES PARTES DEL ACTA POLICIAL:
 ${JSON.stringify(partesFormulario)}
@@ -924,12 +997,12 @@ Responde ÚNICAMENTE en JSON estricto:
     recopilarDatosGroup('sec_1', novedadesSec1);
     recopilarDatosGroup('sec_2', novedadesSec2);
     recopilarDatosGroup('sec_3', novedadesSec3);
-    if (tipoFormato === 'MENOR') recopilarDatosGroup('sec_4', novedadesSec4);
+    if (tipoFormato !== 'MAYOR') recopilarDatosGroup('sec_4', novedadesSec4);
 
     const nivelGas = document.getElementById('combustible_nivel').value;
     const obsText = document.getElementById('observaciones_situacion').value.trim();
 
-    let resultadoFinalTexto = `FORMATO: ACTA DE SITUACIÓN VEHICULAR (${tipoFormato === 'MENOR' ? 'VEHÍCULO MENOR' : 'VEHÍCULO MAYOR'}).\n`;
+    let resultadoFinalTexto = `FORMATO: ACTA DE SITUACIÓN VEHICULAR (${tipoFormato}).\n`;
     resultadoFinalTexto += `NIVEL DE COMBUSTIBLE: ${nivelGas}.\n\n`;
 
     const tit1Text = document.getElementById('tit_sec_1').innerText;
@@ -940,7 +1013,7 @@ Responde ÚNICAMENTE en JSON estricto:
     resultadoFinalTexto += `${tit2Text}:\n` + (novedadesSec2.length > 0 ? `- ${novedadesSec2.join('\n- ')}` : `Con todos sus accesorios en estado REGULAR/BUENO.`) + `\n\n`;
     resultadoFinalTexto += `${tit3Text}:\n` + (novedadesSec3.length > 0 ? `- ${novedadesSec3.join('\n- ')}` : `Con todos sus componentes en estado REGULAR/BUENO.`) + `\n\n`;
 
-    if (tipoFormato === 'MENOR') {
+    if (tipoFormato !== 'MAYOR') {
       const tit4Text = document.getElementById('tit_sec_4').innerText;
       resultadoFinalTexto += `${tit4Text}:\n` + (novedadesSec4.length > 0 ? `- ${novedadesSec4.join('\n- ')}` : `En estado REGULAR/BUENO.`) + `\n\n`;
     }
