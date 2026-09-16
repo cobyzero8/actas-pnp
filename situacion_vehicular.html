@@ -718,7 +718,6 @@
     cambiarFormatoTipoVehiculo(tipoInicial);
     restaurarEstadoSV();
 
-    // Revisa si la clave de Gemini ya existe antes de activar
     verificarEstadoInicialGemini();
   });
 
@@ -769,7 +768,6 @@
     return { url, key };
   }
 
-  // Genera un QR limpio y rápido de escanear
   function generarQRSincronizacion() {
     const placaActual = document.getElementById('lbl_placa').innerText;
     const qrContainer = document.getElementById('qrcode');
@@ -789,7 +787,6 @@
     }
   }
 
-  // Escucha transmisiones Broadcast en vivo y eventos en base de datos
   function inicializarSupabaseRealtime() {
     const { url, key } = obtenerSupabaseCreds();
     const statusRealtime = document.getElementById('lbl_status_realtime');
@@ -834,7 +831,6 @@
     }
   }
 
-  // DESCARGA Y FILTRA A UN MÁXIMO DE 5 FOTOS MÁS RECIENTES
   async function descargarYProcesarFotosSupabase(placa) {
     if (!supabaseClient) return;
 
@@ -851,7 +847,6 @@
         return;
       }
 
-      // FILTRO ESTRICTO: Solo las 5 fotos más recientes
       const ultimos5Archivos = archivos.slice(0, 5);
 
       const fileObjects = [];
@@ -1086,11 +1081,10 @@
       return;
     }
 
-    // Limpieza previa de miniaturas acumuladas
     previewContainer.innerHTML = "";
     
-    // Filtro de imágenes: Toma como máximo las últimas 5 fotos
-    const listaFotos = Array.from(files).slice(-5);
+    // Limite estricto a las primeras 5 fotos máximo
+    const listaFotos = Array.from(files).slice(0, 5);
 
     btnTrigger.disabled = true;
     btnTrigger.innerHTML = `Analizando (${listaFotos.length} fotos)...`;
@@ -1154,12 +1148,21 @@ Responde ÚNICAMENTE en JSON estricto:
       };
 
       const cleanKey = encodeURIComponent(rawApiKey);
-      const modelosAI = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+
+      // Combinaciones de versión API y nombre de modelo para máxima compatibilidad REST
+      const combinacionesEndpoint = [
+        { ver: 'v1beta', model: 'gemini-2.0-flash' },
+        { ver: 'v1beta', model: 'gemini-1.5-flash-latest' },
+        { ver: 'v1beta', model: 'gemini-1.5-flash' },
+        { ver: 'v1', model: 'gemini-1.5-flash' },
+        { ver: 'v1', model: 'gemini-2.0-flash' }
+      ];
+
       let response = null;
       let lastErr = null;
 
-      for (const model of modelosAI) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${cleanKey}`;
+      for (const item of combinacionesEndpoint) {
+        const url = `https://generativelanguage.googleapis.com/${item.ver}/models/${item.model}:generateContent?key=${cleanKey}`;
         try {
           const res = await fetch(url, {
             method: "POST",
@@ -1179,7 +1182,7 @@ Responde ÚNICAMENTE en JSON estricto:
       }
 
       if (!response) {
-        throw new Error(`Error en la API de Gemini (${lastErr}). Revisa que tu API Key sea válida y generada en Google AI Studio.`);
+        throw new Error(`Error en la API de Gemini (${lastErr}). Revisa que tu API Key esté generada correctamente en Google AI Studio (aistudio.google.com).`);
       }
 
       const data = await response.json();
@@ -1223,7 +1226,7 @@ Responde ÚNICAMENTE en JSON estricto:
 
     } catch (err) {
       console.error("Error en escáner IA:", err);
-      statusLabel.innerHTML = `<span style="color:#b91c1c;">❌ Error: ${err.message}</span>`;
+      statusLabel.innerHTML = `<span style="color:#b91c1c;">❌ ${err.message}</span>`;
     } finally {
       btnTrigger.disabled = false;
       btnTrigger.innerHTML = `📷 Subir Fotos (Máx 5) y Escanear con IA`;
