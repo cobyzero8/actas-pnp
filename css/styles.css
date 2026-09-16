@@ -152,3 +152,80 @@ textarea { height: 70px; resize: vertical; }
 }
 .alert-danger { background: #f8d7da; color: #721c24; }
 .alert-success { background: #d4edda; color: #155724; }
+
+
+/* ==========================================
+   ADAPTACIÓN RESPONSIVA MEDIA QUERIES (PNP)
+   ========================================== */
+
+@media (max-width: 768px) {
+  body {
+    padding: 8px;
+  }
+
+  .container, .sv-container {
+    padding: 12px;
+  }
+
+  /* Convierte grillas de 2 columnas a 1 sola en celulares */
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .full {
+    grid-column: span 1 !important;
+  }
+
+  /* Scroll horizontal limpio para la barra de pasos (Wizard) */
+  .wizard-header {
+    display: flex !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+    gap: 8px !important;
+  }
+
+  .wizard-step-badge {
+    flex: 0 0 auto !important;
+    min-width: 120px;
+  }
+
+  /* Reorganización del editor final en Paso 8 */
+  #contenedorPaso2Grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  #columnaLateralPaso2 {
+    position: static !important;
+    max-height: none !important;
+    margin-top: 15px;
+  }
+
+  /* Ajuste de controles vehiculares */
+  .main-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .tipo-vehiculo-selector {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .fuel-gauge-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* Adaptación de modales en pantallas pequeñas */
+  .modal-overlay {
+    padding: 10px !important;
+  }
+
+  .modal-content {
+    width: 100% !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    padding: 15px !important;
+  }
+}
