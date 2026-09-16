@@ -6,40 +6,72 @@
   <title>Acta de Situación Vehicular - PNP</title>
   <link rel="stylesheet" href="css/styles.css">
   <style>
+    :root {
+      --pnp-blue: #003366;
+      --pnp-blue-dark: #002244;
+      --pnp-accent: #0284c7;
+      --pnp-bg: #f1f5f9;
+      --pnp-card-bg: #ffffff;
+      --pnp-border: #cbd5e1;
+      
+      /* Estados Policiales */
+      --st-bueno-bg: #dcfce7;
+      --st-bueno-color: #15803d;
+      --st-bueno-border: #16a34a;
+
+      --st-regular-bg: #e0f2fe;
+      --st-regular-color: #0369a1;
+      --st-regular-border: #0284c7;
+
+      --st-malo-bg: #fee2e2;
+      --st-malo-color: #b91c1c;
+      --st-malo-border: #ef4444;
+
+      --st-falta-bg: #fef3c7;
+      --st-falta-color: #b45309;
+      --st-falta-border: #f59e0b;
+    }
+
     body {
-      background-color: #f1f5f9;
+      background-color: var(--pnp-bg);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       margin: 0;
       padding: 15px;
+      color: #0f172a;
     }
+
     .sv-container {
-      max-width: 1280px;
+      max-width: 1320px;
       margin: 0 auto;
-      background: #ffffff;
-      border-radius: 10px;
+      background: var(--pnp-card-bg);
+      border-radius: 12px;
       padding: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
+
     .sv-header {
-      background: #003366;
+      background: linear-gradient(135deg, var(--pnp-blue) 0%, var(--pnp-blue-dark) 100%);
       color: #ffffff;
-      padding: 15px 20px;
-      border-radius: 8px;
+      padding: 16px 22px;
+      border-radius: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
+      box-shadow: 0 3px 10px rgba(0,51,102,0.2);
     }
     .sv-header h2 {
       margin: 0;
-      font-size: 18px;
+      font-size: 19px;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
+
     .info-card {
       background: #eff6ff;
       border: 1px solid #bfdbfe;
-      border-radius: 8px;
-      padding: 12px 15px;
+      border-radius: 10px;
+      padding: 14px 18px;
       margin-bottom: 20px;
     }
     .info-card h4 {
@@ -47,46 +79,54 @@
       color: #1e40af;
       font-size: 13px;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     .grid-info {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 10px;
+      gap: 12px;
       font-size: 12px;
     }
-    .grid-info div span {
-      font-weight: bold;
-      color: #334155;
+    .grid-info div span:first-child {
+      color: #64748b;
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+    .grid-info div span:last-child {
+      font-weight: 700;
+      color: #1e293b;
+      font-size: 13px;
     }
 
-    /* Layout principal de 2 columnas */
     .main-layout {
       display: grid;
-      grid-template-columns: 1fr 340px;
-      gap: 20px;
+      grid-template-columns: 1fr 380px;
+      gap: 22px;
       align-items: start;
     }
-    @media (max-width: 900px) {
+    @media (max-width: 980px) {
       .main-layout { grid-template-columns: 1fr; }
     }
 
-    /* Panel Lateral Fijo (Guía Visual e IA) */
     .sticky-panel {
       position: sticky;
       top: 15px;
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 18px;
     }
+
     .guide-card {
-      background: #f8fafc;
-      border: 2px solid #0284c7;
-      border-radius: 8px;
-      padding: 15px;
+      background: #ffffff;
+      border: 2px solid var(--pnp-accent);
+      border-radius: 10px;
+      padding: 16px;
       text-align: center;
+      box-shadow: 0 2px 8px rgba(2,132,199,0.08);
     }
     .guide-card h3 {
-      margin: 0 0 10px 0;
+      margin: 0 0 8px 0;
       font-size: 13px;
       color: #0369a1;
       text-transform: uppercase;
@@ -94,102 +134,161 @@
     .location-badge {
       background: #e0f2fe;
       color: #0369a1;
-      padding: 6px 12px;
+      padding: 5px 12px;
       border-radius: 20px;
       font-size: 12px;
-      font-weight: bold;
+      font-weight: 700;
       display: inline-block;
-      margin-bottom: 10px;
-    }
-    .vehicle-diagram {
-      width: 100%;
-      height: 180px;
-      background: #ffffff;
-      border: 1px dashed #cbd5e1;
-      border-radius: 6px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .spot-highlight {
-      width: 22px;
-      height: 22px;
-      background: #ef4444;
-      border-radius: 50%;
-      box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.3);
-      animation: pulse 1.5s infinite;
-      margin-bottom: 8px;
-    }
-    @keyframes pulse {
-      0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-      70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-      100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+      margin-bottom: 12px;
+      border: 1px solid #bae6fd;
     }
 
-    /* Módulo IA */
+    .vehicle-diagram-container {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      background: #f8fafc;
+      border: 1px dashed var(--pnp-border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .svg-vehicle {
+      width: 100%;
+      height: 100%;
+      max-height: 210px;
+    }
+
+    .target-ring {
+      fill: none;
+      stroke: #ef4444;
+      stroke-width: 3;
+      stroke-dasharray: 4, 2;
+      animation: spin 3s linear infinite;
+    }
+    .target-dot {
+      fill: #ef4444;
+      animation: pulse-dot 1.2s infinite ease-in-out;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(0.8); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; }
+    }
+
+    .location-details {
+      margin-top: 10px;
+      background: #f1f5f9;
+      padding: 8px 12px;
+      border-radius: 6px;
+      text-align: left;
+    }
+    .location-details strong { display: block; font-size: 12px; color: #0f172a; }
+    .location-details span { font-size: 11px; color: #475569; }
+
     .ia-card {
       background: #f0fdf4;
       border: 2px dashed #16a34a;
-      border-radius: 8px;
-      padding: 15px;
+      border-radius: 10px;
+      padding: 16px;
       text-align: center;
     }
     .ia-card h4 {
-      margin: 0 0 8px 0;
+      margin: 0 0 6px 0;
       color: #15803d;
       font-size: 13px;
       text-transform: uppercase;
     }
 
+    .api-key-box {
+      margin-bottom: 10px;
+      text-align: left;
+    }
+    .api-key-box label {
+      font-size: 10px;
+      font-weight: bold;
+      color: #166534;
+      display: block;
+      margin-bottom: 3px;
+    }
+    .api-key-input {
+      width: 100%;
+      padding: 6px 8px;
+      font-size: 11px;
+      border: 1px solid #86efac;
+      border-radius: 4px;
+      box-sizing: border-box;
+      background: #ffffff;
+    }
+
+    .preview-thumbs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    .preview-thumbs img {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
+      border-radius: 4px;
+      border: 1px solid #86efac;
+    }
+
     .tipo-vehiculo-selector {
       background: #f8fafc;
-      border: 2px solid #0284c7;
-      padding: 12px 15px;
+      border: 2px solid var(--pnp-accent);
+      padding: 12px 16px;
       border-radius: 8px;
-      margin-bottom: 15px;
+      margin-bottom: 16px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 15px;
     }
     .tipo-vehiculo-selector label {
-      font-weight: bold;
+      font-weight: 700;
       font-size: 13px;
       color: #0369a1;
       text-transform: uppercase;
     }
     .tipo-vehiculo-selector select {
-      padding: 6px 12px;
+      padding: 7px 14px;
       font-size: 13px;
-      font-weight: bold;
+      font-weight: 700;
       border-radius: 6px;
-      border: 1.5px solid #0284c7;
+      border: 1.5px solid var(--pnp-accent);
       background: #ffffff;
       color: #0f172a;
       cursor: pointer;
     }
+
     .section-title {
       background: #f8fafc;
-      border-left: 4px solid #0284c7;
-      padding: 8px 12px;
+      border-left: 4px solid var(--pnp-accent);
+      padding: 9px 14px;
       font-size: 13px;
-      font-weight: bold;
+      font-weight: 700;
       color: #0369a1;
       text-transform: uppercase;
-      margin: 20px 0 10px 0;
+      margin: 22px 0 12px 0;
       border-radius: 0 6px 6px 0;
     }
+
     .grid-check {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
       gap: 10px;
     }
+
     .check-item {
       background: #ffffff;
-      border: 1px solid #cbd5e1;
-      padding: 8px 10px;
+      border: 1px solid var(--pnp-border);
+      padding: 8px 12px;
       border-radius: 6px;
       display: flex;
       justify-content: space-between;
@@ -197,9 +296,9 @@
       font-size: 11px;
       transition: all 0.15s ease;
     }
-    .check-item:hover, .check-item.active-inspect {
+    .check-item:hover {
       background-color: #f0f9ff;
-      border-color: #0284c7;
+      border-color: var(--pnp-accent);
     }
     .check-item label {
       cursor: pointer;
@@ -207,20 +306,21 @@
       color: #1e293b;
       flex: 1;
       text-transform: uppercase;
-      padding-right: 5px;
+      padding-right: 6px;
     }
-    
-    /* Selector de solo REGULAR y FALTA */
+
     .select-estado {
       padding: 5px 8px;
       font-size: 11px;
       border-radius: 4px;
       border: 1.5px solid #94a3b8;
-      font-weight: bold;
+      font-weight: 700;
       cursor: pointer;
     }
-    .select-estado.regular { color: #15803d; background: #f0fdf4; border-color: #16a34a; }
-    .select-estado.falta { color: #b45309; background: #fefce8; border-color: #d97706; }
+    .select-estado.bueno { color: var(--st-bueno-color); background: var(--st-bueno-bg); border-color: var(--st-bueno-border); }
+    .select-estado.regular { color: var(--st-regular-color); background: var(--st-regular-bg); border-color: var(--st-regular-border); }
+    .select-estado.malo { color: var(--st-malo-color); background: var(--st-malo-bg); border-color: var(--st-malo-border); }
+    .select-estado.falta { color: var(--st-falta-color); background: var(--st-falta-bg); border-color: var(--st-falta-border); }
 
     .fuel-gauge-container {
       display: flex;
@@ -228,15 +328,16 @@
       align-items: center;
       background: #fffbeb;
       border: 1px solid #fde047;
-      padding: 12px;
+      padding: 12px 16px;
       border-radius: 8px;
       margin-bottom: 15px;
     }
+
     .btn-action {
       padding: 10px 20px;
       border-radius: 6px;
       font-size: 13px;
-      font-weight: bold;
+      font-weight: 700;
       cursor: pointer;
       border: none;
       display: inline-flex;
@@ -245,18 +346,19 @@
     }
     .btn-save { background: #166534; color: white; }
     .btn-back { background: #64748b; color: white; text-decoration: none; }
-    .btn-ia { background: #15803d; color: white; width: 100%; justify-content: center; padding: 8px; margin-top: 8px; }
+    .btn-ia { background: #15803d; color: white; width: 100%; justify-content: center; padding: 10px; margin-top: 8px; }
 
     .obs-textarea {
       width: 100%;
       box-sizing: border-box;
-      padding: 10px;
+      padding: 10px 14px;
       font-size: 13px;
-      border: 1.5px solid #cbd5e1;
+      border: 1.5px solid var(--pnp-border);
       border-radius: 6px;
-      min-height: 90px;
+      min-height: 95px;
       resize: vertical;
       margin-top: 8px;
+      font-family: inherit;
     }
   </style>
 </head>
@@ -271,7 +373,6 @@
     <a href="formulario.html" onclick="notificarRegreso()" class="btn-action btn-back">⬅️ Volver al Formulario</a>
   </div>
 
-  <!-- DATOS GENERALES -->
   <div class="info-card">
     <h4>📋 DATOS GENERALES DEL VEHÍCULO E INTERVENIDO</h4>
     <div class="grid-info">
@@ -287,9 +388,7 @@
   </div>
 
   <div class="main-layout">
-    <!-- COLUMNA IZQUIERDA: FORMULARIO -->
     <div>
-      <!-- SELECTOR DE TIPO DE VEHÍCULO -->
       <div class="tipo-vehiculo-selector">
         <label for="select_tipo_formato">📌 Formato de Inspección:</label>
         <select id="select_tipo_formato" onchange="cambiarFormatoTipoVehiculo(this.value)">
@@ -298,10 +397,9 @@
         </select>
       </div>
 
-      <!-- Nivel de Combustible -->
       <div class="fuel-gauge-container">
         <label style="font-size: 12px; font-weight: bold; color: #9a3412;">⛽ NIVEL DE COMBUSTIBLE EN TANQUE:</label>
-        <select id="combustible_nivel" class="select-estado regular" style="font-size: 12px; padding: 6px 10px;">
+        <select id="combustible_nivel" class="select-estado regular" style="font-size: 12px; padding: 6px 12px;" onchange="actualizarColorSelect(this)">
           <option value="RESERVA (R)">RESERVA (R)</option>
           <option value="1/4 DE TANQUE">1/4 DE TANQUE</option>
           <option value="1/2 TANQUE" selected>1/2 TANQUE</option>
@@ -321,7 +419,7 @@
         <div class="section-title" id="tit_sec_3">⚙️ III. MOTOR Y MECÁNICA</div>
         <div class="grid-check" id="sec_3"></div>
 
-        <div class="section-title" id="tit_sec_4">🛠️ IV. ESTRUCTURA Y ACCESORIOS ADICIONALES</div>
+        <div class="section-title" id="tit_sec_4" style="display:none;">🛠️ IV. ESTRUCTURA Y ACCESORIOS ADICIONALES</div>
         <div class="grid-check" id="sec_4"></div>
 
         <div class="section-title">📝 OBSERVACIONES, DAÑOS VISIBLES Y ESTADO GENERAL</div>
@@ -336,94 +434,139 @@
       </form>
     </div>
 
-    <!-- COLUMNA DERECHA: GUÍA VISUAL E IA -->
     <div class="sticky-panel">
-      <!-- MÓDULO GUÍA DE UBICACIÓN -->
       <div class="guide-card">
         <h3>📍 Ubicación de Componente</h3>
-        <span class="location-badge" id="lbl_item_actual">Seleccione o pase el cursor sobre un ítem</span>
+        <span class="location-badge" id="lbl_item_actual">Pase o seleccione un ítem</span>
         
-        <div class="vehicle-diagram">
-          <div class="spot-highlight" id="spot_indicador"></div>
-          <strong id="lbl_zona_nombre" style="font-size: 12px; color: #1e293b;">ZONA DEL VEHÍCULO</strong>
-          <span id="lbl_zona_desc" style="font-size: 10px; color: #64748b; padding: 0 10px; margin-top: 4px;">Pase sobre los botones para ver la ubicación técnica exacta en el vehículo.</span>
+        <div class="vehicle-diagram-container">
+          <svg id="svg_diagrama_vehicular" viewBox="0 0 300 180" class="svg-vehicle"></svg>
+        </div>
+
+        <div class="location-details">
+          <strong id="lbl_zona_nombre">ZONA DEL VEHÍCULO</strong>
+          <span id="lbl_zona_desc">Seleccione una pieza en el formulario para localizar su posición técnica en el esquema.</span>
         </div>
       </div>
 
-      <!-- MÓDULO ESCÁNER CON IA -->
       <div class="ia-card">
         <h4>🤖 Inspección Asistida por IA</h4>
-        <p style="font-size: 11px; color: #166534; margin: 0 0 10px 0;">Sube fotos del vehículo o tablero para auto-detectar ítems faltantes o con observaciones.</p>
-        <input type="file" id="input_foto_ia" accept="image/*" multiple style="display:none;" onchange="procesarFotosConIA(this.files)">
-        <button type="button" onclick="document.getElementById('input_foto_ia').click()" class="btn-action btn-ia">
+        <p style="font-size: 11px; color: #166534; margin: 0 0 8px 0;">
+          Sube fotos (Frontal, Tablero, Laterales) para auto-evaluar <strong>TODAS</strong> las partes del acta.
+        </p>
+
+        <div class="api-key-box">
+          <label for="input_gemini_key">🔑 API Key Gemini:</label>
+          <input type="password" id="input_gemini_key" class="api-key-input" placeholder="AIzaSy..." onchange="guardarApiKeyLocal(this.value)">
+        </div>
+
+        <input type="file" id="input_foto_ia" accept="image/*" multiple style="display:none;" onchange="procesarFotosConIAReal(this.files)">
+        <button type="button" id="btn_ia_trigger" onclick="document.getElementById('input_foto_ia').click()" class="btn-action btn-ia">
           📷 Subir Fotos y Escanear con IA
         </button>
-        <span id="lbl_status_ia" style="font-size: 10px; color: #15803d; display: block; margin-top: 6px; font-weight: bold;"></span>
+        
+        <div id="preview_contenedor" class="preview-thumbs"></div>
+        <span id="lbl_status_ia" style="font-size: 10px; color: #15803d; display: block; margin-top: 8px; font-weight: bold;"></span>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-  // DICCIONARIO DE UBICACIONES TÉCNICAS
-  const MAPA_UBICACIONES = {
-    "VELOCÍMETRO": { zona: "Tablero de Instrumentos", desc: "Ubicado en la parte central superior del manubrio/consola." },
-    "TACÓMETRO": { zona: "Tablero de Instrumentos", desc: "Medidor de revoluciones al lado del velocímetro." },
-    "PALANCA DE CAMBIOS": { zona: "Controles Manuales", desc: "Ubicada en el manubrio izquierdo (motos) o consola central." },
-    "FRENO DELANTERO": { zona: "SISTEMA DE FRENO", desc: "Manija derecha del manubrio o pedal." },
-    "FARO DELANTERO": { zona: "Parte Frontal Exterior", desc: "Faro principal de iluminación en el frente del vehículo." },
-    "FARO GRANDE DELT": { zona: "Parte Frontal Exterior", desc: "Faros principales en la máscara frontal del vehículo mayor." },
-    "INTERMITENTES": { zona: "Esquinas Frontales/Posteriores", desc: "Luces de señalización de viraje." },
-    "PARABRISAS": { zona: "Carrocería Frontal", desc: "Vidrio templado/laminado frontal de protección." },
-    "BATERÍA": { zona: "Compartimento Eléctrico", desc: "Ubicada bajo el asiento, lateral o en el motor." },
-    "LLANTAS": { zona: "Tren de Rodaje", desc: "Neumáticos delanteros y posteriores instalados." },
-    "LLANTAS DE REPUESTO": { zona: "Portaequipaje / Parte Posterior", desc: "Rueda de auxilio en maletera o parte trasera exterior." },
-    "CARBURADOR": { zona: "Motor / Alimentación", desc: "Sistema de mezcla aire/combustible junto al motor." },
-    "TOLDO": { zona: "Estructura Superior", desc: "Lona o cobertura superior protectora (vehículos menores)." }
+  // Mapeo completo de coordenadas SVG y descripciones técnicas
+  const MAPA_UBICACIONES_MAYOR = {
+    "FARO GRANDE DELT": { x: 260, y: 50, zona: "Máscara Frontal", desc: "Faros principales en el frente exterior del auto." },
+    "INTERMITENTES": { x: 270, y: 35, zona: "Esquinas Frontales", desc: "Luces de señalización de giro delanteras." },
+    "FAROS POSTERIORES": { x: 40, y: 50, zona: "Faros Traseros", desc: "Faros de freno y reversa posteriores." },
+    "BISELES": { x: 255, y: 65, zona: "Biseles / Faros", desc: "Marcos o embellecedores de faros." },
+    "LIMPIA PARABRISA": { x: 215, y: 80, zona: "Base Parabrisas", desc: "Plumillas y brazos limpiaparabrisas." },
+    "PARABRISAS": { x: 200, y: 90, zona: "Parabrisas Frontal", desc: "Vidrio templado/laminado delantero." },
+    "LUNAS": { x: 150, y: 40, zona: "Ventanillas Laterales", desc: "Lunas de puertas piloto y copiloto." },
+    "ESPEJO EXTERIOR": { x: 210, y: 35, zona: "Puertas Delanteras", desc: "Espejos retrovisores laterales exteriores." },
+    "ANTENAS": { x: 90, y: 25, zona: "Techo / Carrocería", desc: "Antena receptora de radio." },
+    "PARACHOQUES": { x: 280, y: 90, zona: "Frente Inferior", desc: "Parachoques o defensa delantera." },
+    "LLANTAS": { x: 220, y: 145, zona: "Tren de Rodaje", desc: "Neumáticos y aros de ruedas." },
+    "LLANTAS DE REPUESTO": { x: 50, y: 120, zona: "Compartimento Posterior", desc: "Rueda de auxilio en maletera." },
+    "TABLERO": { x: 180, y: 85, zona: "Habitáculo Frontal", desc: "Consola de instrumentos y relojes." },
+    "CHAPA CONTACTO": { x: 175, y: 95, zona: "Columna Dirección", desc: "Chapa de encendido con llave." },
+    "RADIO MUSICAL": { x: 165, y: 90, zona: "Consola Central", desc: "Equipo de radio o pantalla multimedios." },
+    "ENCENDEDOR": { x: 160, y: 100, zona: "Consola Central", desc: "Toma de corriente 12V / encendedor." },
+    "PISOS": { x: 140, y: 110, zona: "Piso Interior", desc: "Pisos de goma/moqueta del vehículo." },
+    "MANIJAS": { x: 150, y: 55, zona: "Puertas", desc: "Manijas de apertura interiores/exteriores." },
+    "CENICEROS": { x: 155, y: 105, zona: "Consola / Puertas", desc: "Depósitos ceniceros." },
+    "VASOS": { x: 150, y: 95, zona: "Consola Central", desc: "Portavasos integrados." },
+    "PARASOLES": { x: 190, y: 65, zona: "Techo Interior", desc: "Viseras parasol superiores." },
+    "CHAPAS": { x: 145, y: 50, zona: "Cerraduras Puerta", desc: "Pestillos y chapas de seguridad." },
+    "CODERAS": { x: 135, y: 60, zona: "Paneles de Puerta", desc: "Apoyabrazos en laterales." },
+    "GATA": { x: 40, y: 135, zona: "Herramientas Traseras", desc: "Gata mecánica o hidráulica." },
+    "LLAVE DE RUEDA": { x: 55, y: 135, zona: "Herramientas Traseras", desc: "Llave de tuercas de ruedas." },
+    "PARLANTES": { x: 120, y: 60, zona: "Sistema de Audio", desc: "Altavoces en puertas o bandeja." },
+    "ESPEJO INTERIOR": { x: 185, y: 75, zona: "Parabrisas Central", desc: "Espejo retrovisor interno." },
+    "ASIENTOS": { x: 130, y: 85, zona: "Butacas Habitáculo", desc: "Asientos delanteros y posteriores." },
+    "BATERIA": { x: 250, y: 110, zona: "Compartimento Motor", desc: "Batería de 12V en vano motor." },
+    "RADIADOR": { x: 270, y: 95, zona: "Frente de Motor", desc: "Radiador del sistema de refrigeración." },
+    "ARRANCADOR": { x: 235, y: 120, zona: "Bloque de Motor", desc: "Motor de arranque eléctrico." },
+    "ALTERNADOR": { x: 245, y: 115, zona: "Motor / Correas", desc: "Alternador generador de carga." },
+    "CARBURADOR": { x: 230, y: 95, zona: "Admisión Motor", desc: "Carburador o inyectores de combustible." },
+    "PURIFICADOR": { x: 220, y: 85, zona: "Filtro de Aire", desc: "Filtro/purificador de aire del motor." },
+    "DISTRIBUIDOR": { x: 225, y: 105, zona: "Sistema Encendido", desc: "Distribuidor o módulo electrónico." },
+    "BOBINA": { x: 215, y: 110, zona: "Encendido", desc: "Bobina de alta tensión." },
+    "TAPA DE ACEITE": { x: 240, y: 90, zona: "Capa de Motor", desc: "Tapón de llenado de lubricante." },
+    "BUJÍAS": { x: 235, y: 100, zona: "Culata Motor", desc: "Bujías de encendido." },
+    "CHICOTES": { x: 225, y: 100, zona: "Cableado Bujías", desc: "Cables de alta tensión." },
+    "VARILLA ACEITE": { x: 245, y: 100, zona: "Medidor de Aceite", desc: "Varilla de nivel de aceite de motor." }
   };
 
-  const MAYOR_SEC_1 = [
-    "FARO GRANDE DELT", "INTERMITENTES", "FAROS POSTERIORES", "BISELES",
-    "LIMPIA PARABRISA", "PARABRISAS", "LUNAS", "ESPEJO EXTERIOR",
-    "ANTENAS", "PARACHOQUES", "LLANTAS", "LLANTAS DE REPUESTO"
-  ];
+  const MAPA_UBICACIONES_MENOR = {
+    "VELOCÍMETRO": { x: 190, y: 45, zona: "Manubrio / Consola", desc: "Reloj indicador de velocidad." },
+    "TACÓMETRO": { x: 195, y: 40, zona: "Manubrio / Consola", desc: "Medidor de revoluciones por minuto." },
+    "PALANCA DE CAMBIOS": { x: 160, y: 65, zona: "Mandos Manuales/Pedal", desc: "Selector de marchas." },
+    "FRENO DELANTERO": { x: 210, y: 45, zona: "Manubrio Derecho", desc: "Manija de freno delantero." },
+    "EMPUÑADURA DEL ACELERADOR": { x: 210, y: 55, zona: "Manubrio Derecho", desc: "Puño del acelerador." },
+    "INTERRUPTOR CONTROL DE FARO": { x: 180, y: 50, zona: "Comando Manubrio", desc: "Switch de luces alta/baja." },
+    "PEDAL DEL FRENO TRASERO": { x: 140, y: 125, zona: "Piso Derecho", desc: "Pedal de freno posterior." },
+    "PEDAL DE ARRANQUE": { x: 110, y: 115, zona: "Motor Lateral", desc: "Palanca de arranque por patada." },
+    "PALANCA DE EMBRAGUE": { x: 175, y: 40, zona: "Manubrio Izquierdo", desc: "Manija de embrague/clutch." },
+    "COMUNICADOR DE SEÑALES": { x: 180, y: 55, zona: "Comando Direccionales", desc: "Interruptor de luces direccionales." },
+    "PULSADOR DE LA BOCINA": { x: 178, y: 60, zona: "Comando Claxon", desc: "Botonera del claxon." },
+    "PALANCA": { x: 150, y: 80, zona: "Reversa / Freno", desc: "Palanca de reversa o parqueo." },
+    "FARO DELANTERO": { x: 240, y: 50, zona: "Máscara Frontal", desc: "Faro principal de iluminación." },
+    "LUCES DE PELIGRO": { x: 230, y: 38, zona: "Frente Superior", desc: "Luces intermitentes de emergencia." },
+    "DIRECCIONAL DERECHO": { x: 245, y: 35, zona: "Esquina Frontal Der.", desc: "Luz direccional derecha." },
+    "DIRECCIONAL IZQUIERDO": { x: 245, y: 65, zona: "Esquina Frontal Izq.", desc: "Luz direccional izquierda." },
+    "LUCES AUXILIARES": { x: 235, y: 70, zona: "Defensa Frontal", desc: "Neblineros o luces adicionales." },
+    "ESPEJO RETROVISOR": { x: 195, y: 25, zona: "Manubrio Espejos", desc: "Espejos retrovisores de manubrio." },
+    "RADIO": { x: 140, y: 35, zona: "Cabina Superior", desc: "Equipo de sonido en cabina." },
+    "CAJITA DE CD": { x: 135, y: 45, zona: "Interior Guantera", desc: "Compartimento porta CDS/documentos." },
+    "BATERÍA": { x: 100, y: 95, zona: "Bajo Asiento / Lateral", desc: "Batería de 12V." },
+    "CHUPÓN DE BUJÍA": { x: 120, y: 105, zona: "Bloque de Motor", desc: "Capuchón aislado de bujía." },
+    "BUJÍAS": { x: 125, y: 100, zona: "Culata Motor", desc: "Bujía de encendido." },
+    "CARBURADOR": { x: 130, y: 95, zona: "Admisión Motor", desc: "Carburador de mezcla de combustible." },
+    "TAPA DE ACEITE": { x: 115, y: 110, zona: "Cárter de Motor", desc: "Tapón de medición de lubricante." },
+    "CADENAS": { x: 80, y: 125, zona: "Transmisión", desc: "Cadena de arrastre de piñón y catalina." },
+    "TAPA DEL DEPÓSITO DE COMBUSTIBLE": { x: 155, y: 70, zona: "Tanque Gasolina", desc: "Tapa del depósito de combustible." },
+    "PEDAL DE CAMBIOS": { x: 130, y: 125, zona: "Piso Izquierdo", desc: "Pedal de selección de marchas." },
+    "LLANTAS": { x: 60, y: 135, zona: "Ruedas Traseras/Delant.", desc: "Neumáticos con aros instalados." },
+    "TOLDO": { x: 110, y: 20, zona: "Techo Cabina", desc: "Lona o cobertura protectora superior." },
+    "ASIENTOS": { x: 100, y: 65, zona: "Habitáculo Pasajeros", desc: "Asientos de conductor y pasajeros." },
+    "TAPAS LATERALES": { x: 95, y: 85, zona: "Carrocería Lateral", desc: "Carenado o tapas protectoras de fibra." },
+    "TAPABARRO DELANTERO": { x: 235, y: 85, zona: "Rueda Delantera", desc: "Guardabarros de llanta frontal." },
+    "TAPABARRO TRASERO": { x: 50, y: 110, zona: "Ruedas Traseras", desc: "Guardabarros de ruedas posteriores." }
+  };
 
-  const MAYOR_SEC_2 = [
-    "TABLERO", "CHAPA CONTACTO", "RADIO MUSICAL", "ENCENDEDOR",
-    "PISOS", "MANIJAS", "CENICEROS", "VASOS",
-    "PARASOLES", "CHAPAS", "CODERAS", "GATA",
-    "LLAVE DE RUEDA", "PARLANTES", "ESPEJO INTERIOR", "ASIENTOS"
-  ];
+  const MAYOR_SEC_1 = ["FARO GRANDE DELT", "INTERMITENTES", "FAROS POSTERIORES", "BISELES", "LIMPIA PARABRISA", "PARABRISAS", "LUNAS", "ESPEJO EXTERIOR", "ANTENAS", "PARACHOQUES", "LLANTAS", "LLANTAS DE REPUESTO"];
+  const MAYOR_SEC_2 = ["TABLERO", "CHAPA CONTACTO", "RADIO MUSICAL", "ENCENDEDOR", "PISOS", "MANIJAS", "CENICEROS", "VASOS", "PARASOLES", "CHAPAS", "CODERAS", "GATA", "LLAVE DE RUEDA", "PARLANTES", "ESPEJO INTERIOR", "ASIENTOS"];
+  const MAYOR_SEC_3 = ["BATERIA", "RADIADOR", "ARRANCADOR", "ALTERNADOR", "CARBURADOR", "PURIFICADOR", "DISTRIBUIDOR", "BOBINA", "TAPA DE ACEITE", "BUJÍAS", "CHICOTES", "VARILLA ACEITE"];
 
-  const MAYOR_SEC_3 = [
-    "BATERIA", "RADIADOR", "ARRANCADOR", "ALTERNADOR",
-    "CARBURADOR", "PURIFICADOR", "DISTRIBUIDOR", "BOBINA",
-    "TAPA DE ACEITE", "BUJÍAS", "CHICOTES", "VARILLA ACEITE"
-  ];
-
-  const MENOR_SEC_1 = [
-    "VELOCÍMETRO", "TACÓMETRO", "PALANCA DE CAMBIOS", "FRENO DELANTERO",
-    "EMPUÑADURA DEL ACELERADOR", "INTERRUPTOR CONTROL DE FARO", "PEDAL DEL FRENO TRASERO",
-    "PEDAL DE ARRANQUE", "PALANCA DE EMBRAGUE", "COMUNICADOR DE SEÑALES", "PULSADOR DE LA BOCINA", "PALANCA"
-  ];
-
-  const MENOR_SEC_2 = [
-    "FARO DELANTERO", "LUCES DE PELIGRO", "DIRECCIONAL DERECHO", "DIRECCIONAL IZQUIERDO",
-    "LUCES AUXILIARES", "ESPEJO RETROVISOR", "RADIO", "CAJITA DE CD", "BATERÍA"
-  ];
-
-  const MENOR_SEC_3 = [
-    "CHUPÓN DE BUJÍA", "BUJÍAS", "CARBURADOR", "TAPA DE ACEITE", "CADENAS"
-  ];
-
-  const MENOR_SEC_4 = [
-    "TAPA DEL DEPÓSITO DE COMBUSTIBLE", "PEDAL DE CAMBIOS", "LLANTAS", "TOLDO",
-    "ASIENTOS", "TAPAS LATERALES", "TAPABARRO DELANTERO", "TAPABARRO TRASERO"
-  ];
+  const MENOR_SEC_1 = ["VELOCÍMETRO", "TACÓMETRO", "PALANCA DE CAMBIOS", "FRENO DELANTERO", "EMPUÑADURA DEL ACELERADOR", "INTERRUPTOR CONTROL DE FARO", "PEDAL DEL FRENO TRASERO", "PEDAL DE ARRANQUE", "PALANCA DE EMBRAGUE", "COMUNICADOR DE SEÑALES", "PULSADOR DE LA BOCINA", "PALANCA"];
+  const MENOR_SEC_2 = ["FARO DELANTERO", "LUCES DE PELIGRO", "DIRECCIONAL DERECHO", "DIRECCIONAL IZQUIERDO", "LUCES AUXILIARES", "ESPEJO RETROVISOR", "RADIO", "CAJITA DE CD", "BATERÍA"];
+  const MENOR_SEC_3 = ["CHUPÓN DE BUJÍA", "BUJÍAS", "CARBURADOR", "TAPA DE ACEITE", "CADENAS"];
+  const MENOR_SEC_4 = ["TAPA DEL DEPÓSITO DE COMBUSTIBLE", "PEDAL DE CAMBIOS", "LLANTAS", "TOLDO", "ASIENTOS", "TAPAS LATERALES", "TAPABARRO DELANTERO", "TAPABARRO TRASERO"];
 
   const PALABRAS_VEHICULO_MENOR = ['TRIMOVIL', 'MOTOCICLETA', 'MOTOTAXI', 'MOTOCAR', 'MOTO', 'CUATRIMOTO', 'TRICICLO'];
 
   document.addEventListener('DOMContentLoaded', () => {
+    cargarApiKeyGuardada();
     const claseDetectada = cargarDatosGenerales();
     const esMenor = PALABRAS_VEHICULO_MENOR.some(tipo => claseDetectada.toUpperCase().includes(tipo));
     const tipoInicial = esMenor ? 'MENOR' : 'MAYOR';
@@ -432,6 +575,15 @@
     cambiarFormatoTipoVehiculo(tipoInicial);
     restaurarEstadoSV();
   });
+
+  function cargarApiKeyGuardada() {
+    const key = localStorage.getItem('pnp_gemini_api_key') || '';
+    if (key) document.getElementById('input_gemini_key').value = key;
+  }
+
+  function guardarApiKeyLocal(val) {
+    localStorage.setItem('pnp_gemini_api_key', val.trim());
+  }
 
   function cargarDatosGenerales() {
     const rawDatos = localStorage.getItem('pnp_datos_generales');
@@ -443,7 +595,7 @@
     try { if (rawVeh) { const list = JSON.parse(rawVeh); if (list.length > 0) veh = list[0]; } } catch(e){}
     try { if (rawInt) { const list = JSON.parse(rawInt); if (list.length > 0) int = list[0]; } } catch(e){}
 
-    const clase = veh.clase_vehiculo || datos.clase_vehiculo || 'TRIMOVIL';
+    const clase = veh.clase_vehiculo || datos.clase_vehiculo || 'AUTOMÓVIL';
 
     document.getElementById('lbl_placa').innerText = veh.placa || datos.placa || 'NO REGISTRA';
     document.getElementById('lbl_clase').innerText = clase;
@@ -485,6 +637,8 @@
       renderizarSeccion('sec_2', MAYOR_SEC_2, 's2');
       renderizarSeccion('sec_3', MAYOR_SEC_3, 's3');
     }
+
+    renderizarSVGDiagrama(tipo, null);
   }
 
   function renderizarSeccion(contenedorId, listaItems, prefijo) {
@@ -497,8 +651,10 @@
         <div class="check-item" onmouseenter="resaltarUbicacionItem('${item}')" onclick="resaltarUbicacionItem('${item}')">
           <label for="${fieldId}">${item}:</label>
           <select id="${fieldId}" class="select-estado regular" data-nombre="${item}" onchange="actualizarColorSelect(this)">
-            <option value="REGULAR" class="regular" selected>REGULAR</option>
-            <option value="FALTA" class="falta">FALTA</option>
+            <option value="BUENO">BUENO (B)</option>
+            <option value="REGULAR" selected>REGULAR (R)</option>
+            <option value="MALO">MALO (M)</option>
+            <option value="FALTA">FALTA (F)</option>
           </select>
         </div>
       `;
@@ -506,47 +662,210 @@
     });
   }
 
+  function renderizarSVGDiagrama(tipoFormato, targetCoords) {
+    const svg = document.getElementById('svg_diagrama_vehicular');
+    let targetSvgHTML = '';
+    if (targetCoords) {
+      targetSvgHTML = `
+        <g transform="translate(${targetCoords.x}, ${targetCoords.y})">
+          <circle r="14" class="target-ring" />
+          <circle r="5" class="target-dot" />
+        </g>
+      `;
+    }
+
+    if (tipoFormato === 'MAYOR') {
+      svg.innerHTML = `
+        <path d="M 30,90 Q 30,50 60,45 L 180,45 Q 220,45 250,60 L 275,75 Q 285,90 275,105 L 250,120 Q 220,135 180,135 L 60,135 Q 30,130 30,90 Z" fill="#e2e8f0" stroke="#0f172a" stroke-width="2.5" />
+        <path d="M 80,55 L 170,55 Q 200,55 215,70 L 215,110 Q 200,125 170,125 L 80,125 Z" fill="#ffffff" stroke="#0284c7" stroke-width="1.8" />
+        <path d="M 180,58 L 210,72 L 210,108 L 180,122 Z" fill="#bae6fd" opacity="0.6" />
+        <rect x="50" y="32" width="35" height="12" rx="3" fill="#334155" />
+        <rect x="200" y="32" width="35" height="12" rx="3" fill="#334155" />
+        <rect x="50" y="136" width="35" height="12" rx="3" fill="#334155" />
+        <rect x="200" y="136" width="35" height="12" rx="3" fill="#334155" />
+        <ellipse cx="270" cy="65" rx="5" ry="8" fill="#fef08a" stroke="#ca8a04" />
+        <ellipse cx="270" cy="115" rx="5" ry="8" fill="#fef08a" stroke="#ca8a04" />
+        <rect x="28" y="55" width="4" height="15" rx="1" fill="#ef4444" />
+        <rect x="28" y="110" width="4" height="15" rx="1" fill="#ef4444" />
+        <text x="260" y="22" font-size="9" font-weight="bold" fill="#0369a1" text-anchor="middle">FRONTAL ➔</text>
+        ${targetSvgHTML}
+      `;
+    } else {
+      svg.innerHTML = `
+        <path d="M 40,50 L 160,50 Q 210,50 240,75 L 240,105 Q 210,130 160,130 L 40,130 Z" fill="#e2e8f0" stroke="#0f172a" stroke-width="2.5" />
+        <rect x="60" y="60" width="100" height="60" rx="6" fill="#ffffff" stroke="#0284c7" stroke-width="1.8" />
+        <path d="M 200,90 L 235,90 M 215,70 L 215,110" stroke="#334155" stroke-width="3" />
+        <rect x="225" y="82" width="28" height="16" rx="4" fill="#334155" />
+        <rect x="55" y="34" width="38" height="14" rx="3" fill="#334155" />
+        <rect x="55" y="132" width="38" height="14" rx="3" fill="#334155" />
+        <circle cx="242" cy="90" r="7" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5" />
+        <text x="225" y="22" font-size="9" font-weight="bold" fill="#0369a1" text-anchor="middle">FRONTAL ➔</text>
+        ${targetSvgHTML}
+      `;
+    }
+  }
+
   function resaltarUbicacionItem(nombreItem) {
     document.getElementById('lbl_item_actual').innerText = nombreItem;
-    const info = MAPA_UBICACIONES[nombreItem] || { zona: "Estructura del Vehículo", desc: `Inspección física correspondiente a ${nombreItem}.` };
+    const tipo = document.getElementById('select_tipo_formato').value;
+    const mapa = (tipo === 'MENOR') ? MAPA_UBICACIONES_MENOR : MAPA_UBICACIONES_MAYOR;
+
+    const info = mapa[nombreItem] || { x: 150, y: 90, zona: "Estructura del Vehículo", desc: `Inspección física correspondiente a ${nombreItem}.` };
     
     document.getElementById('lbl_zona_nombre').innerText = info.zona.toUpperCase();
     document.getElementById('lbl_zona_desc').innerText = info.desc;
+
+    renderizarSVGDiagrama(tipo, { x: info.x, y: info.y });
   }
 
   function actualizarColorSelect(selectElem) {
     selectElem.className = 'select-estado';
-    if (selectElem.value === 'FALTA') {
-      selectElem.classList.add('falta');
-    } else {
-      selectElem.classList.add('regular');
-    }
+    const val = selectElem.value;
+    if (val === 'BUENO') selectElem.classList.add('bueno');
+    else if (val === 'REGULAR') selectElem.classList.add('regular');
+    else if (val === 'MALO') selectElem.classList.add('malo');
+    else if (val === 'FALTA') selectElem.classList.add('falta');
   }
 
-  function procesarFotosConIA(files) {
+  // Integración real con la API de Gemini 1.5 Flash Vision
+  async function procesarFotosConIAReal(files) {
     if (!files || files.length === 0) return;
-    const statusLabel = document.getElementById('lbl_status_ia');
-    statusLabel.innerText = "⏳ Analizando fotos con IA...";
 
-    setTimeout(() => {
-      statusLabel.innerText = "✅ Análisis completado. Ítems faltantes auto-detectados.";
-      
-      // Ejemplo de auto-detección inteligente: marca de 'FALTA' en componentes comunes
-      const faltantesDetectados = ["ESPEJO RETROVISOR", "RADIO", "GATA"];
+    const statusLabel = document.getElementById('lbl_status_ia');
+    const previewContainer = document.getElementById('preview_contenedor');
+    const btnTrigger = document.getElementById('btn_ia_trigger');
+    const apiKey = document.getElementById('input_gemini_key').value.trim();
+
+    if (!apiKey) {
+      alert("⚠️ Por favor ingresa tu API Key de Google Gemini.");
+      statusLabel.innerText = "❌ Falta la API Key de Gemini.";
+      document.getElementById('input_gemini_key').focus();
+      return;
+    }
+
+    btnTrigger.disabled = true;
+    btnTrigger.innerHTML = `Analizando...`;
+    statusLabel.innerText = "⏳ Procesando fotos con Gemini Vision...";
+    previewContainer.innerHTML = "";
+
+    try {
+      const tipoFormato = document.getElementById('select_tipo_formato').value;
+      const partesFormulario = [];
       
       document.querySelectorAll('select[id^="sv_"]').forEach(sel => {
         const nombre = sel.getAttribute('data-nombre');
-        if (faltantesDetectados.includes(nombre)) {
-          sel.value = "FALTA";
-          actualizarColorSelect(sel);
+        if (nombre && !partesFormulario.includes(nombre)) {
+          partesFormulario.push(nombre);
         }
       });
 
-      const obsArea = document.getElementById('observaciones_situacion');
-      if (!obsArea.value.includes('IA:')) {
-        obsArea.value += (obsArea.value ? '\n' : '') + "Detección por IA: Espejos retrovisores y radio ausentes al momento de la intervención.";
+      const imageParts = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const base64Data = await convertirArchivoABase64(file);
+        
+        const img = document.createElement('img');
+        img.src = base64Data;
+        previewContainer.appendChild(img);
+
+        const base64Clean = base64Data.split(',')[1];
+        imageParts.push({
+          inline_data: { mime_type: file.type, data: base64Clean }
+        });
       }
-    }, 1200);
+
+      const promptText = `Eres un perito de inspección técnica vehicular de la Policía Nacional del Perú (PNP).
+Analiza las fotos de este ${tipoFormato === 'MENOR' ? 'VEHÍCULO MENOR (Mototaxi/Moto)' : 'VEHÍCULO MAYOR (Automóvil/Camioneta)'}.
+
+EVALÚA CADA UNA DE LAS SIGUIENTES PARTES DEL ACTA POLICIAL:
+${JSON.stringify(partesFormulario)}
+
+Para CADA parte listada, determina su estado basándote en la evidencia visual:
+- "BUENO": Parte claramente visible, completa y sin daños.
+- "REGULAR": Desgaste normal o suciedad leve sin ruptura.
+- "MALO": Presenta abolladuras, roturas, fisuras o raspones.
+- "FALTA": Parte ausente o no instalada.
+
+Responde ÚNICAMENTE en JSON estricto:
+{
+  "evaluacion_partes": {
+    "PARABRISAS": "BUENO",
+    "FARO GRANDE DELT": "MALO",
+    "ESPEJO EXTERIOR": "FALTA"
+  },
+  "nivel_combustible": "1/2 TANQUE",
+  "observaciones_detalladas": "Se detectó faro derecho roto. Falta espejo retrovisor izquierdo."
+}`;
+
+      const payload = {
+        contents: [{ parts: [{ text: promptText }, ...imageParts] }]
+      };
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+
+      const data = await response.json();
+      const rawText = data.candidates[0].content.parts[0].text;
+      const cleanJsonText = rawText.replace(/```json|```/g, '').trim();
+      const resultadoIA = JSON.parse(cleanJsonText);
+
+      let contActualizados = 0;
+      if (resultadoIA.evaluacion_partes) {
+        document.querySelectorAll('select[id^="sv_"]').forEach(sel => {
+          const nombre = sel.getAttribute('data-nombre');
+          if (nombre && resultadoIA.evaluacion_partes[nombre]) {
+            const estadoDetectado = resultadoIA.evaluacion_partes[nombre].toUpperCase();
+            sel.value = estadoDetectado;
+            actualizarColorSelect(sel);
+            contActualizados++;
+          }
+        });
+      }
+
+      if (resultadoIA.nivel_combustible) {
+        const combSelect = document.getElementById('combustible_nivel');
+        for (let opt of combSelect.options) {
+          if (opt.value.includes(resultadoIA.nivel_combustible)) {
+            combSelect.value = opt.value;
+            actualizarColorSelect(combSelect);
+            break;
+          }
+        }
+      }
+
+      if (resultadoIA.observaciones_detalladas) {
+        const obsArea = document.getElementById('observaciones_situacion');
+        const headerIA = `[INSPECCIÓN IA GEMINI]: `;
+        if (!obsArea.value.includes(headerIA)) {
+          obsArea.value += (obsArea.value ? '\n\n' : '') + `${headerIA}${resultadoIA.observaciones_detalladas}`;
+        }
+      }
+
+      statusLabel.innerText = `✅ Evaluación completada: ${contActualizados} partes analizadas con éxito.`;
+
+    } catch (err) {
+      console.error("Error en escáner IA:", err);
+      statusLabel.innerText = `❌ Error: ${err.message}`;
+    } finally {
+      btnTrigger.disabled = false;
+      btnTrigger.innerHTML = `📷 Subir Fotos y Escanear con IA`;
+    }
+  }
+
+  function convertirArchivoABase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+      reader.readAsDataURL(file);
+    });
   }
 
   function notificarRegreso() {
@@ -564,8 +883,8 @@
       const selects = document.querySelectorAll(`#${contenedorId} select`);
       selects.forEach(el => {
         const nombre = el.getAttribute('data-nombre') || 'ITEM';
-        if (el.value === 'FALTA') {
-          listaDestino.push(`${nombre}: FALTA`);
+        if (el.value === 'FALTA' || el.value === 'MALO') {
+          listaDestino.push(`${nombre}: ${el.value}`);
         }
       });
     };
@@ -573,9 +892,7 @@
     recopilarDatosGroup('sec_1', novedadesSec1);
     recopilarDatosGroup('sec_2', novedadesSec2);
     recopilarDatosGroup('sec_3', novedadesSec3);
-    if (tipoFormato === 'MENOR') {
-      recopilarDatosGroup('sec_4', novedadesSec4);
-    }
+    if (tipoFormato === 'MENOR') recopilarDatosGroup('sec_4', novedadesSec4);
 
     const nivelGas = document.getElementById('combustible_nivel').value;
     const obsText = document.getElementById('observaciones_situacion').value.trim();
@@ -587,20 +904,16 @@
     const tit2Text = document.getElementById('tit_sec_2').innerText;
     const tit3Text = document.getElementById('tit_sec_3').innerText;
 
-    resultadoFinalTexto += `${tit1Text}:\n` + (novedadesSec1.length > 0 ? `- ${novedadesSec1.join('\n- ')}` : `Con todos sus accesorios en estado REGULAR.`) + `\n\n`;
-    resultadoFinalTexto += `${tit2Text}:\n` + (novedadesSec2.length > 0 ? `- ${novedadesSec2.join('\n- ')}` : `Con todos sus accesorios en estado REGULAR.`) + `\n\n`;
-    resultadoFinalTexto += `${tit3Text}:\n` + (novedadesSec3.length > 0 ? `- ${novedadesSec3.join('\n- ')}` : `Con todos sus componentes en estado REGULAR.`) + `\n\n`;
+    resultadoFinalTexto += `${tit1Text}:\n` + (novedadesSec1.length > 0 ? `- ${novedadesSec1.join('\n- ')}` : `Con todos sus accesorios en estado REGULAR/BUENO.`) + `\n\n`;
+    resultadoFinalTexto += `${tit2Text}:\n` + (novedadesSec2.length > 0 ? `- ${novedadesSec2.join('\n- ')}` : `Con todos sus accesorios en estado REGULAR/BUENO.`) + `\n\n`;
+    resultadoFinalTexto += `${tit3Text}:\n` + (novedadesSec3.length > 0 ? `- ${novedadesSec3.join('\n- ')}` : `Con todos sus componentes en estado REGULAR/BUENO.`) + `\n\n`;
 
     if (tipoFormato === 'MENOR') {
       const tit4Text = document.getElementById('tit_sec_4').innerText;
-      resultadoFinalTexto += `${tit4Text}:\n` + (novedadesSec4.length > 0 ? `- ${novedadesSec4.join('\n- ')}` : `En estado REGULAR.`) + `\n\n`;
+      resultadoFinalTexto += `${tit4Text}:\n` + (novedadesSec4.length > 0 ? `- ${novedadesSec4.join('\n- ')}` : `En estado REGULAR/BUENO.`) + `\n\n`;
     }
 
-    if (obsText) {
-      resultadoFinalTexto += `OBSERVACIONES / DAÑOS VISIBLES:\n${obsText}`;
-    } else {
-      resultadoFinalTexto += `OBSERVACIONES: Sin observaciones adicionales.`;
-    }
+    resultadoFinalTexto += obsText ? `OBSERVACIONES / DAÑOS VISIBLES:\n${obsText}` : `OBSERVACIONES: Sin observaciones adicionales.`;
 
     localStorage.setItem('pnp_acta_situacion_vehicular_resultado', resultadoFinalTexto);
     localStorage.setItem('pnp_retorno_etapa_vehiculo', 'true');
@@ -614,9 +927,7 @@
 
     document.querySelectorAll('select[id^="sv_"]').forEach(sel => {
       const nombre = sel.getAttribute('data-nombre');
-      if (nombre) {
-        estadoFormSV.valores_items[nombre] = sel.value;
-      }
+      if (nombre) estadoFormSV.valores_items[nombre] = sel.value;
     });
 
     localStorage.setItem('pnp_sv_estado_formulario', JSON.stringify(estadoFormSV));
@@ -636,6 +947,7 @@
       }
       if (estado.combustible_nivel) {
         document.getElementById('combustible_nivel').value = estado.combustible_nivel;
+        actualizarColorSelect(document.getElementById('combustible_nivel'));
       }
       if (estado.observaciones_situacion !== undefined) {
         document.getElementById('observaciones_situacion').value = estado.observaciones_situacion;
@@ -644,7 +956,7 @@
         document.querySelectorAll('select[id^="sv_"]').forEach(sel => {
           const nombre = sel.getAttribute('data-nombre');
           if (nombre && estado.valores_items[nombre]) {
-            sel.value = estado.valores_items[nombre] === 'BUENO' || estado.valores_items[nombre] === 'REGULAR' ? 'REGULAR' : 'FALTA';
+            sel.value = estado.valores_items[nombre];
             actualizarColorSelect(sel);
           }
         });
