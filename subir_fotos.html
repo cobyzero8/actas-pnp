@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subir Fotos - Inspección Vehicular PNP</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: #f1f5f9;
+      margin: 0;
+      padding: 20px;
+      color: #0f172a;
+      text-align: center;
+    }
+    .card-movil {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    .btn-camara {
+      background: #166534;
+      color: #ffffff;
+      border: none;
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      width: 100%;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+    .btn-camara:disabled {
+      background: #94a3b8;
+    }
+    .preview-list {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 15px;
+    }
+    .preview-list img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card-movil">
+  <h2 style="color: #003366; margin-top: 0;">🚓 CAPTURA MÓVIL PNP</h2>
+  <p style="font-size: 13px; color: #475569;">Envío directo a la computadora del operador</p>
+  
+  <div style="background: #e0f2fe; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+    <strong style="color: #0369a1; font-size: 12px;">VEHÍCULO PLACA:</strong><br>
+    <span id="lbl_placa_movil" style="font-size: 18px; font-weight: bold; color: #0284c7;">-</span>
+  </div>
+
+  <input type="file" id="input_camara" accept="image/*" capture="environment" multiple style="display:none;" onchange="subirFotosASupabase(this.files)">
+  
+  <button id="btn_captura" class="btn-camara" onclick="document.getElementById('input_camara').click()">
+    📷 Tomar / Seleccionar Fotos
+  </button>
+
+  <div id="galeria_preview" class="preview-list"></div>
+  <p id="lbl_estado_subida" style="font-size: 12px; font-weight: bold; margin-top: 15px;"></p>
+</div>
+
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const placa = urlParams.get('placa') || 'GENERAL';
+  document.getElementById('lbl_placa_movil').innerText = placa;
+
+  const supabaseUrl = localStorage.getItem('pnp_supabase_url');
+  const supabaseKey = localStorage.getItem('pnp_supabase_anon_key');
+  let supabaseClient = null;
+
+  if (supabaseUrl && supabaseKey) {
+    supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+  }
+
+  async function subirFotosASupabase(files) {
+    if (!files || files.length === 0) return;
+
+    const btn = document.getElementById('btn_captura');
+    const estado = document.getElementById('lbl_estado_subida');
+    const galeria = document.getElementById('galeria_preview');
+
+    if (!supabaseClient) {
+      alert("⚠️ No se detectó la configuración de Supabase. Vuelve a escanear el QR generado por la PC.");
+      return;
+    }
+
+    btn.disabled = true;
+    estado.innerText = "⏳ Subiendo fotos a la computadora...";
+    estado.style.color = "#0369a1";
+    galeria.innerHTML = "";
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileName = `inspecciones/${placa}/${Date.now()}_${i}.jpg`;
+
+        // Mostrar vista previa
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        galeria.appendChild(img);
+
+        // Subir al Bucket de Supabase Storage
+        const { error: errorStorage } = await supabaseClient
+          .storage
+          .from('fotos_vehiculos')
+          .upload(fileName, file);
+
+        if (errorStorage) throw errorStorage;
+      }
+
+      // Notificar a la PC mediante registro de evento en la base de datos
+      const { error: errorDB } = await supabaseClient
+        .from('notificaciones_fotos')
+        .insert([{ placa: placa, timestamp: new Date().toISOString() }]);
+
+      if (errorDB) throw errorDB;
+
+      estado.innerText = "✅ ¡Fotos enviadas con éxito! Revisa la PC.";
+      estado.style.color = "#166534";
+
+    } catch (err) {
+      console.error(err);
+      estado.innerText = `❌ Error al enviar: ${err.message}`;
+      estado.style.color = "#b91c1c";
+    } finally {
+      btn.disabled = false;
+    }
+  }
+</script>
+
+</body>
+</html>
