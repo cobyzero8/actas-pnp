@@ -890,11 +890,11 @@ function asegurarModalVistaPreviaDOM() {
   if (document.getElementById('modalVistaPrevia')) return;
 
   const modalHTML = `
-    <div id="modalVistaPrevia" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(3px);">
-      <div style="background:#fff; width:90%; max-width:900px; max-height:90vh; border-radius:10px; box-shadow:0 10px 25px rgba(0,0,0,0.3); display:flex; flex-direction:column; overflow:hidden;">
+    <div id="modalVistaPrevia" class="modal-overlay">
+      <div class="modal-content-card">
         
         <!-- Header -->
-        <div style="background:#003366; color:#fff; padding:15px 20px; display:flex; justify-content:space-between; align-items:center;">
+        <div class="modal-header-pnp">
           <h3 style="margin:0; font-size:16px;">👁️ VISTA PREVIA DEL EXPEDIENTE POLICIAL</h3>
           <button type="button" onclick="cerrarModalVistaPrevia()" style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer;">✖</button>
         </div>
@@ -905,7 +905,7 @@ function asegurarModalVistaPreviaDOM() {
         </div>
 
         <!-- Footer -->
-        <div style="background:#f1f5f9; padding:15px 20px; border-top:1px solid #cbd5e1; display:flex; justify-content:space-between; align-items:center;">
+        <div class="modal-footer-pnp">
           <button type="button" onclick="cerrarModalVistaPrevia()" style="padding:10px 18px; background:#64748b; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">
             ✏️ Volver a Editar
           </button>
@@ -937,7 +937,7 @@ function mostrarModalVistaPrevia() {
   actasAProcesarSecuencia.forEach((acta) => {
     const hor = horariosPorActa[acta.id] || { horaInicio: "-", horaTermino: "-" };
     htmlActas += `
-      <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:10px; border-radius:6px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:10px; border-radius:6px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
         <div>
           <strong style="color:#0369a1;">📄 ${acta.titulo}</strong><br>
           <span style="font-size:11px; color:#64748b;">Modalidad: ${acta.esIndividual === false ? 'Colectiva' : (acta.esVehicular ? 'Por Vehículo' : 'Por Intervenido')}</span>
@@ -952,7 +952,7 @@ function mostrarModalVistaPrevia() {
   let htmlIntervenidos = "";
   (d._listaIntervenidos || []).forEach((i, idx) => {
     htmlIntervenidos += `
-      <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:8px 12px; border-radius:6px; margin-bottom:6px; font-size:12px;">
+      <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:8px 12px; border-radius:6px; margin-bottom:6px; font-size:12px; word-break:break-word;">
         <strong>👤 Intervenido ${idx + 1}:</strong> ${i.nombre} | <strong>DNI:</strong> ${i.dni} | <strong>Edad:</strong> ${i.edad} años | <strong>L/C:</strong> ${i.licencia || 'S/L'}
       </div>
     `;
@@ -961,7 +961,7 @@ function mostrarModalVistaPrevia() {
   let htmlVehiculos = "";
   (d._listaVehiculos || []).forEach((v, idx) => {
     htmlVehiculos += `
-      <div style="background:#fefce8; border:1px solid #fef08a; padding:8px 12px; border-radius:6px; margin-bottom:6px; font-size:12px;">
+      <div style="background:#fefce8; border:1px solid #fef08a; padding:8px 12px; border-radius:6px; margin-bottom:6px; font-size:12px; word-break:break-word;">
         <strong>🚗 Vehículo ${idx + 1}:</strong> Placa ${v.placa} | Clase: ${v.clase_vehiculo} | Marca: ${v.marca} | Modelo: ${v.modelo} | Color: ${v.color}
       </div>
     `;
@@ -990,7 +990,7 @@ function mostrarModalVistaPrevia() {
     <!-- DATOS GENERALES -->
     <div style="background:#f1f5f9; border-left:4px solid #003366; padding:10px 14px; margin-bottom:15px; border-radius:0 6px 6px 0;">
       <h4 style="margin:0 0 8px 0; color:#003366; text-transform:uppercase; font-size:13px;">📌 Resumen General de Intervención</h4>
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:8px;">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:8px;">
         <div><strong>Delito / Motivo:</strong> ${d.delito}</div>
         <div><strong>Fecha / Hora Int.:</strong> ${d.fecha} (${d.hora_intervencion} Hrs)</div>
         <div><strong>Lugar:</strong> ${d.lugar}, ${d.distrito}</div>
@@ -1018,7 +1018,7 @@ function mostrarModalVistaPrevia() {
 
     <!-- PERSONAL PNP INTERVINIENTE -->
     <h4 style="margin:15px 0 8px 0; color:#166534; text-transform:uppercase; font-size:13px;">👮 Personal Policial Interviniente</h4>
-    <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:8px 12px; border-radius:6px; font-size:12px;">
+    <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:8px 12px; border-radius:6px; font-size:12px; word-break:break-word;">
       ${d.efectivos_intervinientes_texto}
     </div>
   `;
