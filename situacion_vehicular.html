@@ -735,18 +735,21 @@
     const key = document.getElementById('input_supabase_key').value.trim();
     localStorage.setItem('pnp_supabase_url', url);
     localStorage.setItem('pnp_supabase_anon_key', key);
+    generarQRSincronizacion();
     inicializarSupabaseRealtime();
   }
 
-  // MODIFICADO: Mantiene compatibilidad con la estructura de subcarpetas de GitHub Pages
+  // ACTULIZADO: Genera el QR adjuntando surl y skey automáticamente para el teléfono
   function generarQRSincronizacion() {
     const placaActual = document.getElementById('lbl_placa').innerText;
+    const surl = localStorage.getItem('pnp_supabase_url') || '';
+    const skey = localStorage.getItem('pnp_supabase_anon_key') || '';
     const qrContainer = document.getElementById('qrcode');
     if (!qrContainer) return;
     qrContainer.innerHTML = "";
 
     const urlBase = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
-    const urlMovil = `${urlBase}/subir_fotos.html?placa=${encodeURIComponent(placaActual)}`;
+    const urlMovil = `${urlBase}/subir_fotos.html?placa=${encodeURIComponent(placaActual)}&surl=${encodeURIComponent(surl)}&skey=${encodeURIComponent(skey)}`;
     
     if (typeof QRCode !== 'undefined') {
       new QRCode(qrContainer, {
