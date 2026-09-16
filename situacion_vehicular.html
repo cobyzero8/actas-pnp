@@ -1088,7 +1088,7 @@
 
     btnTrigger.disabled = true;
     btnTrigger.innerHTML = `Analizando (${listaFotos.length} fotos)...`;
-    statusLabel.innerText = `⏳ Procesando ${listaFotos.length} foto(s) con Gemini Vision...`;
+    statusLabel.innerText = `⏳ Procesando ${listaFotos.length} foto(s) con Gemini 3.6 Flash...`;
     if (btnLimpiar) btnLimpiar.style.display = "inline-block";
 
     try {
@@ -1149,13 +1149,10 @@ Responde ÚNICAMENTE en JSON estricto:
 
       const cleanKey = encodeURIComponent(rawApiKey);
 
-      // Combinaciones de versión API y nombre de modelo para máxima compatibilidad REST
+      // Endpoint validado para gemini-3.6-flash
       const combinacionesEndpoint = [
-        { ver: 'v1beta', model: 'gemini-2.0-flash' },
-        { ver: 'v1beta', model: 'gemini-1.5-flash-latest' },
-        { ver: 'v1beta', model: 'gemini-1.5-flash' },
-        { ver: 'v1', model: 'gemini-1.5-flash' },
-        { ver: 'v1', model: 'gemini-2.0-flash' }
+        { ver: 'v1beta', model: 'gemini-3.6-flash' },
+        { ver: 'v1', model: 'gemini-3.6-flash' }
       ];
 
       let response = null;
