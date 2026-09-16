@@ -1059,10 +1059,10 @@
     const statusLabel = document.getElementById('lbl_status_ia');
     const previewContainer = document.getElementById('preview_contenedor');
     const btnTrigger = document.getElementById('btn_ia_trigger');
-    const apiKey = localStorage.getItem('pnp_gemini_api_key') || (typeof CONFIG !== 'undefined' ? CONFIG.GEMINI_API_KEY : '');
+    const rawApiKey = (localStorage.getItem('pnp_gemini_api_key') || (typeof CONFIG !== 'undefined' ? CONFIG.GEMINI_API_KEY : '') || '').trim();
 
-    if (!apiKey) {
-      alert("⚠️ Falta la API Key de Gemini.");
+    if (!rawApiKey) {
+      alert("⚠️ Falta la API Key de Gemini. Por favor conéctala en el panel.");
       statusLabel.innerText = "❌ Falta la API Key de Gemini.";
       return;
     }
@@ -1125,15 +1125,34 @@ Responde ÚNICAMENTE en JSON estricto:
         contents: [{ parts: [{ text: promptText }, ...imageParts] }]
       };
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+      const cleanKey = encodeURIComponent(rawApiKey);
+      const modelosAI = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest'];
+      let response = null;
+      let lastErr = null;
 
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+      // Reintento automático iterando los nombres de modelo vigentes
+      for (const model of modelosAI) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${cleanKey}`;
+        try {
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) {
+            response = res;
+            break;
+          } else {
+            lastErr = `HTTP ${res.status}`;
+          }
+        } catch (e) {
+          lastErr = e.message;
+        }
+      }
 
-      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+      if (!response) {
+        throw new Error(`Error en la API de Gemini (${lastErr || '404'}). Revisa que tu API Key sea válida y generada en Google AI Studio.`);
+      }
 
       const data = await response.json();
       const rawText = data.candidates[0].content.parts[0].text;
