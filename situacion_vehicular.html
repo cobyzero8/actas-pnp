@@ -520,12 +520,12 @@
           </div>
 
           <p style="font-size: 11px; color: #166534; margin: 0 0 8px 0;">
-            Sube hasta <strong>5 fotos máximo</strong> para auto-evaluar las partes del acta.
+            Sube desde <strong>1 hasta 5 fotos</strong> para auto-evaluar las partes del acta.
           </p>
 
           <input type="file" id="input_foto_ia" accept="image/*" multiple style="display:none;" onchange="procesarFotosConIAReal(this.files)">
           <button type="button" id="btn_ia_trigger" onclick="document.getElementById('input_foto_ia').click()" class="btn-action btn-ia">
-            📷 Subir Fotos (Máx 5) y Escanear con IA
+            📷 Subir Fotos (1 a 5) y Escanear con IA
           </button>
           
           <div id="preview_contenedor" class="preview-thumbs"></div>
@@ -1083,12 +1083,12 @@
 
     previewContainer.innerHTML = "";
     
-    // Límite estricto a las primeras 5 fotos máximo
+    // Admite cualquier número de imágenes disponibles (de 1 a 5 máximo)
     const listaFotos = Array.from(files).slice(0, 5);
 
     btnTrigger.disabled = true;
-    btnTrigger.innerHTML = `Analizando fotos...`;
-    statusLabel.innerText = `⏳ Procesando fotos con Gemini 3.6 Flash...`;
+    btnTrigger.innerHTML = `Analizando (${listaFotos.length} foto/s)...`;
+    statusLabel.innerText = `⏳ Procesando ${listaFotos.length} foto(s) con Gemini...`;
     if (btnLimpiar) btnLimpiar.style.display = "inline-block";
 
     try {
@@ -1116,7 +1116,6 @@
           const base64Clean = dataParts[1];
           if (!base64Clean || base64Clean.trim() === '') continue;
 
-          // Extraer MIME type válido o forzar tipo de imagen
           let mimeType = file.type;
           const matchMime = dataParts[0].match(/:(.*?);/);
           if (matchMime && matchMime[1]) {
@@ -1126,7 +1125,6 @@
             mimeType = 'image/jpeg';
           }
 
-          // Renderizar miniatura solo si la imagen es válida
           const img = document.createElement('img');
           img.src = base64Data;
           previewContainer.appendChild(img);
@@ -1146,27 +1144,33 @@
         throw new Error("No se pudieron cargar imágenes válidas para el análisis.");
       }
 
-      const promptText = `Eres un perito de inspección técnica vehicular de la Policía Nacional del Perú (PNP).
-Analiza las fotos de este vehículo del tipo: ${tipoFormato}.
+      const cantidadFotos = imageParts.length;
+      const descFotos = cantidadFotos === 1 
+        ? "1 foto disponible" 
+        : `${cantidadFotos} fotos disponibles`;
 
-EVALÚA CADA UNA DE LAS SIGUIENTES PARTES DEL ACTA POLICIAL:
+      const promptText = `Eres un perito de inspección técnica vehicular de la Policía Nacional del Perú (PNP).
+Analiza la evidencia fotográfica de este vehículo del tipo: ${tipoFormato} (Se te proveen ${descFotos}).
+
+EVALÚA LAS SIGUIENTES PARTES DEL ACTA POLICIAL SEGÚN LO VISIBLE EN LA(S) FOTO(S):
 ${JSON.stringify(partesFormulario)}
 
-Para CADA parte listada, determina su estado basándote en la evidencia visual:
-- "BUENO": Parte claramente visible, completa y sin daños.
-- "REGULAR": Desgaste normal o suciedad leve sin ruptura.
-- "MALO": Presenta abolladuras, roturas, fisuras o raspones.
-- "FALTA": Parte ausente o no instalada.
+INSTRUCCIONES DE EVALUACIÓN:
+- Para cada parte claramente visible en la(s) foto(s), clasifica su estado como:
+  * "BUENO": Sin daños visuales ni imperfecciones notables.
+  * "REGULAR": Desgaste normal o suciedad leve sin fractura/rotura.
+  * "MALO": Presenta abolladuras, roturas, fisuras, rayaduras graves o está roto.
+  * "FALTA": La pieza debería estar ahí y no está instalada o falta.
+- Si una pieza no se aprecia en la(s) foto(s) provista(s), NO la incluyas en evaluacion_partes o mantenla en su estado por defecto.
 
 Responde ÚNICAMENTE en JSON estricto sin bloques de markdown:
 {
   "evaluacion_partes": {
     "PARABRISAS": "BUENO",
-    "FARO GRANDE DELT": "MALO",
-    "ESPEJO EXTERIOR": "FALTA"
+    "FARO GRANDE DELT": "MALO"
   },
   "nivel_combustible": "1/2 TANQUE",
-  "observaciones_detalladas": "Se detectó faro derecho roto. Falta espejo retrovisor izquierdo."
+  "observaciones_detalladas": "Apreciación visual realizada sobre ${descFotos}."
 }`;
 
       const payload = {
@@ -1175,7 +1179,6 @@ Responde ÚNICAMENTE en JSON estricto sin bloques de markdown:
 
       const cleanKey = encodeURIComponent(rawApiKey);
 
-      // Modelos con fallback a las versiones de Flash
       const combinacionesEndpoint = [
         { ver: 'v1beta', model: 'gemini-3.6-flash' },
         { ver: 'v1beta', model: 'gemini-2.5-flash' },
@@ -1247,14 +1250,14 @@ Responde ÚNICAMENTE en JSON estricto sin bloques de markdown:
         }
       }
 
-      statusLabel.innerText = `✅ Evaluación completada con ${imageParts.length} foto(s) (${contActualizados} partes analizadas).`;
+      statusLabel.innerText = `✅ Evaluación completada con ${cantidadFotos} foto(s) (${contActualizados} partes analizadas).`;
 
     } catch (err) {
       console.error("Error en escáner IA:", err);
       statusLabel.innerHTML = `<span style="color:#b91c1c;">❌ ${err.message}</span>`;
     } finally {
       btnTrigger.disabled = false;
-      btnTrigger.innerHTML = `📷 Subir Fotos (Máx 5) y Escanear con IA`;
+      btnTrigger.innerHTML = `📷 Subir Fotos (1 a 5) y Escanear con IA`;
     }
   }
 
