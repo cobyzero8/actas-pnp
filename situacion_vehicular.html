@@ -1083,12 +1083,12 @@
 
     previewContainer.innerHTML = "";
     
-    // Limite estricto a las primeras 5 fotos máximo
+    // Límite estricto a las primeras 5 fotos máximo
     const listaFotos = Array.from(files).slice(0, 5);
 
     btnTrigger.disabled = true;
-    btnTrigger.innerHTML = `Analizando (${listaFotos.length} fotos)...`;
-    statusLabel.innerText = `⏳ Procesando ${listaFotos.length} foto(s) con Gemini 3.6 Flash...`;
+    btnTrigger.innerHTML = `Analizando fotos...`;
+    statusLabel.innerText = `⏳ Procesando fotos con Gemini 3.6 Flash...`;
     if (btnLimpiar) btnLimpiar.style.display = "inline-block";
 
     try {
@@ -1103,21 +1103,47 @@
       });
 
       const imageParts = [];
+
       for (let i = 0; i < listaFotos.length; i++) {
         const file = listaFotos[i];
-        const base64Data = await convertirArchivoABase64(file);
-        
-        const img = document.createElement('img');
-        img.src = base64Data;
-        previewContainer.appendChild(img);
+        if (!file || file.size === 0) continue;
 
-        const base64Clean = base64Data.split(',')[1];
-        imageParts.push({
-          inline_data: {
-            mime_type: file.type || 'image/jpeg',
-            data: base64Clean
+        try {
+          const base64Data = await convertirArchivoABase64(file);
+          if (!base64Data || !base64Data.includes(',')) continue;
+
+          const dataParts = base64Data.split(',');
+          const base64Clean = dataParts[1];
+          if (!base64Clean || base64Clean.trim() === '') continue;
+
+          // Extraer MIME type válido o forzar tipo de imagen
+          let mimeType = file.type;
+          const matchMime = dataParts[0].match(/:(.*?);/);
+          if (matchMime && matchMime[1]) {
+            mimeType = matchMime[1];
           }
-        });
+          if (!mimeType || !mimeType.startsWith('image/')) {
+            mimeType = 'image/jpeg';
+          }
+
+          // Renderizar miniatura solo si la imagen es válida
+          const img = document.createElement('img');
+          img.src = base64Data;
+          previewContainer.appendChild(img);
+
+          imageParts.push({
+            inline_data: {
+              mime_type: mimeType,
+              data: base64Clean
+            }
+          });
+        } catch (fErr) {
+          console.warn("No se pudo procesar la foto:", fErr);
+        }
+      }
+
+      if (imageParts.length === 0) {
+        throw new Error("No se pudieron cargar imágenes válidas para el análisis.");
       }
 
       const promptText = `Eres un perito de inspección técnica vehicular de la Policía Nacional del Perú (PNP).
@@ -1132,7 +1158,7 @@ Para CADA parte listada, determina su estado basándote en la evidencia visual:
 - "MALO": Presenta abolladuras, roturas, fisuras o raspones.
 - "FALTA": Parte ausente o no instalada.
 
-Responde ÚNICAMENTE en JSON estricto:
+Responde ÚNICAMENTE en JSON estricto sin bloques de markdown:
 {
   "evaluacion_partes": {
     "PARABRISAS": "BUENO",
@@ -1149,10 +1175,12 @@ Responde ÚNICAMENTE en JSON estricto:
 
       const cleanKey = encodeURIComponent(rawApiKey);
 
-      // Endpoint validado para gemini-3.6-flash
+      // Modelos con fallback a las versiones de Flash
       const combinacionesEndpoint = [
         { ver: 'v1beta', model: 'gemini-3.6-flash' },
-        { ver: 'v1', model: 'gemini-3.6-flash' }
+        { ver: 'v1beta', model: 'gemini-2.5-flash' },
+        { ver: 'v1beta', model: 'gemini-1.5-flash' },
+        { ver: 'v1', model: 'gemini-1.5-flash' }
       ];
 
       let response = null;
@@ -1219,7 +1247,7 @@ Responde ÚNICAMENTE en JSON estricto:
         }
       }
 
-      statusLabel.innerText = `✅ Evaluación completada con ${listaFotos.length} fotos (${contActualizados} partes analizadas).`;
+      statusLabel.innerText = `✅ Evaluación completada con ${imageParts.length} foto(s) (${contActualizados} partes analizadas).`;
 
     } catch (err) {
       console.error("Error en escáner IA:", err);
