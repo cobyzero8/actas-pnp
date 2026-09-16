@@ -6,9 +6,10 @@
   <title>Acta de Situación Vehicular - PNP</title>
   <link rel="stylesheet" href="css/styles.css">
   
-  <!-- LIBRERÍAS PARA QR Y SINCRONIZACIÓN EN TIEMPO REAL -->
+  <!-- LIBRERÍAS Y ARCHIVO CENTRAL DE CONFIGURACIÓN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
 
   <style>
     :root {
@@ -37,9 +38,7 @@
       --st-falta-border: #f59e0b;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     img, svg, video, canvas {
       max-width: 100%;
@@ -399,7 +398,6 @@
       margin: 8px 0;
     }
 
-    /* REGLAS RESPONSIVAS ADICIONALES */
     @media (max-width: 768px) {
       body { padding: 8px; }
       .sv-container { padding: 12px; border-radius: 8px; }
@@ -449,7 +447,7 @@
 
   <div class="main-layout">
     <div>
-      <!-- SELECTOR CON 3 CATEGORÍAS SEPARADAS -->
+      <!-- SELECTOR DE FORMATO -->
       <div class="tipo-vehiculo-selector">
         <label for="select_tipo_formato">📌 Formato de Inspección:</label>
         <select id="select_tipo_formato" onchange="cambiarFormatoTipoVehiculo(this.value)">
@@ -497,7 +495,7 @@
     </div>
 
     <div class="sticky-panel">
-      <!-- TARJETA DE CÓDIGO QR PARA EL COLEGA -->
+      <!-- QR Y SINCRONIZACIÓN -->
       <div class="qr-card">
         <h4>📱 Sincronización Móvil (Colega)</h4>
         <p style="font-size: 11px; color: #0369a1; margin: 0 0 6px 0;">
@@ -603,7 +601,7 @@
     "VARILLA ACEITE": { x: 245, y: 100, zona: "Medidor de Aceite", desc: "Varilla de nivel de aceite de motor." }
   };
 
-  // 2. MOTOTAXI / TRIMOVIL (3 Ruedas con Cabina)
+  // 2. MOTOTAXI / TRIMOVIL (3 Ruedas)
   const MAPA_UBICACIONES_MOTOTAXI = {
     "VELOCÍMETRO": { x: 200, y: 90, zona: "Manubrio Central", desc: "Reloj velocímetro en tablero del chofer." },
     "TACÓMETRO": { x: 205, y: 80, zona: "Manubrio Central", desc: "Medidor de RPM de motor." },
@@ -641,7 +639,7 @@
     "TAPABARRO TRASERO": { x: 45, y: 125, zona: "Ruedas Traseras", desc: "Guardabarros de las ruedas posteriores." }
   };
 
-  // 3. MOTOCICLETA / MOTO LINEAL (2 Ruedas Alineadas)
+  // 3. MOTOCICLETA (2 Ruedas)
   const MAPA_UBICACIONES_MOTOCICLETA = {
     "VELOCÍMETRO": { x: 205, y: 90, zona: "Relojes Manubrio", desc: "Tacómetro/Velocímetro central de la moto." },
     "TACÓMETRO": { x: 205, y: 80, zona: "Relojes Manubrio", desc: "Medidor de revoluciones por minuto." },
@@ -709,13 +707,12 @@
     cambiarFormatoTipoVehiculo(tipoInicial);
     restaurarEstadoSV();
 
-    // Generar QR y activar Realtime con Supabase
     generarQRSincronizacion();
     inicializarSupabaseRealtime();
   });
 
   function cargarApiKeyGuardada() {
-    const key = localStorage.getItem('pnp_gemini_api_key') || '';
+    const key = localStorage.getItem('pnp_gemini_api_key') || (typeof CONFIG !== 'undefined' ? CONFIG.GEMINI_API_KEY : '') || '';
     if (key) document.getElementById('input_gemini_key').value = key;
   }
 
@@ -723,9 +720,14 @@
     localStorage.setItem('pnp_gemini_api_key', val.trim());
   }
 
+  function obtenerSupabaseCreds() {
+    const url = localStorage.getItem('pnp_supabase_url') || (typeof CONFIG !== 'undefined' ? CONFIG.SUPABASE_URL : '') || '';
+    const key = localStorage.getItem('pnp_supabase_anon_key') || (typeof CONFIG !== 'undefined' ? CONFIG.SUPABASE_ANON_KEY : '') || '';
+    return { url, key };
+  }
+
   function cargarSupabaseCreds() {
-    const url = localStorage.getItem('pnp_supabase_url') || '';
-    const key = localStorage.getItem('pnp_supabase_anon_key') || '';
+    const { url, key } = obtenerSupabaseCreds();
     if (url) document.getElementById('input_supabase_url').value = url;
     if (key) document.getElementById('input_supabase_key').value = key;
   }
@@ -733,41 +735,40 @@
   function guardarSupabaseCreds() {
     const url = document.getElementById('input_supabase_url').value.trim();
     const key = document.getElementById('input_supabase_key').value.trim();
-    localStorage.setItem('pnp_supabase_url', url);
-    localStorage.setItem('pnp_supabase_anon_key', key);
+    if (url) localStorage.setItem('pnp_supabase_url', url);
+    if (key) localStorage.setItem('pnp_supabase_anon_key', key);
+    
     generarQRSincronizacion();
     inicializarSupabaseRealtime();
   }
 
-  // Genera el QR con dimensiones ampliadas y bajo nivel de corrección de error para fácil escaneo
+  // Genera un QR limpio y rápido de escanear
   function generarQRSincronizacion() {
     const placaActual = document.getElementById('lbl_placa').innerText;
-    const surl = localStorage.getItem('pnp_supabase_url') || '';
-    const skey = localStorage.getItem('pnp_supabase_anon_key') || '';
     const qrContainer = document.getElementById('qrcode');
     if (!qrContainer) return;
     qrContainer.innerHTML = "";
 
     const urlBase = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
-    const urlMovil = `${urlBase}/subir_fotos.html?placa=${encodeURIComponent(placaActual)}&surl=${encodeURIComponent(surl)}&skey=${encodeURIComponent(skey)}`;
+    const urlMovil = `${urlBase}/subir_fotos.html?placa=${encodeURIComponent(placaActual)}`;
     
     if (typeof QRCode !== 'undefined') {
       new QRCode(qrContainer, {
         text: urlMovil,
-        width: 180,
-        height: 180,
+        width: 170,
+        height: 170,
         correctLevel: QRCode.CorrectLevel.L
       });
     }
   }
 
+  // Escucha transmisiones Broadcast en vivo y eventos en base de datos
   function inicializarSupabaseRealtime() {
-    const url = localStorage.getItem('pnp_supabase_url');
-    const key = localStorage.getItem('pnp_supabase_anon_key');
+    const { url, key } = obtenerSupabaseCreds();
     const statusRealtime = document.getElementById('lbl_status_realtime');
 
     if (!url || !key) {
-      statusRealtime.innerText = "⚠️ Configura URL y Key de Supabase para activar tiempo real.";
+      statusRealtime.innerText = "⚠️ Revisa la configuración de Supabase URL / Anon Key.";
       statusRealtime.style.color = "#b45309";
       return;
     }
@@ -780,14 +781,20 @@
         statusRealtime.innerText = "⚡ Tiempo real activo. Esperando fotos del celular...";
         statusRealtime.style.color = "#0284c7";
 
-        // Suscribirse a la tabla de notificaciones de fotos subidas
-        supabaseClient
-          .channel('canal_fotos_movil')
+        const channel = supabaseClient.channel('canal_fotos_movil');
+
+        channel
+          .on('broadcast', { event: 'foto_subida' }, async (payload) => {
+            if (!payload.payload || payload.payload.placa === placaActual || payload.payload.placa === 'GENERAL') {
+              statusRealtime.innerText = "📸 ¡Fotos recibidas desde el celular! Procesando con IA...";
+              statusRealtime.style.color = "#15803d";
+              await descargarYProcesarFotosSupabase(placaActual);
+            }
+          })
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notificaciones_fotos' }, async (payload) => {
             if (payload.new && (payload.new.placa === placaActual || payload.new.placa === 'GENERAL')) {
               statusRealtime.innerText = "📸 ¡Fotos recibidas desde el celular! Procesando con IA...";
               statusRealtime.style.color = "#15803d";
-              
               await descargarYProcesarFotosSupabase(placaActual);
             }
           })
@@ -913,7 +920,6 @@
     });
   }
 
-  // RENDERIZADO DE 3 CROQUIS SVG INDEPENDIENTES
   function renderizarSVGDiagrama(tipoFormato, targetCoords) {
     const svg = document.getElementById('svg_diagrama_vehicular');
     
@@ -937,7 +943,6 @@
     }
 
     if (tipoFormato === 'MAYOR') {
-      // Auto / Camioneta
       svg.innerHTML = `
         <text x="150" y="15" font-size="8" font-weight="bold" fill="#64748b" text-anchor="middle">▲ LADO DERECHO</text>
         <text x="150" y="175" font-size="8" font-weight="bold" fill="#64748b" text-anchor="middle">▼ LADO IZQUIERDO</text>
@@ -961,7 +966,6 @@
         ${targetSvgHTML}
       `;
     } else if (tipoFormato === 'MOTOTAXI') {
-      // Mototaxi / Trimovil (3 Ruedas)
       svg.innerHTML = `
         <text x="150" y="15" font-size="8" font-weight="bold" fill="#64748b" text-anchor="middle">▲ LADO DERECHO</text>
         <text x="150" y="175" font-size="8" font-weight="bold" fill="#64748b" text-anchor="middle">▼ LADO IZQUIERDO</text>
@@ -971,18 +975,16 @@
         <rect x="75" y="22" width="150" height="16" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1" />
         <text x="150" y="33" font-size="8.5" font-weight="bold" fill="#0369a1" text-anchor="middle">${indicadorVista}</text>
 
-        <!-- Cabina y Estructura de 3 Ruedas -->
         <path d="M 45,55 L 160,55 Q 210,55 240,78 L 240,102 Q 210,125 160,125 L 45,125 Z" fill="#e2e8f0" stroke="#0f172a" stroke-width="2" />
         <rect x="65" y="62" width="95" height="56" rx="5" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
         <path d="M 195,90 L 230,90 M 210,72 L 210,108" stroke="#334155" stroke-width="2.5" />
-        <rect x="220" y="83" width="25" height="14" rx="3" fill="#334155" /> <!-- Rueda Frontal -->
-        <rect x="58" y="40" width="35" height="12" rx="2" fill="#334155" /> <!-- Rueda Der -->
-        <rect x="58" y="128" width="35" height="12" rx="2" fill="#334155" /> <!-- Rueda Izq -->
+        <rect x="220" y="83" width="25" height="14" rx="3" fill="#334155" />
+        <rect x="58" y="40" width="35" height="12" rx="2" fill="#334155" />
+        <rect x="58" y="128" width="35" height="12" rx="2" fill="#334155" />
         <circle cx="238" cy="90" r="6" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5" />
         ${targetSvgHTML}
       `;
     } else {
-      // Motocicleta / Moto Lineal (2 Ruedas Alineadas)
       svg.innerHTML = `
         <text x="150" y="15" font-size="8" font-weight="bold" fill="#64748b" text-anchor="middle">▲ LADO DERECHO</text>
         <text x="150" y="175" font-size="8" font-weight="bold" fill="#64748b" text-anchor="middle">▼ LADO IZQUIERDO</text>
@@ -992,19 +994,12 @@
         <rect x="75" y="22" width="150" height="16" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1" />
         <text x="150" y="33" font-size="8.5" font-weight="bold" fill="#0369a1" text-anchor="middle">${indicadorVista}</text>
 
-        <!-- Chasis y 2 Ruedas Alineadas al Centro -->
         <path d="M 40,90 L 250,90" stroke="#0f172a" stroke-width="4" />
-        <!-- Rueda Trasera -->
         <rect x="30" y="80" width="38" height="20" rx="4" fill="#334155" stroke="#0f172a" stroke-width="1.5" />
-        <!-- Rueda Delantera -->
         <rect x="225" y="80" width="38" height="20" rx="4" fill="#334155" stroke="#0f172a" stroke-width="1.5" />
-        <!-- Tanque de Gasolina Central -->
         <ellipse cx="165" cy="90" rx="25" ry="14" fill="#0284c7" stroke="#0f172a" stroke-width="1.5" />
-        <!-- Asiento Piloto y Copiloto -->
         <rect x="85" y="80" width="55" height="20" rx="6" fill="#1e293b" />
-        <!-- Manubrio / Horquilla -->
         <path d="M 205,65 L 205,115 M 195,90 L 225,90" stroke="#475569" stroke-width="3" />
-        <!-- Faro Frontal -->
         <circle cx="258" cy="90" r="7" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5" />
         ${targetSvgHTML}
       `;
@@ -1036,14 +1031,13 @@
     else if (val === 'FALTA') selectElem.classList.add('falta');
   }
 
-  // Integración real con la API de Gemini 1.5 Flash Vision
   async function procesarFotosConIAReal(files) {
     if (!files || files.length === 0) return;
 
     const statusLabel = document.getElementById('lbl_status_ia');
     const previewContainer = document.getElementById('preview_contenedor');
     const btnTrigger = document.getElementById('btn_ia_trigger');
-    const apiKey = document.getElementById('input_gemini_key').value.trim();
+    const apiKey = document.getElementById('input_gemini_key').value.trim() || (typeof CONFIG !== 'undefined' ? CONFIG.GEMINI_API_KEY : '');
 
     if (!apiKey) {
       alert("⚠️ Por favor ingresa tu API Key de Google Gemini.");
