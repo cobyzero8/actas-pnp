@@ -738,13 +738,15 @@
     inicializarSupabaseRealtime();
   }
 
+  // MODIFICADO: Mantiene compatibilidad con la estructura de subcarpetas de GitHub Pages
   function generarQRSincronizacion() {
     const placaActual = document.getElementById('lbl_placa').innerText;
     const qrContainer = document.getElementById('qrcode');
     if (!qrContainer) return;
     qrContainer.innerHTML = "";
 
-    const urlMovil = `${window.location.origin}/subir_fotos.html?placa=${encodeURIComponent(placaActual)}`;
+    const urlBase = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+    const urlMovil = `${urlBase}/subir_fotos.html?placa=${encodeURIComponent(placaActual)}`;
     
     if (typeof QRCode !== 'undefined') {
       new QRCode(qrContainer, {
