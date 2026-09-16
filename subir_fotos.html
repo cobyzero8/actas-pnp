@@ -79,11 +79,14 @@
   const placa = urlParams.get('placa') || 'GENERAL';
   document.getElementById('lbl_placa_movil').innerText = placa;
 
-  const supabaseUrl = localStorage.getItem('pnp_supabase_url');
-  const supabaseKey = localStorage.getItem('pnp_supabase_anon_key');
+  // Extrae credenciales desde la URL del QR o desde el almacenamiento local
+  const supabaseUrl = urlParams.get('surl') || localStorage.getItem('pnp_supabase_url');
+  const supabaseKey = urlParams.get('skey') || localStorage.getItem('pnp_supabase_anon_key');
   let supabaseClient = null;
 
   if (supabaseUrl && supabaseKey) {
+    localStorage.setItem('pnp_supabase_url', supabaseUrl);
+    localStorage.setItem('pnp_supabase_anon_key', supabaseKey);
     supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
   }
 
