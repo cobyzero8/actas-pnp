@@ -7,30 +7,30 @@
   <link rel="stylesheet" href="css/styles.css">
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
-<body>
+<body class="login-page">
 
-<div class="container" style="max-width: 420px; margin: 40px auto 20px auto;">
-  <div class="card">
+<main class="login-wrapper">
+  <div class="card login-card">
     <h2 class="header-title">SISTEMA DE ACTAS</h2>
     <p class="sub-title">Comisaría PNP / Control de Patrullaje</p>
 
-    <div id="errorAlert" class="alert-msg alert-danger"></div>
+    <div id="errorAlert" class="alert-msg alert-danger" style="display: none;"></div>
 
-    <form id="loginForm">
-      <div style="margin-bottom: 15px;">
+    <form id="loginForm" autocomplete="on">
+      <div class="form-group">
         <label for="email">Correo / CIP Registrado</label>
-        <input type="email" id="email" placeholder="usuario@pnp.gob.pe" required>
+        <input type="email" id="email" name="email" placeholder="usuario@pnp.gob.pe" required autocomplete="username">
       </div>
 
-      <div style="margin-bottom: 20px;">
+      <div class="form-group">
         <label for="password">Contraseña</label>
-        <input type="password" id="password" placeholder="••••••••" required>
+        <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
       </div>
 
       <button type="submit" class="btn btn-primary">Ingresar al Sistema</button>
     </form>
   </div>
-</div>
+</main>
 
 <script src="js/auth.js"></script>
 </body>
