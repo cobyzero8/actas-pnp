@@ -16,6 +16,33 @@
   <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    img, svg, video, canvas {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .container {
+      width: 100%;
+      margin: 0 auto;
+      padding-left: 10px;
+      padding-right: 10px;
+      box-sizing: border-box;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .grid .full {
+      grid-column: 1 / -1;
+    }
+
     .wizard-header {
       display: flex;
       justify-content: space-between;
@@ -26,6 +53,7 @@
       border-radius: 8px;
       border: 1px solid #e2e8f0;
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
     .wizard-step-badge {
       flex: 1;
@@ -59,6 +87,8 @@
       margin-top: 20px;
       padding-top: 15px;
       border-top: 1px solid #cbd5e1;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .modal-overlay {
@@ -79,6 +109,8 @@
       width: 100%;
       padding: 20px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      max-height: 90vh;
+      overflow-y: auto;
     }
     .especie-field {
       cursor: pointer;
@@ -101,6 +133,7 @@
       transition: all 0.15s ease;
       box-shadow: 0 1px 2px rgba(0,0,0,0.05);
       margin-bottom: 4px;
+      word-break: break-word;
     }
     .chip-btn:hover {
       background: #f0f9ff;
@@ -212,6 +245,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      flex-wrap: wrap;
     }
 
     .block-location { background-color: #eff6ff; border-color: #bfdbfe; }
@@ -234,6 +268,86 @@
 
     summary { user-select: none; outline: none; }
     summary::-webkit-details-marker { display: none; }
+
+    /* REGLAS RESPONSIVAS ADICIONALES */
+    @media (max-width: 900px) {
+      #contenedorPaso2Grid {
+        grid-template-columns: 1fr !important;
+      }
+      #columnaLateralPaso2 {
+        position: static !important;
+        max-height: none !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .wizard-header {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+      }
+
+      .wizard-step-badge {
+        flex: 0 0 auto;
+        min-width: 120px;
+      }
+
+      .wizard-buttons {
+        flex-direction: column-reverse;
+        align-items: stretch;
+      }
+
+      .wizard-buttons > * {
+        width: 100% !important;
+        display: flex;
+        justify-content: center;
+      }
+
+      .wizard-buttons .btn {
+        width: 100% !important;
+        text-align: center;
+      }
+
+      #contenedor_vehiculos_pnp {
+        grid-template-columns: 1fr !important;
+      }
+
+      div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+      }
+
+      div[style*="display: flex; justify-content: space-between;"] {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .modal-content {
+        padding: 15px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 5px;
+      }
+      
+      input[type="text"],
+      input[type="number"],
+      input[type="date"],
+      input[type="time"],
+      select,
+      textarea {
+        font-size: 14px !important;
+      }
+
+      .btn {
+        padding: 10px 12px !important;
+        font-size: 13px !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -259,7 +373,7 @@
     <div id="contenidoVistaPreviaBody" style="padding: 15px; overflow-y: auto; flex: 1; font-size: 12px; background: #f8fafc; border: 1px solid #e2e8f0; margin: 10px 0; border-radius: 6px;">
       <!-- Se inyecta la vista previa dinámicamente -->
     </div>
-    <div style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0;">
+    <div style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; flex-wrap: wrap;">
       <button type="button" class="btn btn-secondary" onclick="cerrarModalVistaPrevia()">Cerrar</button>
       <button type="button" class="btn btn-success" onclick="confirmarYGenerarExpedienteDesdePrevia()">
         📦 Confirmar y Generar ZIP
@@ -289,7 +403,7 @@
       <textarea id="modalDondeSeEncontro" rows="3" placeholder="Ej: En el bolsillo derecho del pantalón jean color azul del intervenido, envuelto en una bolsa" style="width: 100%; box-sizing: border-box; padding: 8px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
     </div>
 
-    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+    <div style="display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;">
       <button type="button" class="btn btn-secondary" onclick="cancelarEspecieModal()" style="width: auto; padding: 8px 12px; font-size: 12px;">
         Quitar / Dejar en NEGATIVO
       </button>
@@ -321,7 +435,7 @@
       </div>
     </div>
 
-    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+    <div style="display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;">
       <button type="button" class="btn btn-secondary" onclick="cancelarProcesoHoras()" style="width: auto; padding: 8px 12px; font-size: 12px;">
         ❌ Cancelar
       </button>
@@ -334,7 +448,7 @@
 
 <div class="container" style="max-width: 1150px;">
   <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
       <a href="menu.html" style="text-decoration: none; color: var(--primary); font-weight: bold; font-size: 13px;">← Cambiar Delito / Actas</a>
       
       <button type="button" onclick="cargarDatosEjemplo()" class="btn btn-primary" style="width: auto; padding: 6px 14px; font-size: 12px; background: #0d9488; border-color: #0d9488;">
@@ -401,8 +515,8 @@
             </div>
             <div class="full">
               <label>Lugar Exacto de Intervención</label>
-              <div style="display: flex; gap: 8px; margin-top: 4px;">
-                <input type="text" id="lugar" placeholder="Ej: Av. San Martín Cdra. 2" required style="flex: 1;">
+              <div style="display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
+                <input type="text" id="lugar" placeholder="Ej: Av. San Martín Cdra. 2" required style="flex: 1; min-width: 200px;">
                 <button type="button" id="btn_gps" onclick="obtenerUbicacionGPS('lugar', 'btn_gps')" class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 11px; white-space: nowrap;">
                   📍 Obtener Ubicación GPS
                 </button>
@@ -419,7 +533,7 @@
       <!-- ================= ETAPA 2: INTERVENIDOS ================= -->
       <div class="etapa-card" id="etapa_2">
         <div class="section-block block-intervenido">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
             <div class="section-title" style="margin: 0;">👥 2. Datos de los Intervenidos / Detenidos</div>
             <button type="button" class="btn btn-primary" onclick="agregarIntervenidoCard()" style="width: auto; padding: 4px 12px; font-size: 12px; background: #dc2626; border-color: #dc2626;">
               ➕ Agregar Otro Intervenido
@@ -554,7 +668,7 @@
       <!-- ================= ETAPA 4: PERSONAL PNP ================= -->
       <div class="etapa-card" id="etapa_4">
         <div class="section-block block-pnp">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
             <div class="section-title" style="margin: 0;">👮‍♂️ 4. Personal e Unidades Policiales Intervinientes</div>
             <button type="button" class="btn btn-primary" onclick="agregarEfectivoPNPCard()" style="width: auto; padding: 4px 12px; font-size: 12px; background: #166534; border-color: #166534;">
               ➕ Agregar Otro Efectivo PNP
@@ -565,7 +679,7 @@
 
           <div style="background: #ffffff; padding: 10px; border-radius: 6px; border: 1px solid #bbf7d0; margin-top: 10px;">
             <label style="font-weight: bold; display: block; margin-bottom: 5px; color: #166534;">Unidades/Vehículos Policiales Participantes:</label>
-            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
               <span style="font-size: 12px;">¿Cuántos vehículos PNP participaron?</span>
               <input type="number" id="cant_vehiculos_pnp" value="1" min="1" max="5" onchange="generarCamposVehiculosPNP()" style="width: 60px; text-align: center; font-weight: bold;">
             </div>
@@ -581,9 +695,9 @@
       <!-- ================= ETAPA 5: VEHÍCULOS (Condicional) ================= -->
       <div class="etapa-card" id="etapa_5">
         <div class="section-block block-vehiculo" id="bloqueVehiculos">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
             <div class="section-title" style="margin: 0;">🚘 5. Vehículos Involucrados en la Intervención</div>
-            <div style="display: flex; gap: 6px; align-items: center;">
+            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
               <button type="button" class="btn" onclick="irASituacionVehicular()" style="font-size: 11px; padding: 5px 10px; background: #0284c7; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
                 🚗 Llenar Inspección Gráfica
               </button>
@@ -735,7 +849,7 @@
 
       <!-- ================= ETAPA 8: REDACCIÓN FINAL Y GENERACIÓN ================= -->
       <div class="etapa-card" id="etapa_8">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #003366; padding-bottom: 10px; margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #003366; padding-bottom: 10px; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
           <h3 style="margin: 0; color: #003366;">📝 Redacción Asistida del Acta de Intervención</h3>
           <div style="display: flex; gap: 8px;">
             <button type="button" id="btnToggleSidebar" onclick="toggleSidebarLayout()" class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 12px;">
@@ -746,7 +860,7 @@
 
         <div id="contenedorPaso2Grid" style="display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start;">
           <div>
-            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; flex-wrap: wrap;">
               <label style="font-size: 13px; font-weight: bold;">Número de Secciones a Redactar:</label>
               <input type="number" id="cant_secciones" value="3" min="1" max="8" style="width: 60px; text-align: center; font-weight: bold;">
               <button type="button" class="btn btn-primary" onclick="construirSeccionesNarrativa()" style="width: auto; padding: 6px 14px; font-size: 12px;">
@@ -1317,7 +1431,7 @@
 
     const cardHtml = `
       <div class="card-efectivo-pnp" id="card_efectivo_pnp_${id}" style="background: #ffffff; border: 1.5px solid #86efac; padding: 10px; border-radius: 6px; margin-bottom: 10px; position: relative;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #bbf7d0; padding-bottom: 4px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #bbf7d0; padding-bottom: 4px; flex-wrap: wrap; gap: 6px;">
           <span style="font-weight: bold; color: #166534; font-size: 12px;">👮‍♂️ Efectivo Policial N° <span class="num-efectivo-pnp"></span></span>
           ${!esPrimero ? `<button type="button" onclick="eliminarEfectivoPNPCard(${id})" style="padding: 2px 6px; font-size: 10px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">🗑️ Eliminar</button>` : '<span style="font-size: 10px; color: #166534; font-weight: bold;">[PRINCIPAL / INTERVINIENTE]</span>'}
         </div>
@@ -1375,7 +1489,7 @@
 
     const cardHtml = `
       <div class="card-intervenido" id="card_intervenido_${id}" style="background: #ffffff; border: 1.5px solid #fca5a5; padding: 12px; border-radius: 6px; margin-bottom: 12px; position: relative;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #fee2e2; padding-bottom: 4px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #fee2e2; padding-bottom: 4px; flex-wrap: wrap; gap: 6px;">
           <span style="font-weight: bold; color: #991b1b; font-size: 13px;">👤 Persona Intervenida N° <span class="num-intervenido"></span></span>
           ${!esPrimero ? `<button type="button" onclick="eliminarIntervenidoCard(${id})" style="padding: 3px 8px; font-size: 11px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">🗑️ Eliminar</button>` : '<span style="font-size: 10px; color: #991b1b; font-weight: bold;">[PRINCIPAL]</span>'}
         </div>
@@ -1462,7 +1576,7 @@
 
     const cardHtml = `
       <div class="card-vehiculo" id="card_vehiculo_${id}" style="background: #ffffff; border: 1.5px solid #fde047; padding: 12px; border-radius: 6px; margin-bottom: 12px; position: relative;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #fef08a; padding-bottom: 4px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #fef08a; padding-bottom: 4px; flex-wrap: wrap; gap: 6px;">
           <span style="font-weight: bold; color: #9a3412; font-size: 13px;">🚘 Vehículo Involucrado N° <span class="num-vehiculo"></span></span>
           ${!esPrimero ? `<button type="button" onclick="eliminarVehiculoCard(${id})" style="padding: 3px 8px; font-size: 11px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">🗑️ Eliminar</button>` : '<span style="font-size: 10px; color: #9a3412; font-weight: bold;">[PRINCIPAL]</span>'}
         </div>
@@ -1740,7 +1854,7 @@
           </label>
           <input type="text" id="titulo_sec_${i}" list="titulos_pnp_list" value="${tituloSugerido}" placeholder="Ej: I. INTERVENCION POLICIAL:" style="width: 100%; padding: 8px 10px; font-weight: bold; font-size: 13px; border: 1.5px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; margin-bottom: 10px; color: #003366;">
 
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; flex-wrap: wrap; gap: 6px;">
             <label style="font-size: 12px; font-weight: bold; color: #475569;">
               Contenido ({agregar_intervencion${i}}):
             </label>
