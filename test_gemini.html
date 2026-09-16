@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h3>Prueba Aislada de Gemini API</h3>
+  <input type="password" id="key" placeholder="Pega tu API Key de AI Studio">
+  <button onclick="probarAPI()">Probar Conexión</button>
+  <pre id="log"></pre>
+
+  <script>
+    async function probarAPI() {
+      const apiKey = document.getElementById('key').value.trim();
+      const log = document.getElementById('log');
+      log.innerText = "Enviando petición...";
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: "Responde OK si me escuchas." }] }]
+          })
+        });
+        const data = await res.json();
+        log.innerText = JSON.stringify(data, null, 2);
+      } catch (err) {
+        log.innerText = "Error: " + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
