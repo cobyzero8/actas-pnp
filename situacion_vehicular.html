@@ -32,6 +32,15 @@
       --st-falta-border: #f59e0b;
     }
 
+    * {
+      box-sizing: border-box;
+    }
+
+    img, svg, video, canvas {
+      max-width: 100%;
+      height: auto;
+    }
+
     body {
       background-color: var(--pnp-bg);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -47,6 +56,7 @@
       border-radius: 12px;
       padding: 20px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      width: 100%;
     }
 
     .sv-header {
@@ -359,6 +369,95 @@
       resize: vertical;
       margin-top: 8px;
       font-family: inherit;
+    }
+
+    /* REGLAS RESPONSIVAS ADICIONALES */
+    @media (max-width: 768px) {
+      body {
+        padding: 8px;
+      }
+
+      .sv-container {
+        padding: 12px;
+        border-radius: 8px;
+      }
+
+      .sv-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px;
+      }
+
+      .sv-header a {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+      }
+
+      .tipo-vehiculo-selector {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+
+      .tipo-vehiculo-selector select {
+        width: 100%;
+      }
+
+      .fuel-gauge-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+
+      .fuel-gauge-container select {
+        width: 100%;
+      }
+
+      .grid-info {
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      }
+
+      .grid-check {
+        grid-template-columns: 1fr;
+      }
+
+      .sticky-panel {
+        position: static;
+      }
+
+      div[style*="justify-content: space-between"] {
+        flex-direction: column-reverse;
+        gap: 10px;
+        align-items: stretch !important;
+      }
+
+      div[style*="justify-content: space-between"] > * {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .sv-header h2 {
+        font-size: 15px;
+      }
+
+      .grid-info {
+        grid-template-columns: 1fr;
+      }
+
+      .check-item {
+        flex-direction: row;
+        gap: 6px;
+      }
+
+      .btn-action {
+        width: 100%;
+        justify-content: center;
+      }
     }
   </style>
 </head>
