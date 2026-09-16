@@ -664,6 +664,16 @@
 
   function renderizarSVGDiagrama(tipoFormato, targetCoords) {
     const svg = document.getElementById('svg_diagrama_vehicular');
+    
+    let indicadorVista = "VISTA AÉREA 360°";
+    if (targetCoords) {
+      if (targetCoords.x >= 220) indicadorVista = "📐 VISTA FRONTAL / DELANTERA";
+      else if (targetCoords.x <= 80) indicadorVista = "📐 VISTA POSTERIOR / TRASERA";
+      else if (targetCoords.y <= 55) indicadorVista = "📐 LADO DERECHO / EXTERIOR";
+      else if (targetCoords.y >= 125) indicadorVista = "📐 LADO IZQUIERDO / EXTERIOR";
+      else indicadorVista = "📐 INTERIOR / HABITÁCULO / MOTOR";
+    }
+
     let targetSvgHTML = '';
     if (targetCoords) {
       targetSvgHTML = `
@@ -676,30 +686,52 @@
 
     if (tipoFormato === 'MAYOR') {
       svg.innerHTML = `
-        <path d="M 30,90 Q 30,50 60,45 L 180,45 Q 220,45 250,60 L 275,75 Q 285,90 275,105 L 250,120 Q 220,135 180,135 L 60,135 Q 30,130 30,90 Z" fill="#e2e8f0" stroke="#0f172a" stroke-width="2.5" />
-        <path d="M 80,55 L 170,55 Q 200,55 215,70 L 215,110 Q 200,125 170,125 L 80,125 Z" fill="#ffffff" stroke="#0284c7" stroke-width="1.8" />
-        <path d="M 180,58 L 210,72 L 210,108 L 180,122 Z" fill="#bae6fd" opacity="0.6" />
-        <rect x="50" y="32" width="35" height="12" rx="3" fill="#334155" />
-        <rect x="200" y="32" width="35" height="12" rx="3" fill="#334155" />
-        <rect x="50" y="136" width="35" height="12" rx="3" fill="#334155" />
-        <rect x="200" y="136" width="35" height="12" rx="3" fill="#334155" />
-        <ellipse cx="270" cy="65" rx="5" ry="8" fill="#fef08a" stroke="#ca8a04" />
-        <ellipse cx="270" cy="115" rx="5" ry="8" fill="#fef08a" stroke="#ca8a04" />
-        <rect x="28" y="55" width="4" height="15" rx="1" fill="#ef4444" />
-        <rect x="28" y="110" width="4" height="15" rx="1" fill="#ef4444" />
-        <text x="260" y="22" font-size="9" font-weight="bold" fill="#0369a1" text-anchor="middle">FRONTAL ➔</text>
+        <!-- Marcas de los 4 Lados del Vehículo -->
+        <text x="150" y="15" font-size="8" font-weight="bold" fill="#64748b" text-anchor="middle">▲ LADO DERECHO</text>
+        <text x="150" y="175" font-size="8" font-weight="bold" fill="#64748b" text-anchor="middle">▼ LADO IZQUIERDO</text>
+        <text x="12" y="95" font-size="8" font-weight="bold" fill="#ef4444" text-anchor="middle" transform="rotate(-90 12,95)">◄ POSTERIOR</text>
+        <text x="288" y="95" font-size="8" font-weight="bold" fill="#0369a1" text-anchor="middle" transform="rotate(90 288,95)">FRONTERA / DELANTE ►</text>
+
+        <!-- Indicador de Zona Activa -->
+        <rect x="75" y="22" width="150" height="16" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1" />
+        <text x="150" y="33" font-size="8.5" font-weight="bold" fill="#0369a1" text-anchor="middle">${indicadorVista}</text>
+
+        <!-- Carrocería Automóvil -->
+        <path d="M 40,90 Q 40,55 70,50 L 180,50 Q 220,50 250,65 L 270,78 Q 280,90 270,102 L 250,115 Q 220,130 180,130 L 70,130 Q 40,125 40,90 Z" fill="#e2e8f0" stroke="#0f172a" stroke-width="2" />
+        <!-- Techo y Parabrisas -->
+        <path d="M 85,60 L 170,60 Q 200,60 215,72 L 215,108 Q 200,120 170,120 L 85,120 Z" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+        <path d="M 180,62 L 210,74 L 210,106 L 180,118 Z" fill="#bae6fd" opacity="0.6" />
+        <!-- Llantas -->
+        <rect x="60" y="38" width="32" height="10" rx="2" fill="#334155" />
+        <rect x="195" y="38" width="32" height="10" rx="2" fill="#334155" />
+        <rect x="60" y="132" width="32" height="10" rx="2" fill="#334155" />
+        <rect x="195" y="132" width="32" height="10" rx="2" fill="#334155" />
+        <!-- Faros Frontales -->
+        <ellipse cx="265" cy="68" rx="4" ry="7" fill="#fef08a" stroke="#ca8a04" />
+        <ellipse cx="265" cy="112" rx="4" ry="7" fill="#fef08a" stroke="#ca8a04" />
+        <!-- Faros Traseros -->
+        <rect x="38" y="60" width="4" height="12" rx="1" fill="#ef4444" />
+        <rect x="38" y="108" width="4" height="12" rx="1" fill="#ef4444" />
         ${targetSvgHTML}
       `;
     } else {
       svg.innerHTML = `
-        <path d="M 40,50 L 160,50 Q 210,50 240,75 L 240,105 Q 210,130 160,130 L 40,130 Z" fill="#e2e8f0" stroke="#0f172a" stroke-width="2.5" />
-        <rect x="60" y="60" width="100" height="60" rx="6" fill="#ffffff" stroke="#0284c7" stroke-width="1.8" />
-        <path d="M 200,90 L 235,90 M 215,70 L 215,110" stroke="#334155" stroke-width="3" />
-        <rect x="225" y="82" width="28" height="16" rx="4" fill="#334155" />
-        <rect x="55" y="34" width="38" height="14" rx="3" fill="#334155" />
-        <rect x="55" y="132" width="38" height="14" rx="3" fill="#334155" />
-        <circle cx="242" cy="90" r="7" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5" />
-        <text x="225" y="22" font-size="9" font-weight="bold" fill="#0369a1" text-anchor="middle">FRONTAL ➔</text>
+        <!-- Marcas para Vehículo Menor / Mototaxi -->
+        <text x="150" y="15" font-size="8" font-weight="bold" fill="#64748b" text-anchor="middle">▲ LADO DERECHO</text>
+        <text x="150" y="175" font-size="8" font-weight="bold" fill="#64748b" text-anchor="middle">▼ LADO IZQUIERDO</text>
+        <text x="12" y="95" font-size="8" font-weight="bold" fill="#ef4444" text-anchor="middle" transform="rotate(-90 12,95)">◄ POSTERIOR</text>
+        <text x="288" y="95" font-size="8" font-weight="bold" fill="#0369a1" text-anchor="middle" transform="rotate(90 288,95)">FRONTERA / DELANTE ►</text>
+
+        <rect x="75" y="22" width="150" height="16" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1" />
+        <text x="150" y="33" font-size="8.5" font-weight="bold" fill="#0369a1" text-anchor="middle">${indicadorVista}</text>
+
+        <path d="M 45,55 L 160,55 Q 210,55 240,78 L 240,102 Q 210,125 160,125 L 45,125 Z" fill="#e2e8f0" stroke="#0f172a" stroke-width="2" />
+        <rect x="65" y="62" width="95" height="56" rx="5" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+        <path d="M 195,90 L 230,90 M 210,72 L 210,108" stroke="#334155" stroke-width="2.5" />
+        <rect x="220" y="83" width="25" height="14" rx="3" fill="#334155" />
+        <rect x="58" y="40" width="35" height="12" rx="2" fill="#334155" />
+        <rect x="58" y="128" width="35" height="12" rx="2" fill="#334155" />
+        <circle cx="238" cy="90" r="6" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5" />
         ${targetSvgHTML}
       `;
     }
