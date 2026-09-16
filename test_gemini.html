@@ -1,26 +1,25 @@
 <!DOCTYPE html>
 <html>
 <body>
-  <h3>Prueba Aislada y Lista de Modelos Gemini</h3>
+  <h3>Prueba Aislada con Gemini 3.6 Flash</h3>
   <input type="password" id="key" placeholder="Pega tu API Key de AI Studio" style="width: 300px;">
-  <button onclick="probarEndpoints()">Probar Conexiones</button>
+  <button onclick="probarGemini36()">Probar Conexión</button>
   <pre id="log" style="background: #f4f4f4; padding: 10px; margin-top: 10px;"></pre>
 
   <script>
-    async function probarEndpoints() {
+    async function probarGemini36() {
       const apiKey = document.getElementById('key').value.trim();
       const log = document.getElementById('log');
-      log.innerText = "Probando endpoints...";
+      log.innerText = "Enviando petición a gemini-3.6-flash...";
 
-      const pruebas = [
-        { version: 'v1', model: 'gemini-1.5-flash' },
-        { version: 'v1beta', model: 'gemini-2.0-flash' },
-        { version: 'v1beta', model: 'gemini-1.5-flash-8b' }
+      const endpoints = [
+        { ver: 'v1beta', model: 'gemini-3.6-flash' },
+        { ver: 'v1', model: 'gemini-3.6-flash' }
       ];
 
       log.innerText = "";
-      for (const p of pruebas) {
-        const url = `https://generativelanguage.googleapis.com/${p.version}/models/${p.model}:generateContent?key=${apiKey}`;
+      for (const ep of endpoints) {
+        const url = `https://generativelanguage.googleapis.com/${ep.ver}/models/${ep.model}:generateContent?key=${apiKey}`;
         try {
           const res = await fetch(url, {
             method: "POST",
@@ -29,12 +28,12 @@
           });
           const data = await res.json();
           if (res.ok) {
-            log.innerText += `✅ ÉXITO con ${p.version} + ${p.model}\n`;
+            log.innerText += `✅ ÉXITO con ${ep.ver} + ${ep.model}\nRespuesta: ${data.candidates[0].content.parts[0].text}\n\n`;
           } else {
-            log.innerText += `❌ ERROR (${res.status}) con ${p.version} + ${p.model}: ${data.error?.message || ''}\n`;
+            log.innerText += `❌ ERROR (${res.status}) con ${ep.ver}: ${data.error?.message || ''}\n\n`;
           }
         } catch (err) {
-          log.innerText += `❌ ERROR RED con ${p.version} + ${p.model}: ${err.message}\n`;
+          log.innerText += `❌ ERROR RED: ${err.message}\n\n`;
         }
       }
     }
