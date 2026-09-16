@@ -1119,8 +1119,8 @@
 
         const base64Clean = base64Data.split(',')[1];
         imageParts.push({
-          inlineData: {
-            mimeType: file.type || 'image/jpeg',
+          inline_data: {
+            mime_type: file.type || 'image/jpeg',
             data: base64Clean
           }
         });
@@ -1154,7 +1154,7 @@ Responde ÚNICAMENTE en JSON estricto:
       };
 
       const cleanKey = encodeURIComponent(rawApiKey);
-      const modelosAI = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+      const modelosAI = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
       let response = null;
       let lastErr = null;
 
