@@ -1,30 +1,41 @@
 <!DOCTYPE html>
 <html>
 <body>
-  <h3>Prueba Aislada de Gemini API</h3>
-  <input type="password" id="key" placeholder="Pega tu API Key de AI Studio">
-  <button onclick="probarAPI()">Probar Conexión</button>
-  <pre id="log"></pre>
+  <h3>Prueba Aislada y Lista de Modelos Gemini</h3>
+  <input type="password" id="key" placeholder="Pega tu API Key de AI Studio" style="width: 300px;">
+  <button onclick="probarEndpoints()">Probar Conexiones</button>
+  <pre id="log" style="background: #f4f4f4; padding: 10px; margin-top: 10px;"></pre>
 
   <script>
-    async function probarAPI() {
+    async function probarEndpoints() {
       const apiKey = document.getElementById('key').value.trim();
       const log = document.getElementById('log');
-      log.innerText = "Enviando petición...";
+      log.innerText = "Probando endpoints...";
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-      try {
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: "Responde OK si me escuchas." }] }]
-          })
-        });
-        const data = await res.json();
-        log.innerText = JSON.stringify(data, null, 2);
-      } catch (err) {
-        log.innerText = "Error: " + err.message;
+      const pruebas = [
+        { version: 'v1', model: 'gemini-1.5-flash' },
+        { version: 'v1beta', model: 'gemini-2.0-flash' },
+        { version: 'v1beta', model: 'gemini-1.5-flash-8b' }
+      ];
+
+      log.innerText = "";
+      for (const p of pruebas) {
+        const url = `https://generativelanguage.googleapis.com/${p.version}/models/${p.model}:generateContent?key=${apiKey}`;
+        try {
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contents: [{ parts: [{ text: "Hola" }] }] })
+          });
+          const data = await res.json();
+          if (res.ok) {
+            log.innerText += `✅ ÉXITO con ${p.version} + ${p.model}\n`;
+          } else {
+            log.innerText += `❌ ERROR (${res.status}) con ${p.version} + ${p.model}: ${data.error?.message || ''}\n`;
+          }
+        } catch (err) {
+          log.innerText += `❌ ERROR RED con ${p.version} + ${p.model}: ${err.message}\n`;
+        }
       }
     }
   </script>
