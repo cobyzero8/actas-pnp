@@ -493,8 +493,24 @@
       </form>
     </div>
 
+    <!-- PANEL LATERAL REORGANIZADO -->
     <div class="sticky-panel">
-      <!-- INSPECCIÓN ASISTIDA POR IA Y ACTIVACIÓN -->
+      <!-- 1. UBICACIÓN DE COMPONENTE -->
+      <div class="guide-card">
+        <h3>📍 Ubicación de Componente</h3>
+        <span class="location-badge" id="lbl_item_actual">Pase o seleccione un ítem</span>
+        
+        <div class="vehicle-diagram-container">
+          <svg id="svg_diagrama_vehicular" viewBox="0 0 300 180" class="svg-vehicle"></svg>
+        </div>
+
+        <div class="location-details">
+          <strong id="lbl_zona_nombre">ZONA DEL VEHÍCULO</strong>
+          <span id="lbl_zona_desc">Seleccione una pieza en el formulario para localizar su posición técnica en el esquema.</span>
+        </div>
+      </div>
+
+      <!-- 2. INSPECCIÓN ASISTIDA POR IA Y ACTIVACIÓN -->
       <div class="ia-card">
         <h4>🤖 Inspección Asistida por IA</h4>
 
@@ -538,7 +554,7 @@
         </div>
       </div>
 
-      <!-- QR Y SINCRONIZACIÓN (ACTIVADO TRAS CONECTAR GEMINI) -->
+      <!-- 3. QR Y SINCRONIZACIÓN (ACTIVADO TRAS CONECTAR GEMINI) -->
       <div class="qr-card" id="card_qr_sincronizacion" style="display: none;">
         <h4>📱 Sincronización Móvil (Colega)</h4>
         <p style="font-size: 11px; color: #0369a1; margin: 0 0 6px 0;">
@@ -550,20 +566,6 @@
         <span id="lbl_status_realtime" style="font-size: 10px; color: #0284c7; display: block; font-weight: bold;">
           ⚡ Esperando conexión en tiempo real...
         </span>
-      </div>
-
-      <div class="guide-card">
-        <h3>📍 Ubicación de Componente</h3>
-        <span class="location-badge" id="lbl_item_actual">Pase o seleccione un ítem</span>
-        
-        <div class="vehicle-diagram-container">
-          <svg id="svg_diagrama_vehicular" viewBox="0 0 300 180" class="svg-vehicle"></svg>
-        </div>
-
-        <div class="location-details">
-          <strong id="lbl_zona_nombre">ZONA DEL VEHÍCULO</strong>
-          <span id="lbl_zona_desc">Seleccione una pieza en el formulario para localizar su posición técnica en el esquema.</span>
-        </div>
       </div>
     </div>
   </div>
