@@ -4,7 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Subir Fotos - Inspección Vehicular PNP</title>
+
+  <!-- LIBRERÍAS Y CONFIGURACIÓN CENTRAL -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+
   <style>
     body {
       font-family: system-ui, -apple-system, sans-serif;
@@ -79,9 +83,10 @@
   const placa = urlParams.get('placa') || 'GENERAL';
   document.getElementById('lbl_placa_movil').innerText = placa;
 
-  // Extrae credenciales desde la URL del QR o desde el almacenamiento local
-  const supabaseUrl = urlParams.get('surl') || localStorage.getItem('pnp_supabase_url');
-  const supabaseKey = urlParams.get('skey') || localStorage.getItem('pnp_supabase_anon_key');
+  // Evaluador de credenciales: URL QR -> Memoria Local -> js/config.js
+  const supabaseUrl = urlParams.get('surl') || localStorage.getItem('pnp_supabase_url') || (typeof CONFIG !== 'undefined' ? CONFIG.SUPABASE_URL : '');
+  const supabaseKey = urlParams.get('skey') || localStorage.getItem('pnp_supabase_anon_key') || (typeof CONFIG !== 'undefined' ? CONFIG.SUPABASE_ANON_KEY : '');
+  
   let supabaseClient = null;
 
   if (supabaseUrl && supabaseKey) {
@@ -98,7 +103,7 @@
     const galeria = document.getElementById('galeria_preview');
 
     if (!supabaseClient) {
-      alert("⚠️ No se detectó la configuración de Supabase. Vuelve a escanear el QR generado por la PC.");
+      alert("⚠️ No se detectaron las credenciales de Supabase. Vuelve a escanear el QR o verifica tu archivo js/config.js.");
       return;
     }
 
@@ -117,7 +122,7 @@
         img.src = URL.createObjectURL(file);
         galeria.appendChild(img);
 
-        // Subir al Bucket de Supabase Storage
+        // Subir imagen al bucket de Supabase
         const { error: errorStorage } = await supabaseClient
           .storage
           .from('fotos_vehiculos')
@@ -126,12 +131,27 @@
         if (errorStorage) throw errorStorage;
       }
 
-      // Notificar a la PC mediante registro de evento en la base de datos
-      const { error: errorDB } = await supabaseClient
-        .from('notificaciones_fotos')
-        .insert([{ placa: placa, timestamp: new Date().toISOString() }]);
+      // 1. NOTIFICACIÓN EN TIEMPO REAL VÍA BROADCAST (TRANSMISIÓN DIRECTA WEBSOCKET)
+      try {
+        const channel = supabaseClient.channel('canal_fotos_movil');
+        await channel.subscribe();
+        await channel.send({
+          type: 'broadcast',
+          event: 'foto_subida',
+          payload: { placa: placa, timestamp: Date.now() }
+        });
+      } catch (errBroadcast) {
+        console.warn("Aviso Broadcast secundario:", errBroadcast);
+      }
 
-      if (errorDB) throw errorDB;
+      // 2. REGISTRO DE RESPALDO EN LA TABLA DE LA BASE DE DATOS
+      try {
+        await supabaseClient
+          .from('notificaciones_fotos')
+          .insert([{ placa: placa, timestamp: new Date().toISOString() }]);
+      } catch (errDB) {
+        console.warn("Aviso DB secundario:", errDB);
+      }
 
       estado.innerText = "✅ ¡Fotos enviadas con éxito! Revisa la PC.";
       estado.style.color = "#166534";
