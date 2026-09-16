@@ -525,11 +525,11 @@
 
           <input type="file" id="input_foto_ia" accept="image/*" multiple style="display:none;" onchange="procesarFotosConIAReal(this.files)">
           <button type="button" id="btn_ia_trigger" onclick="document.getElementById('input_foto_ia').click()" class="btn-action btn-ia">
-            📷 Subir Fotos (Máx 5) y Escanear
+            📷 Subir Fotos (Máx 5) y Escanear con IA
           </button>
           
           <div id="preview_contenedor" class="preview-thumbs"></div>
-          
+
           <button type="button" id="btn_limpiar_fotos" onclick="limpiarFotosInterfaz()" style="background:none; border:none; color:#b91c1c; font-size:11px; cursor:pointer; text-decoration:underline; margin-top:8px; display:none;">
             🗑️ Borrar Fotos y Reiniciar
           </button>
@@ -538,7 +538,7 @@
         </div>
       </div>
 
-      <!-- QR Y SINCRONIZACIÓN -->
+      <!-- QR Y SINCRONIZACIÓN (ACTIVADO TRAS CONECTAR GEMINI) -->
       <div class="qr-card" id="card_qr_sincronizacion" style="display: none;">
         <h4>📱 Sincronización Móvil (Colega)</h4>
         <p style="font-size: 11px; color: #0369a1; margin: 0 0 6px 0;">
@@ -570,6 +570,7 @@
 </div>
 
 <script>
+  // 1. VEHÍCULO MAYOR
   const MAPA_UBICACIONES_MAYOR = {
     "FARO GRANDE DELT": { x: 260, y: 50, zona: "Máscara Frontal", desc: "Faros principales en el frente exterior del auto." },
     "INTERMITENTES": { x: 270, y: 35, zona: "Esquinas Frontales", desc: "Luces de señalización de giro delanteras." },
@@ -613,6 +614,7 @@
     "VARILLA ACEITE": { x: 245, y: 100, zona: "Medidor de Aceite", desc: "Varilla de nivel de aceite de motor." }
   };
 
+  // 2. MOTOTAXI / TRIMOVIL (3 Ruedas)
   const MAPA_UBICACIONES_MOTOTAXI = {
     "VELOCÍMETRO": { x: 200, y: 90, zona: "Manubrio Central", desc: "Reloj velocímetro en tablero del chofer." },
     "TACÓMETRO": { x: 205, y: 80, zona: "Manubrio Central", desc: "Medidor de RPM de motor." },
@@ -650,6 +652,7 @@
     "TAPABARRO TRASERO": { x: 45, y: 125, zona: "Ruedas Traseras", desc: "Guardabarros de las ruedas posteriores." }
   };
 
+  // 3. MOTOCICLETA (2 Ruedas)
   const MAPA_UBICACIONES_MOTOCICLETA = {
     "VELOCÍMETRO": { x: 205, y: 90, zona: "Relojes Manubrio", desc: "Tacómetro/Velocímetro central de la moto." },
     "TACÓMETRO": { x: 205, y: 80, zona: "Relojes Manubrio", desc: "Medidor de revoluciones por minuto." },
@@ -714,6 +717,8 @@
     document.getElementById('select_tipo_formato').value = tipoInicial;
     cambiarFormatoTipoVehiculo(tipoInicial);
     restaurarEstadoSV();
+
+    // Revisa si la clave de Gemini ya existe antes de activar
     verificarEstadoInicialGemini();
   });
 
@@ -730,7 +735,7 @@
   function conectarGeminiKey() {
     const val = document.getElementById('input_gemini_key').value.trim();
     if (!val) {
-      alert("⚠️ Ingresa tu API Key de Gemini para activar la inspección.");
+      alert("⚠️ Ingresa tu API Key de Gemini para activar la inspección y la sincronización.");
       return;
     }
     localStorage.setItem('pnp_gemini_api_key', val);
@@ -764,6 +769,7 @@
     return { url, key };
   }
 
+  // Genera un QR limpio y rápido de escanear
   function generarQRSincronizacion() {
     const placaActual = document.getElementById('lbl_placa').innerText;
     const qrContainer = document.getElementById('qrcode');
@@ -783,12 +789,13 @@
     }
   }
 
+  // Escucha transmisiones Broadcast en vivo y eventos en base de datos
   function inicializarSupabaseRealtime() {
     const { url, key } = obtenerSupabaseCreds();
     const statusRealtime = document.getElementById('lbl_status_realtime');
 
     if (!url || !key) {
-      statusRealtime.innerText = "⚠️ Revisa la configuración de Supabase.";
+      statusRealtime.innerText = "⚠️ Revisa la configuración de Supabase URL / Anon Key.";
       statusRealtime.style.color = "#b45309";
       return;
     }
@@ -798,7 +805,7 @@
         supabaseClient = supabase.createClient(url, key);
         const placaActual = document.getElementById('lbl_placa').innerText;
 
-        statusRealtime.innerText = "⚡ Tiempo real activo. Esperando fotos...";
+        statusRealtime.innerText = "⚡ Tiempo real activo. Esperando fotos del celular...";
         statusRealtime.style.color = "#0284c7";
 
         const channel = supabaseClient.channel('canal_fotos_movil');
@@ -806,13 +813,15 @@
         channel
           .on('broadcast', { event: 'foto_subida' }, async (payload) => {
             if (!payload.payload || payload.payload.placa === placaActual || payload.payload.placa === 'GENERAL') {
-              statusRealtime.innerText = "📸 ¡Fotos recibidas! Procesando las 5 más recientes...";
+              statusRealtime.innerText = "📸 ¡Fotos recibidas desde el celular! Procesando con IA...";
+              statusRealtime.style.color = "#15803d";
               await descargarYProcesarFotosSupabase(placaActual);
             }
           })
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notificaciones_fotos' }, async (payload) => {
             if (payload.new && (payload.new.placa === placaActual || payload.new.placa === 'GENERAL')) {
-              statusRealtime.innerText = "📸 ¡Fotos recibidas! Procesando las 5 más recientes...";
+              statusRealtime.innerText = "📸 ¡Fotos recibidas desde el celular! Procesando con IA...";
+              statusRealtime.style.color = "#15803d";
               await descargarYProcesarFotosSupabase(placaActual);
             }
           })
@@ -820,6 +829,8 @@
       }
     } catch (e) {
       console.error("Error al inicializar Supabase Realtime:", e);
+      statusRealtime.innerText = "❌ Error al conectar a Supabase Realtime.";
+      statusRealtime.style.color = "#b91c1c";
     }
   }
 
@@ -835,9 +846,12 @@
           sortBy: { column: 'created_at', order: 'desc' }
         });
 
-      if (error || !archivos || archivos.length === 0) return;
+      if (error || !archivos || archivos.length === 0) {
+        console.warn("No se encontraron archivos en Supabase Storage.");
+        return;
+      }
 
-      // FILTRO CLAVE: Solo las 5 fotos más recientes
+      // FILTRO ESTRICTO: Solo las 5 fotos más recientes
       const ultimos5Archivos = archivos.slice(0, 5);
 
       const fileObjects = [];
@@ -858,7 +872,7 @@
       }
 
     } catch (err) {
-      console.error("Error al descargar fotos desde Supabase:", err);
+      console.error("Error al descargar fotos desde Supabase Storage:", err);
     }
   }
 
@@ -1072,16 +1086,16 @@
       return;
     }
 
-    // LIMPIEZA AUTOMÁTICA PREVIA
+    // Limpieza previa de miniaturas acumuladas
     previewContainer.innerHTML = "";
     
-    // FILTRO CLAVE DE LÍMITE: Máximo 5 fotos
+    // Filtro de imágenes: Toma como máximo las últimas 5 fotos
     const listaFotos = Array.from(files).slice(-5);
 
     btnTrigger.disabled = true;
     btnTrigger.innerHTML = `Analizando (${listaFotos.length} fotos)...`;
     statusLabel.innerText = `⏳ Procesando ${listaFotos.length} foto(s) con Gemini Vision...`;
-    btnLimpiar.style.display = "inline-block";
+    if (btnLimpiar) btnLimpiar.style.display = "inline-block";
 
     try {
       const tipoFormato = document.getElementById('select_tipo_formato').value;
@@ -1128,10 +1142,11 @@ Responde ÚNICAMENTE en JSON estricto:
 {
   "evaluacion_partes": {
     "PARABRISAS": "BUENO",
-    "FARO GRANDE DELT": "MALO"
+    "FARO GRANDE DELT": "MALO",
+    "ESPEJO EXTERIOR": "FALTA"
   },
   "nivel_combustible": "1/2 TANQUE",
-  "observaciones_detalladas": "Se detectó faro derecho roto."
+  "observaciones_detalladas": "Se detectó faro derecho roto. Falta espejo retrovisor izquierdo."
 }`;
 
       const payload = {
@@ -1164,9 +1179,161 @@ Responde ÚNICAMENTE en JSON estricto:
       }
 
       if (!response) {
-        throw new Error(`Error en API Gemini: ${lastErr}. Revisa que tu clave esté habilitada en Google AI Studio.`);
+        throw new Error(`Error en la API de Gemini (${lastErr}). Revisa que tu API Key sea válida y generada en Google AI Studio.`);
       }
 
       const data = await response.json();
       const rawText = data.candidates[0].content.parts[0].text;
-      const cleanJsonText = rawText.replace(/```json|
+      const cleanJsonText = rawText.replace(/```json|```/g, '').trim();
+      const resultadoIA = JSON.parse(cleanJsonText);
+
+      let contActualizados = 0;
+      if (resultadoIA.evaluacion_partes) {
+        document.querySelectorAll('select[id^="sv_"]').forEach(sel => {
+          const nombre = sel.getAttribute('data-nombre');
+          if (nombre && resultadoIA.evaluacion_partes[nombre]) {
+            const estadoDetectado = resultadoIA.evaluacion_partes[nombre].toUpperCase();
+            sel.value = estadoDetectado;
+            actualizarColorSelect(sel);
+            contActualizados++;
+          }
+        });
+      }
+
+      if (resultadoIA.nivel_combustible) {
+        const combSelect = document.getElementById('combustible_nivel');
+        for (let opt of combSelect.options) {
+          if (opt.value.includes(resultadoIA.nivel_combustible)) {
+            combSelect.value = opt.value;
+            actualizarColorSelect(combSelect);
+            break;
+          }
+        }
+      }
+
+      if (resultadoIA.observaciones_detalladas) {
+        const obsArea = document.getElementById('observaciones_situacion');
+        const headerIA = `[INSPECCIÓN IA GEMINI]: `;
+        if (!obsArea.value.includes(headerIA)) {
+          obsArea.value += (obsArea.value ? '\n\n' : '') + `${headerIA}${resultadoIA.observaciones_detalladas}`;
+        }
+      }
+
+      statusLabel.innerText = `✅ Evaluación completada con ${listaFotos.length} fotos (${contActualizados} partes analizadas).`;
+
+    } catch (err) {
+      console.error("Error en escáner IA:", err);
+      statusLabel.innerHTML = `<span style="color:#b91c1c;">❌ Error: ${err.message}</span>`;
+    } finally {
+      btnTrigger.disabled = false;
+      btnTrigger.innerHTML = `📷 Subir Fotos (Máx 5) y Escanear con IA`;
+    }
+  }
+
+  function convertirArchivoABase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function notificarRegreso() {
+    localStorage.setItem('pnp_retorno_etapa_vehiculo', 'true');
+  }
+
+  function guardarSituacionVehicular() {
+    const tipoFormato = document.getElementById('select_tipo_formato').value;
+    const novedadesSec1 = [];
+    const novedadesSec2 = [];
+    const novedadesSec3 = [];
+    const novedadesSec4 = [];
+
+    const recopilarDatosGroup = (contenedorId, listaDestino) => {
+      const selects = document.querySelectorAll(`#${contenedorId} select`);
+      selects.forEach(el => {
+        const nombre = el.getAttribute('data-nombre') || 'ITEM';
+        if (el.value === 'FALTA' || el.value === 'MALO') {
+          listaDestino.push(`${nombre}: ${el.value}`);
+        }
+      });
+    };
+
+    recopilarDatosGroup('sec_1', novedadesSec1);
+    recopilarDatosGroup('sec_2', novedadesSec2);
+    recopilarDatosGroup('sec_3', novedadesSec3);
+    if (tipoFormato !== 'MAYOR') recopilarDatosGroup('sec_4', novedadesSec4);
+
+    const nivelGas = document.getElementById('combustible_nivel').value;
+    const obsText = document.getElementById('observaciones_situacion').value.trim();
+
+    let resultadoFinalTexto = `FORMATO: ACTA DE SITUACIÓN VEHICULAR (${tipoFormato}).\n`;
+    resultadoFinalTexto += `NIVEL DE COMBUSTIBLE: ${nivelGas}.\n\n`;
+
+    const tit1Text = document.getElementById('tit_sec_1').innerText;
+    const tit2Text = document.getElementById('tit_sec_2').innerText;
+    const tit3Text = document.getElementById('tit_sec_3').innerText;
+
+    resultadoFinalTexto += `${tit1Text}:\n` + (novedadesSec1.length > 0 ? `- ${novedadesSec1.join('\n- ')}` : `Con todos sus accesorios en estado REGULAR/BUENO.`) + `\n\n`;
+    resultadoFinalTexto += `${tit2Text}:\n` + (novedadesSec2.length > 0 ? `- ${novedadesSec2.join('\n- ')}` : `Con todos sus accesorios en estado REGULAR/BUENO.`) + `\n\n`;
+    resultadoFinalTexto += `${tit3Text}:\n` + (novedadesSec3.length > 0 ? `- ${novedadesSec3.join('\n- ')}` : `Con todos sus componentes en estado REGULAR/BUENO.`) + `\n\n`;
+
+    if (tipoFormato !== 'MAYOR') {
+      const tit4Text = document.getElementById('tit_sec_4').innerText;
+      resultadoFinalTexto += `${tit4Text}:\n` + (novedadesSec4.length > 0 ? `- ${novedadesSec4.join('\n- ')}` : `En estado REGULAR/BUENO.`) + `\n\n`;
+    }
+
+    resultadoFinalTexto += obsText ? `OBSERVACIONES / DAÑOS VISIBLES:\n${obsText}` : `OBSERVACIONES: Sin observaciones adicionales.`;
+
+    localStorage.setItem('pnp_acta_situacion_vehicular_resultado', resultadoFinalTexto);
+    localStorage.setItem('pnp_retorno_etapa_vehiculo', 'true');
+
+    const estadoFormSV = {
+      tipo_formato: tipoFormato,
+      combustible_nivel: nivelGas,
+      observaciones_situacion: obsText,
+      valores_items: {}
+    };
+
+    document.querySelectorAll('select[id^="sv_"]').forEach(sel => {
+      const nombre = sel.getAttribute('data-nombre');
+      if (nombre) estadoFormSV.valores_items[nombre] = sel.value;
+    });
+
+    localStorage.setItem('pnp_sv_estado_formulario', JSON.stringify(estadoFormSV));
+
+    alert(`✅ Inspección del Acta de Situación Vehicular guardada con éxito.`);
+    window.location.href = 'formulario.html';
+  }
+
+  function restaurarEstadoSV() {
+    const raw = localStorage.getItem('pnp_sv_estado_formulario');
+    if (!raw) return;
+    try {
+      const estado = JSON.parse(raw);
+      if (estado.tipo_formato) {
+        document.getElementById('select_tipo_formato').value = estado.tipo_formato;
+        cambiarFormatoTipoVehiculo(estado.tipo_formato);
+      }
+      if (estado.combustible_nivel) {
+        document.getElementById('combustible_nivel').value = estado.combustible_nivel;
+        actualizarColorSelect(document.getElementById('combustible_nivel'));
+      }
+      if (estado.observaciones_situacion !== undefined) {
+        document.getElementById('observaciones_situacion').value = estado.observaciones_situacion;
+      }
+      if (estado.valores_items) {
+        document.querySelectorAll('select[id^="sv_"]').forEach(sel => {
+          const nombre = sel.getAttribute('data-nombre');
+          if (nombre && estado.valores_items[nombre]) {
+            sel.value = estado.valores_items[nombre];
+            actualizarColorSelect(sel);
+          }
+        });
+      }
+    } catch(e){}
+  }
+</script>
+</body>
+</html>
