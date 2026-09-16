@@ -739,7 +739,7 @@
     inicializarSupabaseRealtime();
   }
 
-  // ACTULIZADO: Genera el QR adjuntando surl y skey automáticamente para el teléfono
+  // Genera el QR con dimensiones ampliadas y bajo nivel de corrección de error para fácil escaneo
   function generarQRSincronizacion() {
     const placaActual = document.getElementById('lbl_placa').innerText;
     const surl = localStorage.getItem('pnp_supabase_url') || '';
@@ -754,8 +754,9 @@
     if (typeof QRCode !== 'undefined') {
       new QRCode(qrContainer, {
         text: urlMovil,
-        width: 120,
-        height: 120
+        width: 180,
+        height: 180,
+        correctLevel: QRCode.CorrectLevel.L
       });
     }
   }
