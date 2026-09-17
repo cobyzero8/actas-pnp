@@ -469,14 +469,14 @@ function generarBloqueCierreYFirmas(horaFin, lista) {
     const int1 = (lista && lista[0]) ? lista[0] : { nombre: '{intervenido_nombre}', dni: '{intervenido_dni}' };
     textoCierre += 
       `                                        __________________________________\n` +
-      `                                                    EL INTERVENIDO\n\n` +
+      `                                                  EL INTERVENIDO\n\n` +
       `                                        Nombre: ${int1.nombre}\n` +
       `                                        DNI N°: ${int1.dni}`;
   } else {
     lista.forEach((item, idx) => {
       textoCierre += 
         `                                        __________________________________\n` +
-        `                                                    EL INTERVENIDO N° ${idx + 1}\n\n` +
+        `                                                  EL INTERVENIDO N° ${idx + 1}\n\n` +
         `                                        Nombre: ${item.nombre}\n` +
         `                                        DNI N°: ${item.dni}\n\n`;
     });
