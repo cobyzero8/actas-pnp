@@ -272,7 +272,6 @@
     summary { user-select: none; outline: none; }
     summary::-webkit-details-marker { display: none; }
 
-    /* REGLAS RESPONSIVAS ADICIONALES */
     @media (max-width: 900px) {
       #contenedorPaso2Grid {
         grid-template-columns: 1fr !important;
@@ -374,7 +373,6 @@
       <button type="button" onclick="cerrarModalVistaPrevia()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">&times;</button>
     </div>
     <div id="contenidoVistaPreviaBody" style="padding: 15px; overflow-y: auto; flex: 1; font-size: 12px; background: #f8fafc; border: 1px solid #e2e8f0; margin: 10px 0; border-radius: 6px;">
-      <!-- Se inyecta la vista previa dinámicamente -->
     </div>
     <div style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; flex-wrap: wrap;">
       <button type="button" class="btn btn-secondary" onclick="cerrarModalVistaPrevia()">Cerrar</button>
@@ -1644,7 +1642,60 @@
     return `${textos.join(', ')} y ${ultimo}`;
   }
 
-  /* FUNCIONES MEJORADAS DE ESCANEO OCR CON TESSERACT.JS (DNI Y TIV) */
+  /* PREPROCESAMIENTO EN CANVAS PARA MEJORAR VELOCIDAD Y NITIDEZ DE OCR */
+  function preprocesarImagenParaOcr(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          let maxDim = 1400;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const imgData = ctx.getImageData(0, 0, width, height);
+          const data = imgData.data;
+          const contrast = 1.35;
+          const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+
+          for (let i = 0; i < data.length; i += 4) {
+            const avg = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            let color = factor * (avg - 128) + 128;
+            color = Math.min(255, Math.max(0, color));
+            data[i] = color;
+            data[i + 1] = color;
+            data[i + 2] = color;
+          }
+
+          ctx.putImageData(imgData, 0, 0);
+          resolve(canvas.toDataURL('image/jpeg', 0.9));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /* ESCANEO OPTIMIZADO Y ULTRA PRECISO PARA DNI AZUL Y DNI ELECTRÓNICO */
   async function escanearDniOcr(idNum) {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
@@ -1666,71 +1717,127 @@
       if (inputDni) inputDni.value = "⏳...";
 
       try {
-        const result = await Tesseract.recognize(file, 'spa', {
+        let imagenProcesada = file;
+        try {
+          imagenProcesada = await preprocesarImagenParaOcr(file);
+        } catch (errCanvas) {
+          console.warn("No se pudo aplicar canvas, usando imagen original:", errCanvas);
+        }
+
+        const result = await Tesseract.recognize(imagenProcesada, 'spa', {
           logger: m => console.log(m)
         });
         const rawText = result.data.text || "";
-        console.log("Texto OCR DNI:\n", rawText);
+        console.log("=== TEXTO DETECTADO POR OCR ===:\n", rawText);
 
         const texto = rawText.toUpperCase();
         const lineas = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
-        // 1. EXTRAER DNI (8 DÍGITOS)
+        const limpiarNombre = (str) => {
+          if (!str) return "";
+          return str
+            .replace(/[^A-ZÁÉÍÓÚÑa-záéíóúñ\s]/g, '')
+            .replace(/\b(SL|1ER|2DO|PRIMER|SEGUNDO|APELLIDO|PRENOMBRES|NOMBRES|SEXO|PERU|DNI|CUI)\b/gi, '')
+            .trim()
+            .toUpperCase();
+        };
+
+        // 1. EXTRAER NUMERACIÓN DE DNI (8 DÍGITOS / CUI)
         let dniEncontrado = "";
-        const matchDni = texto.match(/\b\d{8}\b/);
-        if (matchDni) {
-          dniEncontrado = matchDni[0];
+        const matchCui = texto.match(/CUI[\s:]*(\d{8})/i) || texto.match(/\b(\d{8})[-–]\d\b/);
+        if (matchCui) {
+          dniEncontrado = matchCui[1];
         } else {
-          const matchDniRelax = texto.match(/\b\d{2}[\s.-]?\d{3}[\s.-]?\d{3}\b/);
-          if (matchDniRelax) {
-            dniEncontrado = matchDniRelax[0].replace(/\D/g, '');
+          const matchDniExp = texto.match(/DNI[\s:]*(\d{8})/i) || texto.match(/DOCUMENTO[\s:]*(\d{8})/i);
+          if (matchDniExp) {
+            dniEncontrado = matchDniExp[1];
+          } else {
+            const coincidencias8D = texto.match(/\b\d{8}\b/g) || [];
+            for (let d of coincidencias8D) {
+              if (!d.startsWith("19") && !d.startsWith("20") && !d.startsWith("2811") && !d.startsWith("0101")) {
+                dniEncontrado = d;
+                break;
+              }
+            }
           }
         }
 
-        // 2. EXTRAER APELLIDOS Y NOMBRES
-        let apellidos = "";
-        let nombres = "";
+        // 2. EXTRAER APELLIDOS Y NOMBRES ESTRUCTURADOS
+        let primerApellido = "";
+        let segundoApellido = "";
+        let prenombres = "";
 
         for (let i = 0; i < lineas.length; i++) {
           const lUpper = lineas[i].toUpperCase();
-          if (lUpper.includes("APELLIDO") || lUpper.includes("SURNAME") || lUpper.includes("PRIMER APELLIDO")) {
-            if (i + 1 < lineas.length) {
-              const sig = lineas[i + 1].trim();
-              if (!sig.toUpperCase().includes("NOMBRE") && !sig.toUpperCase().includes("DNI") && sig.length > 2) {
-                apellidos = sig;
-              }
-            }
+
+          if (lUpper.includes("PRIMER APELLIDO") || lUpper.includes("1ER APELLIDO") || lUpper.includes("APELLIDO PATERNO")) {
+            let restoL = lUpper.replace(/.*(PRIMER APELLIDO|1ER APELLIDO|APELLIDO PATERNO)[:\s]*/, '').trim();
+            let candidato = limpiarNombre(restoL);
+            if (!candidato && i + 1 < lineas.length) candidato = limpiarNombre(lineas[i + 1]);
+            if (candidato && candidato.length >= 2) primerApellido = candidato;
           }
-          if (lUpper.includes("NOMBRE") || lUpper.includes("GIVEN NAME") || lUpper.includes("PRENOMBRES")) {
-            if (i + 1 < lineas.length) {
-              const sig = lineas[i + 1].trim();
-              if (!sig.toUpperCase().includes("SEXO") && !sig.toUpperCase().includes("FECHA") && sig.length > 2) {
-                nombres = sig;
-              }
-            }
+
+          if (lUpper.includes("SEGUNDO APELLIDO") || lUpper.includes("2DO APELLIDO") || lUpper.includes("APELLIDO MATERNO")) {
+            let restoL = lUpper.replace(/.*(SEGUNDO APELLIDO|2DO APELLIDO|APELLIDO MATERNO)[:\s]*/, '').trim();
+            let candidato = limpiarNombre(restoL);
+            if (!candidato && i + 1 < lineas.length) candidato = limpiarNombre(lineas[i + 1]);
+            if (candidato && candidato.length >= 2) segundoApellido = candidato;
+          }
+
+          if (lUpper.includes("PRENOMBRES") || lUpper.includes("NOMBRES") || lUpper.includes("GIVEN NAME")) {
+            let restoL = lUpper.replace(/.*(PRENOMBRES|NOMBRES|GIVEN NAME)[:\s]*/, '').trim();
+            let candidato = limpiarNombre(restoL);
+            if (!candidato && i + 1 < lineas.length) candidato = limpiarNombre(lineas[i + 1]);
+            if (candidato && candidato.length >= 2) prenombres = candidato;
           }
         }
 
         let nombreCompletoFinal = "";
-        if (apellidos && nombres) {
-          nombreCompletoFinal = `${apellidos.toUpperCase()}, ${nombres}`;
-        } else if (apellidos) {
-          nombreCompletoFinal = apellidos.toUpperCase();
-        } else if (nombres) {
-          nombreCompletoFinal = nombres;
+        if (primerApellido || segundoApellido || prenombres) {
+          let apellidosJuntos = `${primerApellido} ${segundoApellido}`.trim();
+          if (apellidosJuntos && prenombres) {
+            nombreCompletoFinal = `${apellidosJuntos}, ${prenombres}`;
+          } else if (apellidosJuntos) {
+            nombreCompletoFinal = apellidosJuntos;
+          } else {
+            nombreCompletoFinal = prenombres;
+          }
+        } else {
+          const lineasCandidatas = lineas.map(l => limpiarNombre(l)).filter(l => {
+            return l.length >= 3 && 
+                   !l.includes("REPUBLICA") && !l.includes("PERU") && !l.includes("IDENTIDAD") && 
+                   !l.includes("ELECTORAL") && !l.includes("NACIMIENTO") && !l.includes("FECHA") &&
+                   !l.includes("DOCUMENTO") && !l.includes("ESTADO") && !l.includes("CIVIL") &&
+                   !l.includes("MALE") && !l.includes("FEMALE") && !l.includes("SEXO");
+          });
+
+          if (lineasCandidatas.length >= 3) {
+            nombreCompletoFinal = `${lineasCandidatas[0]} ${lineasCandidatas[1]}, ${lineasCandidatas[2]}`;
+          } else if (lineasCandidatas.length === 2) {
+            nombreCompletoFinal = `${lineasCandidatas[0]}, ${lineasCandidatas[1]}`;
+          } else if (lineasCandidatas.length === 1) {
+            nombreCompletoFinal = lineasCandidatas[0];
+          }
         }
 
         // 3. EXTRAER FECHA DE NACIMIENTO Y CALCULAR EDAD
         let edadCalculada = null;
         const mesesMap = {
           'ENE': 0, 'FEB': 1, 'MAR': 2, 'ABR': 3, 'MAY': 4, 'JUN': 5,
-          'JUL': 6, 'AGO': 7, 'SET': 8, 'SEP': 8, 'OCT': 9, 'NOV': 10, 'DIC': 11
+          'JUL': 6, 'AGO': 7, 'SET': 8, 'SEP': 8, 'OCT': 9, 'NOV': 10, 'DIC': 11,
+          'JAN': 0, 'APR': 3, 'AUG': 7, 'DEC': 11
         };
 
-        const regexFechaNum = /\b(0[1-9]|[12][0-9]|3[01])[-/\.\s](0[1-9]|1[012])[-/\.\s](19\d\d|20[0-2]\d)\b/;
-        const regexFechaTexto = /\b(0[1-9]|[12][0-9]|3[01])\s*(ENE|FEB|MAR|ABR|MAY|JUN|JUL|AGO|SET|SEP|OCT|NOV|DIC)[A-Z]*\s*(19\d\d|20[0-2]\d)\b/i;
+        const regexFechaNum = /\b(0[1-9]|[12][0-9]|3[01])[\s/\.-](0[1-9]|1[012])[\s/\.-](19\d\d|20[0-2]\d)\b/;
+        const regexFechaTexto = /\b(0[1-9]|[12][0-9]|3[01])\s*([A-Z]{3,4})[A-Z]*\s*(19\d\d|20[0-2]\d)\b/i;
 
-        let matchFecha = texto.match(regexFechaNum);
+        let textoNacimientoContexto = texto;
+        const posNac = texto.indexOf("NACIMIENTO");
+        if (posNac !== -1) {
+          textoNacimientoContexto = texto.substring(posNac, posNac + 150);
+        }
+
+        let matchFecha = textoNacimientoContexto.match(regexFechaNum) || texto.match(regexFechaNum);
         let dia, mes, anio;
 
         if (matchFecha) {
@@ -1738,7 +1845,7 @@
           mes = parseInt(matchFecha[2], 10) - 1;
           anio = parseInt(matchFecha[3], 10);
         } else {
-          const matchFechaTxt = texto.match(regexFechaTexto);
+          const matchFechaTxt = textoNacimientoContexto.match(regexFechaTexto) || texto.match(regexFechaTexto);
           if (matchFechaTxt) {
             dia = parseInt(matchFechaTxt[1], 10);
             const mesTxt = matchFechaTxt[2].toUpperCase().substring(0, 3);
@@ -1772,31 +1879,17 @@
           estadoCivilEncontrado = "conviviente";
         }
 
-        // ASIGNACIÓN FINAL DE CAMPOS
-        if (inputDni) {
-          inputDni.value = dniEncontrado || valAnteriorDni;
+        // ASIGNACIÓN FINAL A LOS CAMPOS
+        if (dniEncontrado && inputDni) {
+          inputDni.value = dniEncontrado;
+        } else if (inputDni) {
+          inputDni.value = valAnteriorDni;
         }
 
-        if (inputNombre) {
-          if (nombreCompletoFinal) {
-            inputNombre.value = nombreCompletoFinal;
-          } else {
-            // Si no se encontraron etiquetas estructuradas, tomar las líneas de texto limpias más probables
-            const lineasLimpias = lineas.filter(l => {
-              const lU = l.toUpperCase();
-              return !lU.includes("REPUBLICA") && !lU.includes("PERU") && !lU.includes("IDENTIDAD") && 
-                     !lU.includes("ELECTORAL") && !lU.includes("NACIMIENTO") && !lU.includes("FECHA") &&
-                     !lU.includes("DNI") && !lU.includes("SEXO") && !lU.includes("ESTADO") &&
-                     l.replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ\s]/g, '').trim().length > 4;
-            });
-            if (lineasLimpias.length >= 2) {
-              inputNombre.value = `${lineasLimpias[0].toUpperCase()}, ${lineasLimpias[1].toUpperCase()}`;
-            } else if (lineasLimpias.length === 1) {
-              inputNombre.value = lineasLimpias[0].toUpperCase();
-            } else {
-              inputNombre.value = valAnteriorNombre;
-            }
-          }
+        if (nombreCompletoFinal && inputNombre) {
+          inputNombre.value = nombreCompletoFinal;
+        } else if (inputNombre) {
+          inputNombre.value = valAnteriorNombre;
         }
 
         if (edadCalculada !== null && inputEdad) {
@@ -1808,22 +1901,22 @@
         }
 
         let resumen = [];
-        if (dniEncontrado) resumen.push(`• DNI: ${dniEncontrado}`);
-        if (inputNombre && inputNombre.value && inputNombre.value !== valAnteriorNombre) resumen.push(`• Nombre: ${inputNombre.value}`);
-        if (edadCalculada !== null) resumen.push(`• Edad Calculada: ${edadCalculada} años`);
+        if (dniEncontrado) resumen.push(`• N° DNI: ${dniEncontrado}`);
+        if (nombreCompletoFinal) resumen.push(`• Nombre: ${nombreCompletoFinal}`);
+        if (edadCalculada !== null) resumen.push(`• Edad: ${edadCalculada} años`);
         if (estadoCivilEncontrado) resumen.push(`• Estado Civil: ${estadoCivilEncontrado.toUpperCase()}`);
 
         if (resumen.length > 0) {
-          alert(`📸 Escaneo OCR de DNI completado con éxito:\n\n${resumen.join('\n')}\n\nVerifique y confirme los datos.`);
+          alert(`📸 Escaneo OCR de DNI Exitoso:\n\n${resumen.join('\n')}\n\nVerifique los datos capturados.`);
         } else {
-          alert("📸 Escaneo terminado. No se pudieron extraer datos legibles automáticos. Por favor verifique la nitidez de la foto.");
+          alert("📸 No se pudieron detectar datos automáticos legibles. Verifique la nitidez y luminosidad de la foto.");
         }
 
       } catch (err) {
         console.error("Error OCR DNI:", err);
         if (inputNombre) inputNombre.value = valAnteriorNombre;
         if (inputDni) inputDni.value = valAnteriorDni;
-        alert("⚠️ Error al procesar la imagen del DNI mediante OCR.");
+        alert("⚠️ Error al procesar la imagen del DNI.");
       }
     };
     fileInput.click();
@@ -1843,7 +1936,12 @@
       if (inputPlaca) inputPlaca.value = "⏳ Escaneando TIV...";
 
       try {
-        const result = await Tesseract.recognize(file, 'spa');
+        let imagenProcesada = file;
+        try {
+          imagenProcesada = await preprocesarImagenParaOcr(file);
+        } catch(e){}
+
+        const result = await Tesseract.recognize(imagenProcesada, 'spa');
         const texto = result.data.text || "";
         console.log("Texto OCR TIV:", texto);
 
@@ -2388,10 +2486,6 @@
     const hora = getVal('hora_intervencion', '11:15');
     const fechaFormateada = getVal('fecha');
     const lugar = getVal('lugar', 'Av. Ejército N.° 712');
-    const region = getVal('region', 'Arequipa');
-    const provincia = getVal('provincia', 'Arequipa');
-    const distrito = getVal('distrito', 'Yanahuara');
-    const unidadPol = getVal('unidad_policial', 'Comisaría PNP Yanahuara');
     const unidadDisp = getVal('unidad_disposicion', 'Comisaría PNP Yanahuara');
     const fiscal = getVal('fiscal', 'Dr. Gonzalo Pérez Ramírez (Fiscal Provincial de Turno de Arequipa)');
     const horaFin = getVal('hora2', '12:00');
