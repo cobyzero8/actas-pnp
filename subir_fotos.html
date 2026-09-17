@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Subir Fotos - Inspección Vehicular PNP</title>
+  <title>Inspección Móvil - PNP</title>
 
   <!-- LIBRERÍAS Y CONFIGURACIÓN CENTRAL -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -14,43 +14,90 @@
       font-family: system-ui, -apple-system, sans-serif;
       background-color: #f1f5f9;
       margin: 0;
-      padding: 20px;
+      padding: 10px;
       color: #0f172a;
-      text-align: center;
     }
     .card-movil {
       background: #ffffff;
-      padding: 20px;
+      padding: 15px;
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      max-width: 400px;
+      max-width: 500px;
       margin: 0 auto;
     }
+    h2 { color: #003366; font-size: 16px; text-align: center; margin-top: 0; }
+    .placa-box { background: #e0f2fe; padding: 8px; border-radius: 6px; margin-bottom: 12px; text-align: center; }
+    
+    .section-title {
+      background: #f8fafc;
+      border-left: 4px solid #0284c7;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: bold;
+      color: #0369a1;
+      text-transform: uppercase;
+      margin: 15px 0 8px 0;
+      text-align: left;
+    }
+    
+    .item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 11px;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 4px;
+      text-align: left;
+    }
+    
+    select, textarea, input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 6px;
+      font-size: 11px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+    }
+    
+    .select-parte { width: 105px; font-weight: bold; }
+
     .btn-camara {
       background: #166534;
       color: #ffffff;
       border: none;
-      padding: 16px;
+      padding: 12px;
       border-radius: 8px;
-      font-size: 16px;
+      font-size: 13px;
       font-weight: bold;
       width: 100%;
       cursor: pointer;
-      margin-top: 15px;
+      margin-top: 8px;
     }
-    .btn-camara:disabled {
-      background: #94a3b8;
+    .btn-enviar-manual {
+      background: #0284c7;
+      color: #ffffff;
+      border: none;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      width: 100%;
+      cursor: pointer;
+      margin-top: 20px;
     }
+    .btn-camara:disabled, .btn-enviar-manual:disabled { background: #94a3b8; }
+
     .preview-list {
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
       justify-content: center;
-      margin-top: 15px;
+      margin-top: 8px;
     }
     .preview-list img {
-      width: 60px;
-      height: 60px;
+      width: 50px;
+      height: 50px;
       object-fit: cover;
       border-radius: 6px;
       border: 1px solid #cbd5e1;
@@ -60,22 +107,52 @@
 <body>
 
 <div class="card-movil">
-  <h2 style="color: #003366; margin-top: 0;">🚓 CAPTURA MÓVIL PNP</h2>
-  <p style="font-size: 13px; color: #475569;">Envío directo a la computadora del operador</p>
+  <h2>🚓 INSPECCIÓN MÓVIL (COLEGA)</h2>
+  <p style="font-size: 11px; color: #475569; text-align: center; margin-bottom: 8px;">Envío de fotos (IA) o llenado manual completo para la PC</p>
   
-  <div style="background: #e0f2fe; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
-    <strong style="color: #0369a1; font-size: 12px;">VEHÍCULO PLACA:</strong><br>
-    <span id="lbl_placa_movil" style="font-size: 18px; font-weight: bold; color: #0284c7;">-</span>
+  <div class="placa-box">
+    <strong style="color: #0369a1; font-size: 10px;">VEHÍCULO PLACA:</strong><br>
+    <span id="lbl_placa_movil" style="font-size: 15px; font-weight: bold; color: #0284c7;">-</span>
   </div>
 
+  <!-- FOTOS CON IA -->
   <input type="file" id="input_camara" accept="image/*" capture="environment" multiple style="display:none;" onchange="subirFotosASupabase(this.files)">
-  
   <button id="btn_captura" class="btn-camara" onclick="document.getElementById('input_camara').click()">
-    📷 Tomar / Seleccionar Fotos
+    📷 Tomar / Subir Fotos (IA)
+  </button>
+  <div id="galeria_preview" class="preview-list"></div>
+
+  <!-- SELECTOR DE TIPO DE FORMATO EN MÓVIL -->
+  <div class="section-title">📌 Tipo de Vehículo / Formato</div>
+  <select id="movil_tipo_formato" onchange="cambiarFormatoMovil(this.value)">
+    <option value="MAYOR">VEHÍCULO MAYOR (Auto, Camioneta, SUV)</option>
+    <option value="MOTOTAXI">VEHÍCULO MENOR: Mototaxi / Trimovil (3 Ruedas)</option>
+    <option value="MOTOCICLETA">VEHÍCULO MENOR: Motocicleta / Moto Lineal (2 Ruedas)</option>
+  </select>
+
+  <!-- COMBUSTIBLE -->
+  <div class="section-title">⛽ Nivel de Combustible</div>
+  <select id="movil_combustible">
+    <option value="RESERVA (R)">RESERVA (R)</option>
+    <option value="1/4 DE TANQUE">1/4 DE TANQUE</option>
+    <option value="1/2 TANQUE" selected>1/2 TANQUE</option>
+    <option value="3/4 DE TANQUE">3/4 DE TANQUE</option>
+    <option value="TANQUE LLENO (1/1)">TANQUE LLENO (1/1)</option>
+    <option value="NO ESPECIFICA / INOPERATIVO">NO ESPECIFICA / INOPERATIVO</option>
+  </select>
+
+  <!-- SECCIONES DINÁMICAS COMPLETAS -->
+  <div id="movil_contenedor_secciones"></div>
+
+  <!-- OBSERVACIONES -->
+  <div class="section-title">📝 Observaciones de Campo</div>
+  <textarea id="movil_observaciones" placeholder="Escriba aquí daños o detalles detectados..."></textarea>
+
+  <button id="btn_enviar_manual_btn" class="btn-enviar-manual" onclick="enviarInspeccionManualCompleta()">
+    🚀 Enviar Todos los Datos a la PC
   </button>
 
-  <div id="galeria_preview" class="preview-list"></div>
-  <p id="lbl_estado_subida" style="font-size: 12px; font-weight: bold; margin-top: 15px;"></p>
+  <p id="lbl_estado_subida" style="font-size: 11px; font-weight: bold; margin-top: 10px; text-align: center;"></p>
 </div>
 
 <script>
@@ -83,7 +160,17 @@
   const placa = urlParams.get('placa') || 'GENERAL';
   document.getElementById('lbl_placa_movil').innerText = placa;
 
-  // Evaluador de credenciales: URL QR -> Memoria Local -> js/config.js
+  // Listas idénticas a la PC
+  const MAYOR_SEC_1 = ["FARO GRANDE DELT", "INTERMITENTES", "FAROS POSTERIORES", "BISELES", "LIMPIA PARABRISA", "PARABRISAS", "LUNAS", "ESPEJO EXTERIOR", "ANTENAS", "PARACHOQUES", "LLANTAS", "LLANTAS DE REPUESTO"];
+  const MAYOR_SEC_2 = ["TABLERO", "CHAPA CONTACTO", "RADIO MUSICAL", "ENCENDEDOR", "PISOS", "MANIJAS", "CENICEROS", "VASOS", "PARASOLES", "CHAPAS", "CODERAS", "GATA", "LLAVE DE RUEDA", "PARLANTES", "ESPEJO INTERIOR", "ASIENTOS"];
+  const MAYOR_SEC_3 = ["BATERIA", "RADIADOR", "ARRANCADOR", "ALTERNADOR", "CARBURADOR", "PURIFICADOR", "DISTRIBUIDOR", "BOBINA", "TAPA DE ACEITE", "BUJÍAS", "CHICOTES", "VARILLA ACEITE"];
+
+  const MENOR_SEC_1 = ["VELOCÍMETRO", "TACÓMETRO", "PALANCA DE CAMBIOS", "FRENO DELANTERO", "EMPUÑADURA DEL ACELERADOR", "INTERRUPTOR CONTROL DE FARO", "PEDAL DEL FRENO TRASERO", "PEDAL DE ARRANQUE", "PALANCA DE EMBRAGUE", "COMUNICADOR DE SEÑALES", "PULSADOR DE LA BOCINA", "PALANCA"];
+  const MENOR_SEC_2 = ["FARO DELANTERO", "LUCES DE PELIGRO", "DIRECCIONAL DERECHO", "DIRECCIONAL IZQUIERDO", "LUCES AUXILIARES", "ESPEJO RETROVISOR", "RADIO", "CAJITA DE CD", "BATERÍA"];
+  const MENOR_SEC_3 = ["CHUPÓN DE BUJÍA", "BUJÍAS", "CARBURADOR", "TAPA DE ACEITE", "CADENAS"];
+  const MENOR_SEC_4 = ["TAPA DEL DEPÓSITO DE COMBUSTIBLE", "PEDAL DE CAMBIOS", "LLANTAS", "TOLDO", "ASIENTOS", "TAPAS LATERALES", "TAPABARRO DELANTERO", "TAPABARRO TRASERO"];
+
+  // Credenciales Supabase
   const supabaseUrl = urlParams.get('surl') || localStorage.getItem('pnp_supabase_url') || (typeof CONFIG !== 'undefined' ? CONFIG.SUPABASE_URL : '');
   const supabaseKey = urlParams.get('skey') || localStorage.getItem('pnp_supabase_anon_key') || (typeof CONFIG !== 'undefined' ? CONFIG.SUPABASE_ANON_KEY : '');
   
@@ -95,20 +182,60 @@
     supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
   }
 
+  document.addEventListener('DOMContentLoaded', () => {
+    cambiarFormatoMovil('MAYOR');
+  });
+
+  function cambiarFormatoMovil(tipo) {
+    const contenedor = document.getElementById('movil_contenedor_secciones');
+    contenedor.innerHTML = "";
+
+    let htmlSecciones = "";
+    if (tipo === 'MAYOR') {
+      htmlSecciones += generarHTMLGrupo("🚘 I. PARTE EXTERIOR", MAYOR_SEC_1);
+      htmlSecciones += generarHTMLGrupo("💺 II. PARTE INTERIOR", MAYOR_SEC_2);
+      htmlSecciones += generarHTMLGrupo("⚙️ III. MOTOR Y MECÁNICA", MAYOR_SEC_3);
+    } else {
+      htmlSecciones += generarHTMLGrupo("🕹️ I. CONTROLES Y MANUBRIO", MENOR_SEC_1);
+      htmlSecciones += generarHTMLGrupo("💡 II. LUCES Y SISTEMA ELÉCTRICO", MENOR_SEC_2);
+      htmlSecciones += generarHTMLGrupo("⚙️ III. MOTOR Y TRANSMISIÓN", MENOR_SEC_3);
+      htmlSecciones += generarHTMLGrupo("🛵 IV. ESTRUCTURA Y ACCESORIOS", MENOR_SEC_4);
+    }
+    contenedor.innerHTML = htmlSecciones;
+  }
+
+  function generarHTMLGrupo(titulo, lista) {
+    let html = `<div class="section-title">${titulo}</div>`;
+    lista.forEach(item => {
+      html += `
+        <div class="item-row">
+          <span>${item}</span>
+          <select class="select-parte" data-nombre="${item}">
+            <option value="BUENO">BUENO</option>
+            <option value="REGULAR" selected>REGULAR</option>
+            <option value="MALO">MALO</option>
+            <option value="FALTA">FALTA</option>
+          </select>
+        </div>
+      `;
+    });
+    return html;
+  }
+
+  // SUBIR FOTOS (IA)
   async function subirFotosASupabase(files) {
     if (!files || files.length === 0) return;
-
     const btn = document.getElementById('btn_captura');
     const estado = document.getElementById('lbl_estado_subida');
     const galeria = document.getElementById('galeria_preview');
 
     if (!supabaseClient) {
-      alert("⚠️ No se detectaron las credenciales de Supabase. Vuelve a escanear el QR o verifica tu archivo js/config.js.");
+      alert("⚠️ No se detectaron credenciales de Supabase.");
       return;
     }
 
     btn.disabled = true;
-    estado.innerText = "⏳ Subiendo fotos a la computadora...";
+    estado.innerText = "⏳ Subiendo fotos...";
     estado.style.color = "#0369a1";
     galeria.innerHTML = "";
 
@@ -117,51 +244,79 @@
         const file = files[i];
         const fileName = `inspecciones/${placa}/${Date.now()}_${i}.jpg`;
 
-        // Mostrar vista previa
         const img = document.createElement('img');
         img.src = URL.createObjectURL(file);
         galeria.appendChild(img);
 
-        // Subir imagen al bucket de Supabase
-        const { error: errorStorage } = await supabaseClient
-          .storage
-          .from('fotos_vehiculos')
-          .upload(fileName, file);
-
-        if (errorStorage) throw errorStorage;
+        const { error } = await supabaseClient.storage.from('fotos_vehiculos').upload(fileName, file);
+        if (error) throw error;
       }
 
-      // 1. NOTIFICACIÓN EN TIEMPO REAL VÍA BROADCAST (TRANSMISIÓN DIRECTA WEBSOCKET)
-      try {
-        const channel = supabaseClient.channel('canal_fotos_movil');
-        await channel.subscribe();
-        await channel.send({
-          type: 'broadcast',
-          event: 'foto_subida',
-          payload: { placa: placa, timestamp: Date.now() }
-        });
-      } catch (errBroadcast) {
-        console.warn("Aviso Broadcast secundario:", errBroadcast);
-      }
+      const channel = supabaseClient.channel('canal_fotos_movil');
+      await channel.subscribe();
+      await channel.send({
+        type: 'broadcast',
+        event: 'foto_subida',
+        payload: { placa: placa, timestamp: Date.now() }
+      });
 
-      // 2. REGISTRO DE RESPALDO EN LA TABLA DE LA BASE DE DATOS
-      try {
-        await supabaseClient
-          .from('notificaciones_fotos')
-          .insert([{ placa: placa, timestamp: new Date().toISOString() }]);
-      } catch (errDB) {
-        console.warn("Aviso DB secundario:", errDB);
-      }
+      await supabaseClient.from('notificaciones_fotos').insert([{ placa: placa, timestamp: new Date().toISOString() }]);
 
-      estado.innerText = "✅ ¡Fotos enviadas con éxito! Revisa la PC.";
+      estado.innerText = "✅ ¡Fotos enviadas con éxito a la PC!";
       estado.style.color = "#166534";
-
     } catch (err) {
-      console.error(err);
-      estado.innerText = `❌ Error al enviar: ${err.message}`;
+      estado.innerText = `❌ Error: ${err.message}`;
       estado.style.color = "#b91c1c";
     } finally {
       btn.disabled = false;
+    }
+  }
+
+  // ENVIAR DATOS MANUALES COMPLETOS
+  async function enviarInspeccionManualCompleta() {
+    const estado = document.getElementById('lbl_estado_subida');
+    const btnManual = document.getElementById('btn_enviar_manual_btn');
+
+    if (!supabaseClient) {
+      alert("⚠️ No se detectaron credenciales de Supabase.");
+      return;
+    }
+
+    btnManual.disabled = true;
+    estado.innerText = "⏳ Enviando datos manuales a la PC...";
+    estado.style.color = "#0369a1";
+
+    try {
+      const evaluacionPartes = {};
+      document.querySelectorAll('.select-parte').forEach(sel => {
+        evaluacionPartes[sel.getAttribute('data-nombre')] = sel.value;
+      });
+
+      const paqueteDatos = {
+        placa: placa,
+        tipo_formato: document.getElementById('movil_tipo_formato').value,
+        combustible: document.getElementById('movil_combustible').value,
+        partes: evaluacionPartes,
+        observaciones: document.getElementById('movil_observaciones').value,
+        timestamp: Date.now()
+      };
+
+      const channel = supabaseClient.channel('canal_fotos_movil');
+      await channel.subscribe();
+      
+      await channel.send({
+        type: 'broadcast',
+        event: 'inspeccion_manual_enviada',
+        payload: paqueteDatos
+      });
+
+      estado.innerText = "✅ ¡Datos manuales aplicados en la PC al instante!";
+      estado.style.color = "#166534";
+    } catch (err) {
+      estado.innerText = `❌ Error al enviar: ${err.message}`;
+      estado.style.color = "#b91c1c";
+    } finally {
+      btnManual.disabled = false;
     }
   }
 </script>
