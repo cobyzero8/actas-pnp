@@ -469,14 +469,14 @@ function generarBloqueCierreYFirmas(horaFin, lista) {
     const int1 = (lista && lista[0]) ? lista[0] : { nombre: '{intervenido_nombre}', dni: '{intervenido_dni}' };
     textoCierre += 
       `                                        __________________________________\n` +
-      `                                                  EL INTERVENIDO\n\n` +
+      `                                                    EL INTERVENIDO\n\n` +
       `                                        Nombre: ${int1.nombre}\n` +
       `                                        DNI N°: ${int1.dni}`;
   } else {
     lista.forEach((item, idx) => {
       textoCierre += 
         `                                        __________________________________\n` +
-        `                                                  EL INTERVENIDO N° ${idx + 1}\n\n` +
+        `                                                    EL INTERVENIDO N° ${idx + 1}\n\n` +
         `                                        Nombre: ${item.nombre}\n` +
         `                                        DNI N°: ${item.dni}\n\n`;
     });
@@ -579,6 +579,13 @@ if (formExpediente) {
 
       actasAProcesarSecuencia.push(coincide);
     });
+
+    // Mover "acta_intervencion" al final de la secuencia de procesamiento
+    const indexIntervencion = actasAProcesarSecuencia.findIndex(a => a.id === 'acta_intervencion');
+    if (indexIntervencion !== -1) {
+      const [actaIntervencionObj] = actasAProcesarSecuencia.splice(indexIntervencion, 1);
+      actasAProcesarSecuencia.push(actaIntervencionObj);
+    }
 
     if (actasAProcesarSecuencia.length === 0) {
       alert(`⚠️ No se encontraron coincidencias para las actas seleccionadas.`);
