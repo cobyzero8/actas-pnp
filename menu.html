@@ -217,18 +217,18 @@
       <button onclick="cerrarSesion()" class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 12px;">Salir</button>
     </div>
 
-    <!-- PASO 1: SELECCIONAR DELITO -->
+    <!-- PASO 1: BÚSQUEDA Y SELECCIÓN DE DELITO -->
     <div style="margin-bottom: 20px;">
       <label for="filtro_delito" style="color: var(--primary, #003366); font-size: 14px; font-weight: bold; display: block; margin-bottom: 6px;">
-        1. Escriba cualquier palabra del delito (ej: ebriedad, conduccion, robo):
+        1. Escriba para buscar (ej: ebriedad, conduccion, robo, etc.):
       </label>
       
-      <!-- Buscador dinámico que autoselecta -->
-      <input type="search" id="filtro_delito" placeholder="🔍 Escriba aquí para buscar..." 
-             style="width: 100%; padding: 12px; border: 2px solid var(--primary, #003366); border-radius: 6px; margin-bottom: 8px; font-size: 15px; font-weight: bold;"
+      <!-- Buscador dinámico (solo filtra la lista) -->
+      <input type="search" id="filtro_delito" placeholder="🔍 Escriba aquí cualquier palabra del delito..." 
+             style="width: 100%; padding: 12px; border: 2px solid var(--primary, #003366); border-radius: 6px; margin-bottom: 8px; font-size: 15px;"
              oninput="filtrarDelitos(this.value)">
 
-      <!-- Selector que refleja el resultado filtrado automáticamente -->
+      <!-- Selector que el usuario presiona para elegir -->
       <select id="delito_select" style="border: 2px solid var(--primary, #003366); font-weight: bold; width: 100%; padding: 12px; border-radius: 6px; background: white; color: #212529;">
         <option value="">-- SELECCIONE UN DELITO O DILIGENCIA --</option>
       </select>
@@ -587,10 +587,10 @@
       `;
     });
 
-    // Poblar inicialmente todos los delitos en el selector
+    // Poblar inicialmente la lista completa
     poblarOpcionesDelito(LISTA_DELITOS_BASE);
 
-    // Escuchar el cambio directo en el combo desplegable
+    // ESCUCHAR SELECCIÓN DEL USUARIO: Solo abre la ventana emergente al hacer clic/seleccionar formalmente un delito
     const selectDelito = document.getElementById('delito_select');
     if (selectDelito) {
       selectDelito.addEventListener('change', function(e) {
@@ -601,26 +601,18 @@
     }
   });
 
-  // Función de filtrado inteligente: busca cualquier palabra y selecciona automáticamente la mejor coincidencia
+  // SOLO FILTRA LA LISTA EN SEGUNDO PLANO (NO abre emergentes ni selecciona automáticamente)
   function filtrarDelitos(texto) {
     const query = texto.toUpperCase().trim();
-    const select = document.getElementById('delito_select');
 
     if (!query) {
       poblarOpcionesDelito(LISTA_DELITOS_BASE);
       return;
     }
 
-    // Filtrar delitos que contengan el texto en cualquier parte
+    // Filtrar coincidencias
     const filtrados = LISTA_DELITOS_BASE.filter(delito => delito.toUpperCase().includes(query));
-
     poblarOpcionesDelito(filtrados);
-
-    // Si hay coincidencias, auto-seleccionar la primera y aplicar el protocolo
-    if (filtrados.length > 0) {
-      select.value = filtrados[0];
-      aplicarProtocoloPolicial(filtrados[0]);
-    }
   }
 
   function conmutarActaVehicular(estado) {
