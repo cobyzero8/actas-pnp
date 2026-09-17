@@ -289,6 +289,112 @@ function procesarDocumentosRNT() {
 }
 
 /* ==========================================================================
+   FUNCIONES DE ESCANEO OCR (DNI y TIV / SUNARP) CON TESSERACT.JS
+   ========================================================================== */
+
+async function escanearDniOcr(idNum) {
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*';
+  fileInput.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const inputNombre = document.getElementById(`intervenido_nombre_${idNum}`);
+    const inputDni = document.getElementById(`intervenido_dni_${idNum}`);
+    const valAntNombre = inputNombre ? inputNombre.value : '';
+    const valAntDni = inputDni ? inputDni.value : '';
+
+    if (inputNombre) inputNombre.value = "⏳ Escaneando DNI (OCR)...";
+    if (inputDni) inputDni.value = "...";
+
+    try {
+      if (typeof Tesseract === 'undefined') {
+        throw new Error("La librería Tesseract.js no está cargada.");
+      }
+
+      const result = await Tesseract.recognize(file, 'spa', {
+        logger: m => console.log(m)
+      });
+      const texto = result.data.text;
+      console.log("Texto OCR DNI extraído:", texto);
+
+      const matchDni = texto.match(/\b\d{8}\b/);
+      if (matchDni && inputDni) {
+        inputDni.value = matchDni[0];
+      } else if (inputDni) {
+        inputDni.value = valAntDni;
+      }
+
+      if (inputNombre) {
+        inputNombre.value = valAntNombre;
+      }
+
+      alert("📸 Escaneo OCR de DNI completado con éxito. Verifique y ajuste los datos extraídos si es necesario.");
+    } catch (err) {
+      console.error("Error en OCR DNI:", err);
+      if (inputNombre) inputNombre.value = valAntNombre;
+      if (inputDni) inputDni.value = valAntDni;
+      alert("⚠️ Error al procesar la imagen del DNI mediante OCR: " + err.message);
+    }
+  };
+  fileInput.click();
+}
+
+async function escanearTivOcr(idNum) {
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*';
+  fileInput.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const inputPlaca = document.getElementById(`placa_vehiculo_${idNum}`);
+    const inputChasis = document.getElementById(`num_chasis_vehiculo_${idNum}`);
+    const inputMotor = document.getElementById(`num_motor_vehiculo_${idNum}`);
+
+    const valAntPlaca = inputPlaca ? inputPlaca.value : '';
+    if (inputPlaca) inputPlaca.value = "⏳ Escaneando TIV (SUNARP)...";
+
+    try {
+      if (typeof Tesseract === 'undefined') {
+        throw new Error("La librería Tesseract.js no está cargada.");
+      }
+
+      const result = await Tesseract.recognize(file, 'spa', {
+        logger: m => console.log(m)
+      });
+      const texto = result.data.text;
+      console.log("Texto OCR TIV extraído:", texto);
+
+      const matchPlaca = texto.match(/[A-Z0-9]{3,4}[-\s]?[A-Z0-9]{2,3}/);
+      if (matchPlaca && inputPlaca) {
+        inputPlaca.value = matchPlaca[0].trim();
+      } else if (inputPlaca) {
+        inputPlaca.value = valAntPlaca;
+      }
+
+      const matchChasis = texto.match(/(?:chasis|serie)[:\s]*([A-Z0-9]{10,17})/i) || texto.match(/\b[A-HJ-NPR-Z0-9]{17}\b/);
+      if (matchChasis && inputChasis) {
+        inputChasis.value = matchChasis[1] || matchChasis[0];
+      }
+
+      const matchMotor = texto.match(/(?:motor)[:\s]*([A-Z0-9*-]{6,15})/i);
+      if (matchMotor && inputMotor) {
+        inputMotor.value = matchMotor[1];
+      }
+
+      alert("📸 Escaneo OCR de Tarjeta de Identificación Vehicular (TIV) completado con éxito.");
+    } catch (err) {
+      console.error("Error en OCR TIV:", err);
+      if (inputPlaca) inputPlaca.value = valAntPlaca;
+      alert("⚠️ Error al procesar la imagen TIV mediante OCR: " + err.message);
+    }
+  };
+  fileInput.click();
+}
+
+/* ==========================================================================
    EXTRACCIÓN DE LISTAS Y DATOS DE FORMULARIO
    ========================================================================== */
 
@@ -469,14 +575,14 @@ function generarBloqueCierreYFirmas(horaFin, lista) {
     const int1 = (lista && lista[0]) ? lista[0] : { nombre: '{intervenido_nombre}', dni: '{intervenido_dni}' };
     textoCierre += 
       `                                        __________________________________\n` +
-      `                                                  EL INTERVENIDO\n\n` +
+      `                                                    EL INTERVENIDO\n\n` +
       `                                        Nombre: ${int1.nombre}\n` +
       `                                        DNI N°: ${int1.dni}`;
   } else {
     lista.forEach((item, idx) => {
       textoCierre += 
         `                                        __________________________________\n` +
-        `                                                  EL INTERVENIDO N° ${idx + 1}\n\n` +
+        `                                                   EL INTERVENIDO N° ${idx + 1}\n\n` +
         `                                        Nombre: ${item.nombre}\n` +
         `                                        DNI N°: ${item.dni}\n\n`;
     });
@@ -580,7 +686,6 @@ if (formExpediente) {
       actasAProcesarSecuencia.push(coincide);
     });
 
-    // Mover "acta_intervencion" al final de la secuencia de procesamiento
     const indexIntervencion = actasAProcesarSecuencia.findIndex(a => a.id === 'acta_intervencion');
     if (indexIntervencion !== -1) {
       const [actaIntervencionObj] = actasAProcesarSecuencia.splice(indexIntervencion, 1);
@@ -1062,7 +1167,6 @@ async function ejecutarGeneracionFinalExpediente() {
     const listaVehiculos = datosFinalesBase._listaVehiculos || [];
     const textoIntervenidosColectivo = datosFinalesBase.resumen_intervenidos || "";
 
-    // REGISTRO EN SUPABASE (Aislado)
     try {
       const client = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
       if (client && typeof client.from === 'function') {
@@ -1305,3 +1409,5 @@ window.confirmarHoraActaActual = confirmarHoraActaActual;
 window.cerrarModalVistaPrevia = cerrarModalVistaPrevia;
 window.confirmarYGenerarExpedienteDesdePrevia = confirmarYGenerarExpedienteDesdePrevia;
 window.limpiarPantalla = limpiarPantalla;
+window.escanearDniOcr = escanearDniOcr;
+window.escanearTivOcr = escanearTivOcr;
