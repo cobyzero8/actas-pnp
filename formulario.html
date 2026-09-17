@@ -451,9 +451,14 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
       <a href="menu.html" style="text-decoration: none; color: var(--primary); font-weight: bold; font-size: 13px;">← Cambiar Delito / Actas</a>
       
-      <button type="button" onclick="cargarDatosEjemplo()" class="btn btn-primary" style="width: auto; padding: 6px 14px; font-size: 12px; background: #0d9488; border-color: #0d9488;">
-        ⚡ Cargar Prueba (1 Efectivo PNP + 1 Intervenido + 1 Vehículo)
-      </button>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button type="button" onclick="cargarDatosEjemplo()" class="btn btn-primary" style="width: auto; padding: 6px 14px; font-size: 12px; background: #0d9488; border-color: #0d9488;">
+          ⚡ Cargar Prueba (1 Efectivo PNP + 1 Intervenido + 1 Vehículo)
+        </button>
+        <button type="button" onclick="limpiarBD()" class="btn" style="width: auto; padding: 6px 14px; font-size: 12px; background: #dc2626; border-color: #dc2626; color: white; font-weight: bold;">
+          🗑️ Limpiar BD
+        </button>
+      </div>
 
       <button type="button" onclick="cerrarSesion()" class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size: 11px;">Salir</button>
     </div>
@@ -1656,6 +1661,41 @@
     alert("⚡ ¡Datos de prueba cargados exitosamente!");
   }
 
+  function limpiarBD() {
+    if (confirm("¿Está seguro de limpiar todos los datos guardados y reiniciar el formulario?")) {
+      localStorage.removeItem('pnp_formulario_estado_guardado');
+      localStorage.removeItem('pnp_delito_seleccionado');
+      localStorage.removeItem('pnp_actas_seleccionadas');
+      localStorage.removeItem('pnp_acta_situacion_vehicular_resultado');
+      localStorage.removeItem('pnp_lista_intervenidos');
+      localStorage.removeItem('pnp_lista_vehiculos');
+      localStorage.removeItem('pnp_lista_efectivos');
+      localStorage.removeItem('pnp_datos_generales');
+
+      document.getElementById('expedienteForm').reset();
+      document.getElementById('contenedor_efectivos_pnp').innerHTML = "";
+      document.getElementById('contenedor_intervenidos').innerHTML = "";
+      document.getElementById('contenedor_vehiculos').innerHTML = "";
+      contadorEfectivosPNP = 0;
+      contadorIntervenidos = 0;
+      contadorVehiculos = 0;
+
+      agregarEfectivoPNPCard();
+      agregarIntervenidoCard();
+      agregarVehiculoCard();
+      generarCamposVehiculosPNP();
+      construirSeccionesNarrativa();
+
+      const elDelito = document.getElementById('resumenDelito');
+      const elCant = document.getElementById('resumenActasCant');
+      if (elDelito) elDelito.innerText = "-";
+      if (elCant) elCant.innerText = "-";
+
+      alert("🗑️ Base de datos local y formulario limpiados exitosamente.");
+      location.reload();
+    }
+  }
+
   function getVal(id, fallback = "") {
     const el = document.getElementById(id);
     return el && el.value.trim() !== "" ? el.value.trim() : fallback;
@@ -1950,7 +1990,7 @@
     document.getElementById('agregar_intervencion_1').value = `--- Siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv}, procedieron a la intervención de: ${personaNomInv} (${persona.edad} años), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, por la presunta comisión del Delito Contra el Patrimonio – RECEPTACIÓN AGRAVADA.`;
 
     document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
-    document.getElementById('agregar_intervencion_2').value = `01. Circunstancias Precedentes: En operativo de control e inspección de locales de venta y servicio técnico de equipos móviles, se procedió a la verificación de la procedencia legal de los dispositivos exhibidos.\n\n02. Circunstancias Concomitantes: Al solicitar al intervenido la exhibición y consulta de los equipos en su poder mediante la plataforma OSIPTEL, se constató que el equipo celular marca Xiaomi, modelo Redmi Note 11, IMEI N° 864532091234567, arrojó resultado "SUSTRAÍDO / REPORTADO POR ROBO".\n\n03. Circunstancias Posteriores: El intervenido no pudo acreditar la posesión legítima ni la procedencia del equipo celular, motivo por el cual se procedió a su incautación y al traslado del ciudadano a la ${unidadDisp} para las investigaciones de ley.`;
+    document.getElementById('agregar_intervencion_2').value = `01. Circunstancias Precedentes: En operativo de control e inspección de locales de venta y servicio técnico de equipos móviles, se procedió a la verificación de la procedencia legal de los dispositivos exhibidos.\n\n02. Circunstancias Concomitantes: Al solicitar al intervenido la exhibición y consulta de los equipos en su poder mediante la plataforma OSIPTEL, se constató que el equipo celular marca Xiaomi, modelo Redmi Note 11, IMEI N° 864532091234567, arrojó resultado "SUSTRAÍDO / REPORTADO POR ROBO".\n\n03. Circunstancias Posteriores: El intervenido no pudo acreditar la posesión legítima ni la procedencia el equipo celular, motivo por el cual se procedió a su incautación y al traslado del ciudadano a la ${unidadDisp} para las investigaciones de ley.`;
 
     document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
     document.getElementById('agregar_intervencion_3').value = `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}.\n\n--- Siendo las ${horaFin} horas del mismo día se dio por concluida la diligencia.\nSe adjunta:`;
