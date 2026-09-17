@@ -1695,7 +1695,7 @@
     });
   }
 
-  /* ESCANEO OPTIMIZADO Y ULTRA PRECISO PARA DNI AZUL Y DNI ELECTRÓNICO */
+/* ESCANEO OPTIMIZADO Y ULTRA PRECISO PARA DNI AZUL Y DNI ELECTRÓNICO */
   async function escanearDniOcr(idNum) {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
@@ -1705,7 +1705,6 @@
       const file = e.target.files[0];
       if (!file) return;
 
-      // Referencias dinámicas usando idNum (_1, _2, _3...)
       const inputNombre = document.getElementById(`intervenido_nombre_${idNum}`);
       const inputDni = document.getElementById(`intervenido_dni_${idNum}`);
       const inputEdad = document.getElementById(`edad_${idNum}`);
@@ -1729,21 +1728,29 @@
           logger: m => console.log(m)
         });
         const rawText = result.data.text || "";
-        console.log("=== TEXTO CRUDO DETECTADO POR OCR ===:\n", rawText);
+        console.log("=== TEXTO CRUDO OCR ==:\n", rawText);
 
         const texto = rawText.toUpperCase();
         const lineas = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
-        // Filtro estricto para eliminar ruido, marcas de agua del DNI (ej: APO, NEA, SL) y etiquetas de encabezado
-        const limpiarPalabra = (str) => {
+        // Lista estricta de palabras de encabezado, etiquetas y basura OCR a ignorar
+        const palabrasRuido = [
+          "REPUBLICA", "REPÚBLICA", "DEL", "PERU", "PERÚ", "IDENTIFICACION", "IDENTIFICACIÓN",
+          "JACION", "TIFICACI", "TIFICACION", "REGISTRO", "ESTADO", "CIVIL", "ELECTORAL",
+          "DOCUMENTO", "NACIONAL", "DE", "IDENTIDAD", "CUI", "DNI", "TITULAR", "FIRMA",
+          "SEXO", "M", "F", "1ER", "2DO", "PRIMER", "SEGUNDO", "APELLIDO", "APELLIDOS",
+          "PRENOMBRES", "NOMBRES", "NOMBRE", "FECHA", "NACIMIENTO", "EXPEDICION", "CADUCIDAD"
+        ];
+
+        const limpiarTexto = (str) => {
           if (!str) return "";
-          return str
-            .replace(/[^A-ZÁÉÍÓÚÑ\s]/g, '')
-            .replace(/\b(SL|APO|NEA|Y|A|T|1ER|2DO|PRIMER|SEGUNDO|APELLIDO|PRENOMBRES|NOMBRES|SEXO|PERU|REPUBLICA|DNI|CUI|DOCUMENTO|IDENTIDAD|NACIONAL|REGISTRO|ESTADO|CIVIL)\b/gi, '')
-            .trim();
+          let limpio = str.replace(/[^A-ZÁÉÍÓÚÑ\s]/g, ' ');
+          const regexRuido = new RegExp(`\\b(${palabrasRuido.join('|')})\\b`, 'gi');
+          limpio = limpio.replace(regexRuido, ' ');
+          return limpio.replace(/\s+/g, ' ').trim();
         };
 
-        // 1. EXTRAER DNI / CUI (8 DÍGITOS)
+        // 1. EXTRAER DNI (8 DÍGITOS)
         let dniEncontrado = "";
         const matchCui = texto.match(/CUI[\s:]*(\d{8})/i) || texto.match(/\b(\d{8})[-–]\d\b/);
         if (matchCui) {
@@ -1763,7 +1770,7 @@
           }
         }
 
-        // 2. EXTRAER APELLIDOS Y NOMBRES ESTRUCTURADOS (BUSQUEDA POR ETIQUETAS)
+    // 2. EXTRAER APELLIDOS Y NOMBRES
         let primerApellido = "";
         let segundoApellido = "";
         let prenombres = "";
@@ -1771,71 +1778,71 @@
         for (let i = 0; i < lineas.length; i++) {
           const lUpper = lineas[i].toUpperCase();
 
-          if (lUpper.includes("PRIMER APELLIDO") || lUpper.includes("1ER APELLIDO")) {
-            let candidato = limpiarPalabra(lineas[i].replace(/.*(PRIMER APELLIDO|1ER APELLIDO)[:\s]*/, ''));
-            if (!candidato && i + 1 < lineas.length) candidato = limpiarPalabra(lineas[i + 1]);
-            if (candidato && candidato.length >= 2) primerApellido = candidato;
-          }
-
-          if (lUpper.includes("SEGUNDO APELLIDO") || lUpper.includes("2DO APELLIDO")) {
-            let candidato = limpiarPalabra(lineas[i].replace(/.*(SEGUNDO APELLIDO|2DO APELLIDO)[:\s]*/, ''));
-            if (!candidato && i + 1 < lineas.length) candidato = limpiarPalabra(lineas[i + 1]);
-            if (candidato && candidato.length >= 2) segundoApellido = candidato;
-          }
-
-          if (lUpper.includes("PRENOMBRES") || lUpper.includes("NOMBRES")) {
-            let candidato = limpiarPalabra(lineas[i].replace(/.*(PRENOMBRES|NOMBRES)[:\s]*/, ''));
-            if (!candidato && i + 1 < lineas.length) candidato = limpiarPalabra(lineas[i + 1]);
-            if (candidato && candidato.length >= 2) prenombres = candidato;
+          if (lUpper.includes("1ER APELLIDO") || lUpper.includes("PRIMER APELLIDO")) {
+            let pos = limpiarTexto(lineas[i]);
+            if (!pos && i + 1 < lineas.length) pos = limpiarTexto(lineas[i + 1]);
+            if (pos) primerApellido = pos;
+          } else if (lUpper.includes("2DO APELLIDO") || lUpper.includes("SEGUNDO APELLIDO")) {
+            let pos = limpiarTexto(lineas[i]);
+            if (!pos && i + 1 < lineas.length) pos = limpiarTexto(lineas[i + 1]);
+            if (pos) segundoApellido = pos;
+          } else if (lUpper.includes("PRENOMBRES") || lUpper.includes("NOMBRES")) {
+            let pos = limpiarTexto(lineas[i]);
+            if (!pos && i + 1 < lineas.length) pos = limpiarTexto(lineas[i + 1]);
+            if (pos) prenombres = pos;
           }
         }
 
         let nombreCompletoFinal = "";
         if (primerApellido || segundoApellido || prenombres) {
-          let apellidosJuntos = `${primerApellido} ${segundoApellido}`.trim();
-          if (apellidosJuntos && prenombres) {
-            nombreCompletoFinal = `${apellidosJuntos}, ${prenombres}`;
-          } else if (apellidosJuntos) {
-            nombreCompletoFinal = apellidosJuntos;
-          } else {
-            nombreCompletoFinal = prenombres;
-          }
+          const apellidos = `${primerApellido} ${segundoApellido}`.trim();
+          // Coloca primero los Nombres y luego los Apellidos
+          nombreCompletoFinal = prenombres ? `${prenombres} ${apellidos}`.trim() : apellidos;
         } else {
-          // Respaldo de filtrado si las etiquetas fallan
-          const lineasValidas = lineas.map(l => limpiarPalabra(l)).filter(l => l.length >= 3);
-          if (lineasValidas.length >= 3) {
-            nombreCompletoFinal = `${lineasValidas[0]} ${lineasValidas[1]}, ${lineasValidas[2]}`;
-          } else if (lineasValidas.length === 2) {
-            nombreCompletoFinal = `${lineasValidas[0]}, ${lineasValidas[1]}`;
+          // Filtrado directo de líneas sin etiquetas (Respaldo)
+          const lineasLimpias = lineas
+            .map(l => limpiarTexto(l))
+            .filter(l => l.length >= 3);
+
+          if (lineasLimpias.length >= 3) {
+            // En el DNI: [0] 1er Apellido, [1] 2do Apellido, [2] Prenombres
+            nombreCompletoFinal = `${lineasLimpias[2]} ${lineasLimpias[0]} ${lineasLimpias[1]}`.trim();
+          } else if (lineasLimpias.length === 2) {
+            // Asumiendo [0] Apellidos y [1] Nombres
+            nombreCompletoFinal = `${lineasLimpias[1]} ${lineasLimpias[0]}`.trim();
+          } else if (lineasLimpias.length === 1) {
+            nombreCompletoFinal = lineasLimpias[0];
           }
         }
 
         // 3. EXTRAER FECHA DE NACIMIENTO Y CALCULAR EDAD
         let edadCalculada = null;
-        const regexFechaNum = /\b(0[1-9]|[12][0-9]|3[01])[\s/\.-](0[1-9]|1[012])[\s/\.-](19\d\d|20[0-2]\d)\b/;
-        let matchFecha = texto.match(regexFechaNum);
+        const regexFecha = /\b(0[1-9]|[12][0-9]|3[01])[\s/\.-](0[1-9]|1[012])[\s/\.-](19\d\d|20[0-2]\d)\b/g;
+        const fechasEncontradas = [...texto.matchAll(regexFecha)];
 
-        if (matchFecha) {
-          const dia = parseInt(matchFecha[1], 10);
-          const mes = parseInt(matchFecha[2], 10) - 1;
-          const anio = parseInt(matchFecha[3], 10);
-          
+        for (const match of fechasEncontradas) {
+          const dia = parseInt(match[1], 10);
+          const mes = parseInt(match[2], 10) - 1;
+          const anio = parseInt(match[3], 10);
           const hoy = new Date();
           let edad = hoy.getFullYear() - anio;
           if (hoy.getMonth() < mes || (hoy.getMonth() === mes && hoy.getDate() < dia)) {
             edad--;
           }
-          if (edad >= 0 && edad <= 120) edadCalculada = edad;
+          if (edad >= 14 && edad <= 110) {
+            edadCalculada = edad;
+            break;
+          }
         }
 
-        // 4. EXTRAER ESTADO CIVIL
+        // 4. ESTADO CIVIL
         let estadoCivilEncontrado = "";
-        if (texto.includes("SOLTERO") || texto.includes("SOLTERA")) estadoCivilEncontrado = "soltero";
-        else if (texto.includes("CASADO") || texto.includes("CASADA")) estadoCivilEncontrado = "casado";
-        else if (texto.includes("VIUDO") || texto.includes("VIUDA")) estadoCivilEncontrado = "viudo";
-        else if (texto.includes("CONVIVIENTE")) estadoCivilEncontrado = "conviviente";
+        if (/\b(SOLTERO|SOLTERA)\b/.test(texto)) estadoCivilEncontrado = "soltero";
+        else if (/\b(CASADO|CASADA)\b/.test(texto)) estadoCivilEncontrado = "casado";
+        else if (/\b(VIUDO|VIUDA)\b/.test(texto)) estadoCivilEncontrado = "viudo";
+        else if (/\b(CONVIVIENTE)\b/.test(texto)) estadoCivilEncontrado = "conviviente";
 
-        // POBLADO AUTOMÁTICO DE CAMPOS
+        // ASIGNACIÓN A CAMPOS
         if (dniEncontrado && inputDni) inputDni.value = dniEncontrado;
         else if (inputDni) inputDni.value = valAnteriorDni;
 
