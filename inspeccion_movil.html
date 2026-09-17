@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inspección Móvil - Colega PNP</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #f1f5f9; margin: 0; padding: 15px; color: #0f172a; }
+    .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    h2 { color: #003366; font-size: 18px; text-align: center; margin-top: 0; }
+    .info-placa { background: #eff6ff; border: 1px solid #bfdbfe; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 15px; color: #1e40af; }
+    .section-title { background: #f8fafc; border-left: 4px solid #0284c7; padding: 8px 12px; font-size: 12px; font-weight: bold; color: #0369a1; text-transform: uppercase; margin: 15px 0 10px 0; }
+    .item-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; }
+    select { padding: 6px; font-size: 11px; font-weight: bold; border-radius: 4px; border: 1px solid #cbd5e1; }
+    textarea { width: 100%; box-sizing: border-box; padding: 8px; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 6px; min-height: 70px; margin-top: 5px; }
+    .btn-enviar { background: #166534; color: white; width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+    .btn-enviar:active { background: #14532d; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>📱 INSPECCIÓN MÓVIL (COLEGA)</h2>
+  <div class="info-placa" id="lbl_placa_movil">Vehículo Placa: ...</div>
+
+  <p style="font-size: 11px; color: #475569; text-align: center;">
+    Llena los datos de la inspección manual y presiona enviar para actualizar la PC del perito en tiempo real.
+  </p>
+
+  <div class="section-title">⛽ Combustible y General</div>
+  <div style="margin-bottom: 15px;">
+    <label style="font-size: 11px; font-weight: bold;">Nivel de Tanque:</label>
+    <select id="movil_combustible" style="width: 100%; margin-top: 5px; padding: 8px;">
+      <option value="RESERVA (R)">RESERVA (R)</option>
+      <option value="1/4 DE TANQUE">1/4 DE TANQUE</option>
+      <option value="1/2 TANQUE" selected>1/2 TANQUE</option>
+      <option value="3/4 DE TANQUE">3/4 DE TANQUE</option>
+      <option value="TANQUE LLENO (1/1)">TANQUE LLENO (1/1)</option>
+      <option value="NO ESPECIFICA / INOPERATIVO">NO ESPECIFICA / INOPERATIVO</option>
+    </select>
+  </div>
+
+  <div class="section-title">🚘 Partes Principales (Exterior e Interior)</div>
+  <div id="movil_lista_partes">
+    <!-- Se generan dinámicamente o de forma estándar -->
+    <div class="item-row">
+      <span>PARABRISAS</span>
+      <select class="movil-parte" data-nombre="PARABRISAS">
+        <option value="BUENO">BUENO</option>
+        <option value="REGULAR" selected>REGULAR</option>
+        <option value="MALO">MALO</option>
+        <option value="FALTA">FALTA</option>
+      </select>
+    </div>
+    <div class="item-row">
+      <span>FARO GRANDE DELT</span>
+      <select class="movil-parte" data-nombre="FARO GRANDE DELT">
+        <option value="BUENO">BUENO</option>
+        <option value="REGULAR" selected>REGULAR</option>
+        <option value="MALO">MALO</option>
+        <option value="FALTA">FALTA</option>
+      </select>
+    </div>
+    <div class="item-row">
+      <span>FAROS POSTERIORES</span>
+      <select class="movil-parte" data-nombre="FAROS POSTERIORES">
+        <option value="BUENO">BUENO</option>
+        <option value="REGULAR" selected>REGULAR</option>
+        <option value="MALO">MALO</option>
+        <option value="FALTA">FALTA</option>
+      </select>
+    </div>
+    <div class="item-row">
+      <span>LLANTAS</span>
+      <select class="movil-parte" data-nombre="LLANTAS">
+        <option value="BUENO">BUENO</option>
+        <option value="REGULAR" selected>REGULAR</option>
+        <option value="MALO">MALO</option>
+        <option value="FALTA">FALTA</option>
+      </select>
+    </div>
+    <div class="item-row">
+      <span>BATERIA</span>
+      <select class="movil-parte" data-nombre="BATERIA">
+        <option value="BUENO">BUENO</option>
+        <option value="REGULAR" selected>REGULAR</option>
+        <option value="MALO">MALO</option>
+        <option value="FALTA">FALTA</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="section-title">📝 Observaciones</div>
+  <textarea id="movil_observaciones" placeholder="Escriba aquí observaciones o daños detectados en campo..."></textarea>
+
+  <button type="button" onclick="enviarInspeccionManualRealtime()" class="btn-enviar">
+    🚀 Enviar Datos a la PC en Tiempo Real
+  </button>
+  
+  <div id="movil_status" style="text-align: center; font-size: 11px; margin-top: 10px; font-weight: bold;"></div>
+</div>
+
+<script>
+  let placaMovil = "GENERAL";
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('placa')) {
+      placaMovil = params.get('placa');
+      document.getElementById('lbl_placa_movil').innerText = `Vehículo Placa: ${placaMovil}`;
+    }
+  });
+
+  function obtenerCredsSupabase() {
+    const url = localStorage.getItem('pnp_supabase_url') || (typeof CONFIG !== 'undefined' ? CONFIG.SUPABASE_URL : '') || '';
+    const key = localStorage.getItem('pnp_supabase_anon_key') || (typeof CONFIG !== 'undefined' ? CONFIG.SUPABASE_ANON_KEY : '') || '';
+    return { url, key };
+  }
+
+  async function enviarInspeccionManualRealtime() {
+    const statusDiv = document.getElementById('movil_status');
+    const { url, key } = obtenerCredsSupabase();
+
+    if (!url || !key) {
+      statusDiv.innerHTML = "<span style='color:red;'>⚠️ Error de configuración de Supabase.</span>";
+      return;
+    }
+
+    statusDiv.innerHTML = "⏳ Enviando datos a la PC...";
+
+    try {
+      const supabaseClient = supabase.createClient(url, key);
+
+      // Recopilar selecciones
+      const evaluacionPartes = {};
+      document.querySelectorAll('.movil-parte').forEach(sel => {
+        evaluacion_partes[sel.getAttribute('data-nombre')] = sel.value; // Pequeño fix de nomenclatura
+      });
+
+      // Recopilar todo el paquete de datos manuales
+      const paqueteDatos = {
+        placa: placaMovil,
+        combustible: document.getElementById('movil_combustible').value,
+        partes: evaluacion_partes,
+        observaciones: document.getElementById('movil_observaciones').value,
+        timestamp: new Date().toISOString()
+      };
+
+      // 1. Enviar mediante Broadcast (Canal de tiempo real instantáneo)
+      const channel = supabaseClient.channel('canal_fotos_movil');
+      await channel.subscribe();
+      
+      await channel.send({
+        type: 'broadcast',
+        event: 'inspeccion_manual_enviada',
+        payload: paqueteDatos
+      });
+
+      // 2. Opcional: Insertar en tabla por si el evento se pierde
+      await supabaseClient.from('notificaciones_fotos').insert([
+        { placa: placaMovil, tipo: 'MANUAL', created_at: new Date() }
+      ]);
+
+      statusDiv.innerHTML = "<span style='color:green;'>✅ ¡Datos enviados con éxito a la PC!</span>";
+    } catch (err) {
+      console.error(err);
+      statusDiv.innerHTML = `<span style='color:red;'>❌ Error al enviar: ${err.message}</span>`;
+    }
+  }
+</script>
+</body>
+</html>
