@@ -1644,11 +1644,12 @@
     return `${textos.join(', ')} y ${ultimo}`;
   }
 
-  /* NUEVAS FUNCIONES DE ESCANEO OCR (DNI y TIV) */
+  /* NUEVAS FUNCIONES DE ESCANEO OCR CON CÁMARA TRASERA DIRECTA (DNI y TIV) */
   async function escanearDniOcr(idNum) {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = 'image/*';
+    fileInput.setAttribute('capture', 'environment');
     fileInput.onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -1693,6 +1694,7 @@
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = 'image/*';
+    fileInput.setAttribute('capture', 'environment');
     fileInput.onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
