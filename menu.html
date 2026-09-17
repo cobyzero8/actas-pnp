@@ -79,9 +79,50 @@
     }
 
     input[type="text"],
-    input[type="search"],
-    select {
+    input[type="search"] {
       font-size: 16px; /* Evita zoom automático en iOS */
+    }
+
+    /* ESTILOS DE AUTOCOMPLETADO INTELIGENTE RESPONSIVE */
+    .autocomplete-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .autocomplete-items {
+      position: absolute;
+      border: 2px solid var(--primary, #003366);
+      border-top: none;
+      z-index: 999;
+      top: 100%;
+      left: 0;
+      right: 0;
+      max-height: 240px;
+      overflow-y: auto;
+      background-color: #ffffff;
+      border-bottom-left-radius: 8px;
+      border-bottom-right-radius: 8px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .autocomplete-item {
+      padding: 12px 14px;
+      cursor: pointer;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .autocomplete-item:last-child {
+      border-bottom: none;
+    }
+
+    .autocomplete-item:active,
+    .autocomplete-item:hover {
+      background-color: #e2e8f0;
+      color: var(--primary, #003366);
     }
 
     .vehicular-card {
@@ -217,21 +258,17 @@
       <button onclick="cerrarSesion()" class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 12px;">Salir</button>
     </div>
 
-    <!-- PASO 1: BÚSQUEDA Y SELECCIÓN DE DELITO -->
+    <!-- PASO 1: UN SOLO CUADRO DE BÚSQUEDA DIRECTA -->
     <div style="margin-bottom: 20px;">
-      <label for="filtro_delito" style="color: var(--primary, #003366); font-size: 14px; font-weight: bold; display: block; margin-bottom: 6px;">
-        1. Escriba para buscar (ej: ebriedad, conduccion, robo, etc.):
+      <label for="delito_input" style="color: var(--primary, #003366); font-size: 14px; font-weight: bold; display: block; margin-bottom: 6px;">
+        1. Busque el Presunto Delito (Opcional si es Acta Independiente):
       </label>
-      
-      <!-- Buscador dinámico (solo filtra la lista) -->
-      <input type="search" id="filtro_delito" placeholder="🔍 Escriba aquí cualquier palabra del delito..." 
-             style="width: 100%; padding: 12px; border: 2px solid var(--primary, #003366); border-radius: 6px; margin-bottom: 8px; font-size: 15px;"
-             oninput="filtrarDelitos(this.value)">
-
-      <!-- Selector que el usuario presiona para elegir -->
-      <select id="delito_select" style="border: 2px solid var(--primary, #003366); font-weight: bold; width: 100%; padding: 12px; border-radius: 6px; background: white; color: #212529;">
-        <option value="">-- SELECCIONE UN DELITO O DILIGENCIA --</option>
-      </select>
+      <div class="autocomplete-wrapper">
+        <input type="text" id="delito_input" autocomplete="off" 
+               placeholder="Escribe para buscar delito (ej: ebriedad, conduccion, robo)..." 
+               style="border: 2px solid var(--primary, #003366); font-weight: bold; width: 100%; padding: 12px; border-radius: 6px;">
+        <div id="delitos_sugerencias" class="autocomplete-items" style="display: none;"></div>
+      </div>
     </div>
 
     <!-- CONSULTA DE PARTICIPACIÓN VEHICULAR -->
@@ -562,19 +599,13 @@
     return "DEFAULT";
   }
 
-  function poblarOpcionesDelito(lista) {
-    const select = document.getElementById('delito_select');
-    select.innerHTML = '<option value="">-- SELECCIONE UN DELITO O DILIGENCIA --</option>';
-    lista.forEach(delito => {
-      const option = document.createElement('option');
-      option.value = delito;
-      option.textContent = delito;
-      select.appendChild(option);
-    });
+  // Normalizador para ignorar tildes en búsquedas (ej: "conduccion" encuentra "CONDUCCIÓN")
+  function normalizarTexto(str) {
+    return str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : "";
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    // Cargar checklist de actas
+    // Generar checklist de actas
     const contenedorUI = document.getElementById('checklistContenedor');
     contenedorUI.innerHTML = "";
     CATALOGO_ACTAS.forEach((acta) => {
@@ -587,32 +618,60 @@
       `;
     });
 
-    // Poblar inicialmente la lista completa
-    poblarOpcionesDelito(LISTA_DELITOS_BASE);
-
-    // ESCUCHAR SELECCIÓN DEL USUARIO: Solo abre la ventana emergente al hacer clic/seleccionar formalmente un delito
-    const selectDelito = document.getElementById('delito_select');
-    if (selectDelito) {
-      selectDelito.addEventListener('change', function(e) {
-        const delitoSeleccionado = e.target.value;
-        if (!delitoSeleccionado) return;
-        aplicarProtocoloPolicial(delitoSeleccionado);
-      });
-    }
+    // Iniciar buscador inteligente
+    configurarBuscadorInteligente();
   });
 
-  // SOLO FILTRA LA LISTA EN SEGUNDO PLANO (NO abre emergentes ni selecciona automáticamente)
-  function filtrarDelitos(texto) {
-    const query = texto.toUpperCase().trim();
+  function configurarBuscadorInteligente() {
+    const input = document.getElementById('delito_input');
+    const sugerenciasBox = document.getElementById('delitos_sugerencias');
 
-    if (!query) {
-      poblarOpcionesDelito(LISTA_DELITOS_BASE);
-      return;
-    }
+    input.addEventListener('input', function() {
+      const val = this.value;
+      sugerenciasBox.innerHTML = '';
+      if (!val || val.trim().length === 0) {
+        sugerenciasBox.style.display = 'none';
+        return;
+      }
 
-    // Filtrar coincidencias
-    const filtrados = LISTA_DELITOS_BASE.filter(delito => delito.toUpperCase().includes(query));
-    poblarOpcionesDelito(filtrados);
+      const busquedaNorm = normalizarTexto(val);
+      const coincidencias = LISTA_DELITOS_BASE.filter(d => normalizarTexto(d).includes(busquedaNorm));
+
+      if (coincidencias.length === 0) {
+        sugerenciasBox.style.display = 'none';
+        return;
+      }
+
+      coincidencias.forEach(delito => {
+        const item = document.createElement('div');
+        item.className = 'autocomplete-item';
+        item.textContent = delito;
+        
+        item.addEventListener('click', function() {
+          input.value = delito;
+          sugerenciasBox.style.display = 'none';
+          aplicarProtocoloPolicial(delito);
+        });
+
+        sugerenciasBox.appendChild(item);
+      });
+
+      sugerenciasBox.style.display = 'block';
+    });
+
+    // Cerrar sugerencias al tocar fuera de la caja
+    document.addEventListener('click', function(e) {
+      if (e.target !== input && e.target !== sugerenciasBox) {
+        sugerenciasBox.style.display = 'none';
+      }
+    });
+
+    // Mostrar las sugerencias de nuevo si el usuario vuelve a tocar el input con texto escrito
+    input.addEventListener('focus', function() {
+      if (this.value.trim().length > 0) {
+        input.dispatchEvent(new Event('input'));
+      }
+    });
   }
 
   function conmutarActaVehicular(estado) {
@@ -693,7 +752,7 @@
   }
 
   function continuarAlFormulario() {
-    let delitoTexto = document.getElementById('delito_select').value.trim();
+    let delitoTexto = document.getElementById('delito_input').value.trim();
 
     const actasElegidas = [];
     CATALOGO_ACTAS.forEach(acta => {
