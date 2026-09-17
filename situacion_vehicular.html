@@ -685,7 +685,7 @@
     "TAPA DEL DEPÓSITO DE COMBUSTIBLE": { x: 170, y: 90, zona: "Tanque Gasolina Central", desc: "Tapón del tanque superior." },
     "PEDAL DE CAMBIOS": { x: 130, y: 125, zona: "Pedal Izquierdo", desc: "Pedal de selección de marchas." },
     "LLANTAS": { x: 40, y: 90, zona: "Rueda Posterior / Delantera", desc: "Llantas delantera y trasera de la moto." },
-    "TOLDO": { x: 100, y: 90, zona: "No Aplica a Moto Lineal", desc: "Sin toldo en motocicleta estándar." },
+    "TOLDO": { x: 100, y: 90, zona: "No Aplica a Moto Lineal", desc: "Sin todo en motocicleta estándar." },
     "ASIENTOS": { x: 100, y: 90, zona: "Asiento / Montura Longitud", desc: "Asiento para piloto y copiloto." },
     "TAPAS LATERALES": { x: 115, y: 115, zona: "Tapas Carenado Bajo Asiento", desc: "Tapas plásticas laterales del chasis." },
     "TAPABARRO DELANTERO": { x: 245, y: 90, zona: "Rueda Delantera", desc: "Guardabarros de llanta frontal." },
@@ -804,7 +804,7 @@
         supabaseClient = supabase.createClient(url, key);
         const placaActual = document.getElementById('lbl_placa').innerText;
 
-        statusRealtime.innerText = "⚡ Tiempo real activo. Esperando fotos del celular...";
+        statusRealtime.innerText = "⚡ Tiempo real activo. Esperando datos del celular...";
         statusRealtime.style.color = "#0284c7";
 
         const channel = supabaseClient.channel('canal_fotos_movil');
@@ -817,9 +817,43 @@
               await descargarYProcesarFotosSupabase(placaActual);
             }
           })
+          .on('broadcast', { event: 'inspeccion_manual_enviada' }, (payload) => {
+            const data = payload.payload;
+            if (data && (data.placa === placaActual || data.placa === 'GENERAL')) {
+              statusRealtime.innerText = "📥 ¡Datos manuales recibidos del celular!";
+              statusRealtime.style.color = "#166534";
+
+              // 1. Actualizar Nivel de Combustible
+              if (data.combustible) {
+                const combSelect = document.getElementById('combustible_nivel');
+                combSelect.value = data.combustible;
+                actualizarColorSelect(combSelect);
+              }
+
+              // 2. Actualizar Estados de las Partes
+              if (data.partes) {
+                document.querySelectorAll('select[id^="sv_"]').forEach(sel => {
+                  const nombre = sel.getAttribute('data-nombre');
+                  if (nombre && data.partes[nombre]) {
+                    sel.value = data.partes[nombre];
+                    actualizarColorSelect(sel);
+                  }
+                });
+              }
+
+              // 3. Actualizar Observaciones
+              if (data.observaciones) {
+                const obsArea = document.getElementById('observaciones_situacion');
+                const headerMovil = `[INSPECCIÓN MANUAL MÓVIL]: `;
+                if (!obsArea.value.includes(headerMovil)) {
+                  obsArea.value += (obsArea.value ? '\n\n' : '') + `${headerMovil}${data.observaciones}`;
+                }
+              }
+            }
+          })
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notificaciones_fotos' }, async (payload) => {
             if (payload.new && (payload.new.placa === placaActual || payload.new.placa === 'GENERAL')) {
-              statusRealtime.innerText = "📸 ¡Fotos recibidas desde el celular! Procesando con IA...";
+              statusRealtime.innerText = "📸 ¡Notificación recibida desde el celular!";
               statusRealtime.style.color = "#15803d";
               await descargarYProcesarFotosSupabase(placaActual);
             }
