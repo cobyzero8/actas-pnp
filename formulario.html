@@ -959,65 +959,7 @@
     "VIII. COMUNICACIÓN AL RMP:"
   ];
 
-  // ================= NUEVA FUNCIÓN: LIMPIEZA AUTOMÁTICA DE BASE DE DATOS Y STORAGE =================
-  async function limpiarBaseDeDatosYStorageSupabase() {
-    try {
-      const url = localStorage.getItem('pnp_supabase_url') || (typeof CONFIG !== 'undefined' ? CONFIG.SUPABASE_URL : '');
-      const key = localStorage.getItem('pnp_supabase_anon_key') || (typeof CONFIG !== 'undefined' ? CONFIG.SUPABASE_ANON_KEY : '');
-      if (!url || !key) return;
-
-      const sb = supabase.createClient(url, key);
-
-      let placaActual = "";
-      const vehs = obtenerListaVehiculos();
-      if (vehs && vehs.length > 0) {
-        placaActual = vehs[0].placa || "";
-      }
-
-      // 1. Borrar datos de las tablas especificados (`intervenciones` y `notificaciones_fotos`)
-      if (placaActual) {
-        await sb.from('notificaciones_fotos').delete().eq('placa', placaActual);
-        await sb.from('intervenciones').delete().eq('placa', placaActual);
-      } else {
-        await sb.from('notificaciones_fotos').delete().neq('id', -999999);
-        await sb.from('intervenciones').delete().neq('id', -999999);
-      }
-
-      // 2. Limpiar fotos temporales del Storage asociado
-      if (placaActual) {
-        const { data: archivos } = await sb.storage
-          .from('fotos_vehiculos')
-          .list(`inspecciones/${placaActual}`);
-
-        if (archivos && archivos.length > 0) {
-          const rutasArchivos = archivos.map(f => `inspecciones/${placaActual}/${f.name}`);
-          await sb.storage.from('fotos_vehiculos').remove(rutasArchivos);
-        }
-      }
-
-      console.log("🧹 Limpieza automática completada: tablas intervenciones y notificaciones_fotos vaciadas.");
-    } catch (err) {
-      console.warn("Aviso en limpieza automática:", err);
-    }
-  }
-
-  // Interceptar la generación desde la vista previa y el envío del formulario para ejecutar la limpieza
   document.addEventListener('DOMContentLoaded', () => {
-    const originalConfirmarPrevia = window.confirmarYGenerarExpedienteDesdePrevia;
-    if (typeof window.confirmarYGenerarExpedienteDesdePrevia === 'function') {
-      window.confirmarYGenerarExpedienteDesdePrevia = async function() {
-        await limpiarBaseDeDatosYStorageSupabase();
-        return originalConfirmarPrevia.apply(this, arguments);
-      };
-    }
-
-    const expedienteFormEl = document.getElementById('expedienteForm');
-    if (expedienteFormEl) {
-      expedienteFormEl.addEventListener('submit', async () => {
-        await limpiarBaseDeDatosYStorageSupabase();
-      });
-    }
-
     const restaurado = restaurarEstadoFormulario();
 
     if (!restaurado) {
@@ -2245,7 +2187,7 @@
     document.getElementById('agregar_intervencion_2').value = `--- Llegados al lugar de la ocurrencia, se constató de manera objetiva los siguientes hechos:\nSe intervino un accidente de tránsito (choque por alcance con daños materiales) entre dos vehículos particulares, producto de una maniobra intempestiva y frenado intempestivo en vía concurrida.\n\nParticipante(s) / Intervenido(s): ${personaNomInv} (DNI N.° ${persona.dni}, ${persona.edad} años).\n\nVehículo(s) Involucrado(s): Auto ${v1.marca} ${v1.modelo}, color ${v1.color}, placa ${v1.placa}, y Camioneta ${v2.marca} ${v2.modelo}, color ${v2.color}, placa ${v2.placa}.\n\nVerificación Documentaria RNT: Licencia de conducir A-I vigente, SOAT electrónico activo (La Positiva) y Certificado de Inspección Técnica Vehicular al día.\n\nHallazgos / Especies / Detalle: Conforme / Daños materiales leves en el parachoque posterior del vehículo impactado; sin registrarse lesionados ni heridos de consideración.`;
 
     document.getElementById('titulo_sec_3').value = "3. ACCIONES ADOPTADAS Y PUESTA A DISPOSICIÓN:";
-    document.getElementById('agregar_intervencion_3').value = `--- Se procedió al auxilio, aislar y garantizar la seguridad en la zona. Asimismo, de los hechos descritos se comunicó al RMP ${fiscal}, trasladando la intervención y actuados a la ${unidadDisp} para el trámite de ley y diligencias correspondientes.`;
+    document.getElementById('agregar_intervencion_3').value = `--- Se procedió a prestar auxilio, aislar y garantizar la seguridad en la zona. Asimismo, de los hechos descritos se comunicó al RMP ${fiscal}, trasladando la intervención y actuados a la ${unidadDisp} para el trámite de ley y diligencias correspondientes.`;
 
     if (document.getElementById('detalle_hallazgo')) {
       document.getElementById('detalle_hallazgo').value = "Conforme / Daños materiales leves en el parachoque posterior del vehículo impactado; sin registrarse lesionados ni heridos de consideración.";
