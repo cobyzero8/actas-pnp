@@ -1644,7 +1644,7 @@
     return `${textos.join(', ')} y ${ultimo}`;
   }
 
-  /* NUEVAS FUNCIONES DE ESCANEO OCR CON CÁMARA TRASERA DIRECTA (DNI y TIV) */
+  /* FUNCIONES MEJORADAS DE ESCANEO OCR CON TESSERACT.JS (DNI Y TIV) */
   async function escanearDniOcr(idNum) {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
@@ -1656,34 +1656,173 @@
 
       const inputNombre = document.getElementById(`intervenido_nombre_${idNum}`);
       const inputDni = document.getElementById(`intervenido_dni_${idNum}`);
-      const valAnteriorNombre = inputNombre.value;
-      const valAnteriorDni = inputDni.value;
+      const inputEdad = document.getElementById(`edad_${idNum}`);
+      const selectEstadoCivil = document.getElementById(`estado_civil_${idNum}`);
 
-      inputNombre.value = "⏳ Escaneando DNI (OCR)...";
-      inputDni.value = "...";
+      const valAnteriorNombre = inputNombre ? inputNombre.value : "";
+      const valAnteriorDni = inputDni ? inputDni.value : "";
+
+      if (inputNombre) inputNombre.value = "⏳ Escaneando DNI (OCR)...";
+      if (inputDni) inputDni.value = "⏳...";
 
       try {
         const result = await Tesseract.recognize(file, 'spa', {
           logger: m => console.log(m)
         });
-        const texto = result.data.text;
-        console.log("Texto OCR DNI:", texto);
+        const rawText = result.data.text || "";
+        console.log("Texto OCR DNI:\n", rawText);
 
-        // Intentar extraer DNI (8 dígitos numéricos)
+        const texto = rawText.toUpperCase();
+        const lineas = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+        // 1. EXTRAER DNI (8 DÍGITOS)
+        let dniEncontrado = "";
         const matchDni = texto.match(/\b\d{8}\b/);
         if (matchDni) {
-          inputDni.value = matchDni[0];
+          dniEncontrado = matchDni[0];
         } else {
-          inputDni.value = valAnteriorDni;
+          const matchDniRelax = texto.match(/\b\d{2}[\s.-]?\d{3}[\s.-]?\d{3}\b/);
+          if (matchDniRelax) {
+            dniEncontrado = matchDniRelax[0].replace(/\D/g, '');
+          }
         }
 
-        // Limpiar y poner texto extraído en nombre o notificar
-        inputNombre.value = valAnteriorNombre;
-        alert("📸 Escaneo OCR de DNI completado con éxito. Verifique los datos extraídos.");
+        // 2. EXTRAER APELLIDOS Y NOMBRES
+        let apellidos = "";
+        let nombres = "";
+
+        for (let i = 0; i < lineas.length; i++) {
+          const lUpper = lineas[i].toUpperCase();
+          if (lUpper.includes("APELLIDO") || lUpper.includes("SURNAME") || lUpper.includes("PRIMER APELLIDO")) {
+            if (i + 1 < lineas.length) {
+              const sig = lineas[i + 1].trim();
+              if (!sig.toUpperCase().includes("NOMBRE") && !sig.toUpperCase().includes("DNI") && sig.length > 2) {
+                apellidos = sig;
+              }
+            }
+          }
+          if (lUpper.includes("NOMBRE") || lUpper.includes("GIVEN NAME") || lUpper.includes("PRENOMBRES")) {
+            if (i + 1 < lineas.length) {
+              const sig = lineas[i + 1].trim();
+              if (!sig.toUpperCase().includes("SEXO") && !sig.toUpperCase().includes("FECHA") && sig.length > 2) {
+                nombres = sig;
+              }
+            }
+          }
+        }
+
+        let nombreCompletoFinal = "";
+        if (apellidos && nombres) {
+          nombreCompletoFinal = `${apellidos.toUpperCase()}, ${nombres}`;
+        } else if (apellidos) {
+          nombreCompletoFinal = apellidos.toUpperCase();
+        } else if (nombres) {
+          nombreCompletoFinal = nombres;
+        }
+
+        // 3. EXTRAER FECHA DE NACIMIENTO Y CALCULAR EDAD
+        let edadCalculada = null;
+        const mesesMap = {
+          'ENE': 0, 'FEB': 1, 'MAR': 2, 'ABR': 3, 'MAY': 4, 'JUN': 5,
+          'JUL': 6, 'AGO': 7, 'SET': 8, 'SEP': 8, 'OCT': 9, 'NOV': 10, 'DIC': 11
+        };
+
+        const regexFechaNum = /\b(0[1-9]|[12][0-9]|3[01])[-/\.\s](0[1-9]|1[012])[-/\.\s](19\d\d|20[0-2]\d)\b/;
+        const regexFechaTexto = /\b(0[1-9]|[12][0-9]|3[01])\s*(ENE|FEB|MAR|ABR|MAY|JUN|JUL|AGO|SET|SEP|OCT|NOV|DIC)[A-Z]*\s*(19\d\d|20[0-2]\d)\b/i;
+
+        let matchFecha = texto.match(regexFechaNum);
+        let dia, mes, anio;
+
+        if (matchFecha) {
+          dia = parseInt(matchFecha[1], 10);
+          mes = parseInt(matchFecha[2], 10) - 1;
+          anio = parseInt(matchFecha[3], 10);
+        } else {
+          const matchFechaTxt = texto.match(regexFechaTexto);
+          if (matchFechaTxt) {
+            dia = parseInt(matchFechaTxt[1], 10);
+            const mesTxt = matchFechaTxt[2].toUpperCase().substring(0, 3);
+            mes = mesesMap[mesTxt] !== undefined ? mesesMap[mesTxt] : 0;
+            anio = parseInt(matchFechaTxt[3], 10);
+          }
+        }
+
+        if (anio && anio >= 1920 && anio <= new Date().getFullYear()) {
+          const hoy = new Date();
+          let edad = hoy.getFullYear() - anio;
+          const mesActual = hoy.getMonth();
+          const diaActual = hoy.getDate();
+          if (mesActual < mes || (mesActual === mes && diaActual < dia)) {
+            edad--;
+          }
+          if (edad >= 0 && edad <= 120) {
+            edadCalculada = edad;
+          }
+        }
+
+        // 4. EXTRAER ESTADO CIVIL
+        let estadoCivilEncontrado = "";
+        if (texto.includes("SOLTERO") || texto.includes("SOLTERA")) {
+          estadoCivilEncontrado = "soltero";
+        } else if (texto.includes("CASADO") || texto.includes("CASADA")) {
+          estadoCivilEncontrado = "casado";
+        } else if (texto.includes("VIUDO") || texto.includes("VIUDA")) {
+          estadoCivilEncontrado = "viudo";
+        } else if (texto.includes("CONVIVIENTE")) {
+          estadoCivilEncontrado = "conviviente";
+        }
+
+        // ASIGNACIÓN FINAL DE CAMPOS
+        if (inputDni) {
+          inputDni.value = dniEncontrado || valAnteriorDni;
+        }
+
+        if (inputNombre) {
+          if (nombreCompletoFinal) {
+            inputNombre.value = nombreCompletoFinal;
+          } else {
+            // Si no se encontraron etiquetas estructuradas, tomar las líneas de texto limpias más probables
+            const lineasLimpias = lineas.filter(l => {
+              const lU = l.toUpperCase();
+              return !lU.includes("REPUBLICA") && !lU.includes("PERU") && !lU.includes("IDENTIDAD") && 
+                     !lU.includes("ELECTORAL") && !lU.includes("NACIMIENTO") && !lU.includes("FECHA") &&
+                     !lU.includes("DNI") && !lU.includes("SEXO") && !lU.includes("ESTADO") &&
+                     l.replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ\s]/g, '').trim().length > 4;
+            });
+            if (lineasLimpias.length >= 2) {
+              inputNombre.value = `${lineasLimpias[0].toUpperCase()}, ${lineasLimpias[1].toUpperCase()}`;
+            } else if (lineasLimpias.length === 1) {
+              inputNombre.value = lineasLimpias[0].toUpperCase();
+            } else {
+              inputNombre.value = valAnteriorNombre;
+            }
+          }
+        }
+
+        if (edadCalculada !== null && inputEdad) {
+          inputEdad.value = edadCalculada;
+        }
+
+        if (estadoCivilEncontrado && selectEstadoCivil) {
+          selectEstadoCivil.value = estadoCivilEncontrado;
+        }
+
+        let resumen = [];
+        if (dniEncontrado) resumen.push(`• DNI: ${dniEncontrado}`);
+        if (inputNombre && inputNombre.value && inputNombre.value !== valAnteriorNombre) resumen.push(`• Nombre: ${inputNombre.value}`);
+        if (edadCalculada !== null) resumen.push(`• Edad Calculada: ${edadCalculada} años`);
+        if (estadoCivilEncontrado) resumen.push(`• Estado Civil: ${estadoCivilEncontrado.toUpperCase()}`);
+
+        if (resumen.length > 0) {
+          alert(`📸 Escaneo OCR de DNI completado con éxito:\n\n${resumen.join('\n')}\n\nVerifique y confirme los datos.`);
+        } else {
+          alert("📸 Escaneo terminado. No se pudieron extraer datos legibles automáticos. Por favor verifique la nitidez de la foto.");
+        }
+
       } catch (err) {
         console.error("Error OCR DNI:", err);
-        inputNombre.value = valAnteriorNombre;
-        inputDni.value = valAnteriorDni;
+        if (inputNombre) inputNombre.value = valAnteriorNombre;
+        if (inputDni) inputDni.value = valAnteriorDni;
         alert("⚠️ Error al procesar la imagen del DNI mediante OCR.");
       }
     };
@@ -1700,29 +1839,25 @@
       if (!file) return;
 
       const inputPlaca = document.getElementById(`placa_vehiculo_${idNum}`);
-      const inputMarca = document.getElementById(`marca_vehiculo_${idNum}`);
-      const inputChasis = document.getElementById(`num_chasis_vehiculo_${idNum}`);
-      
-      const valAntPlaca = inputPlaca.value;
-      inputPlaca.value = "⏳ Escaneando TIV...";
+      const valAntPlaca = inputPlaca ? inputPlaca.value : "";
+      if (inputPlaca) inputPlaca.value = "⏳ Escaneando TIV...";
 
       try {
         const result = await Tesseract.recognize(file, 'spa');
-        const texto = result.data.text;
+        const texto = result.data.text || "";
         console.log("Texto OCR TIV:", texto);
 
-        // Buscar placa (patrones comunes ej: ABC-123 o 1234-3Y)
         const matchPlaca = texto.match(/[A-Z0-9]{3,4}[-\s]?[A-Z0-9]{2,3}/);
-        if (matchPlaca) {
+        if (matchPlaca && inputPlaca) {
           inputPlaca.value = matchPlaca[0].trim();
-        } else {
+        } else if (inputPlaca) {
           inputPlaca.value = valAntPlaca;
         }
 
         alert("📸 Escaneo OCR de Tarjeta de Propiedad (TIV) completado.");
       } catch (err) {
         console.error("Error OCR TIV:", err);
-        inputPlaca.value = valAntPlaca;
+        if (inputPlaca) inputPlaca.value = valAntPlaca;
         alert("⚠️ Error al procesar la imagen TIV mediante OCR.");
       }
     };
