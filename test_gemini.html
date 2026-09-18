@@ -1,39 +1,77 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Prueba Aislada Gemini API</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+    input { width: 340px; padding: 8px; font-size: 14px; }
+    button { padding: 8px 16px; font-size: 14px; cursor: pointer; background: #003366; color: white; border: none; border-radius: 4px; font-weight: bold; }
+    pre { background: #1e1e1e; color: #00ff66; padding: 15px; border-radius: 6px; white-space: pre-wrap; font-size: 13px; max-height: 500px; overflow-y: auto; margin-top: 15px; }
+  </style>
+</head>
 <body>
-  <h3>Prueba Aislada con Gemini 3.6 Flash</h3>
-  <input type="password" id="key" placeholder="Pega tu API Key de AI Studio" style="width: 300px;">
-  <button onclick="probarGemini36()">Probar Conexión</button>
-  <pre id="log" style="background: #f4f4f4; padding: 10px; margin-top: 10px;"></pre>
+  <h3>🔍 Diagnóstico Aislado de API Key y Modelos Gemini</h3>
+  <p style="font-size: 13px; color: #555;">Pega tu API Key de Google AI Studio para verificar qué modelos soporta tu cuenta:</p>
+
+  <input type="password" id="key" placeholder="Pega tu API Key de Google AI Studio">
+  <button onclick="probarConexion()">Probar Conexión y Listar Modelos</button>
+  
+  <pre id="log">Ingresa tu API Key y presiona 'Probar Conexión'...</pre>
 
   <script>
-    async function probarGemini36() {
+    async function probarConexion() {
       const apiKey = document.getElementById('key').value.trim();
       const log = document.getElementById('log');
-      log.innerText = "Enviando petición a gemini-3.6-flash...";
+      
+      if (!apiKey) {
+        alert("Por favor ingresa una API Key.");
+        return;
+      }
 
-      const endpoints = [
-        { ver: 'v1beta', model: 'gemini-3.6-flash' },
-        { ver: 'v1', model: 'gemini-3.6-flash' }
-      ];
+      log.innerText = "⏳ 1. Consultando ModelService.ListModels en endpoint v1beta...\n\n";
 
-      log.innerText = "";
-      for (const ep of endpoints) {
-        const url = `https://generativelanguage.googleapis.com/${ep.ver}/models/${ep.model}:generateContent?key=${apiKey}`;
+      // 1. Listar todos los modelos soportados por la API Key
+      try {
+        const resList = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        const dataList = await resList.json();
+
+        if (resList.ok && dataList.models) {
+          log.innerText += `✅ MODELOS HABILITADOS PARA GENERACIÓN DE TEXTO EN TU CUENTA:\n`;
+          const generadores = dataList.models
+            .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"))
+            .map(m => m.name.replace("models/", ""));
+
+          log.innerText += generadores.map(m => ` - ${m}`).join("\n") + "\n\n";
+        } else {
+          log.innerText += `❌ ERROR en ListModels: ${dataList.error?.message || resList.statusText}\n\n`;
+        }
+      } catch (e) {
+        log.innerText += `❌ ERROR DE RED al consultar ListModels: ${e.message}\n\n`;
+      }
+
+      // 2. Probar la generación de contenido con los modelos principales
+      const modelosATestear = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+      log.innerText += `--------------------------------------------------\n`;
+      log.innerText += `⏳ 2. Probando peticiones 'generateContent' con los modelos activos...\n\n`;
+
+      for (const model of modelosATestear) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
         try {
           const res = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents: [{ parts: [{ text: "Hola" }] }] })
+            body: JSON.stringify({ contents: [{ parts: [{ text: "Hola, responde OK si la conexión fue exitosa." }] }] })
           });
           const data = await res.json();
           if (res.ok) {
-            log.innerText += `✅ ÉXITO con ${ep.ver} + ${ep.model}\nRespuesta: ${data.candidates[0].content.parts[0].text}\n\n`;
+            const respTexto = data.candidates?.[0]?.content?.parts?.[0]?.text || "Respuesta recibida sin texto";
+            log.innerText += `✅ [${model}] CONEXIÓN EXITOSA:\n   Respuesta: "${respTexto.trim()}"\n\n`;
           } else {
-            log.innerText += `❌ ERROR (${res.status}) con ${ep.ver}: ${data.error?.message || ''}\n\n`;
+            log.innerText += `❌ [${model}] RECHAZADO (${res.status}): ${data.error?.message}\n\n`;
           }
         } catch (err) {
-          log.innerText += `❌ ERROR RED: ${err.message}\n\n`;
+          log.innerText += `❌ [${model}] ERROR RED: ${err.message}\n\n`;
         }
       }
     }
