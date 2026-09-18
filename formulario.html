@@ -1064,12 +1064,11 @@
       contents: [{ parts: [{ text: prompt }] }]
     };
 
-    // Lista de modelos compatibles en v1beta
+    // Modelos estandarizados válidos para el endpoint v1beta
     const modelosPrueba = [
       'gemini-2.5-flash',
       'gemini-2.0-flash',
-      'gemini-1.5-flash',
-      'gemini-1.5-flash-latest'
+      'gemini-1.5-flash'
     ];
 
     let ultimoError = null;
@@ -1086,13 +1085,12 @@
 
         const data = await res.json().catch(() => ({}));
 
-        if (res.ok) {
-          return data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (res.ok && data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+          return data.candidates[0].content.parts[0].text;
         }
 
         const errMsg = data.error?.message || `HTTP ${res.status}`;
-        
-        // Detectar si el problema es de la clave API o permisos
+
         if (res.status === 400 || res.status === 401 || res.status === 403) {
           if (errMsg.includes("API key") || errMsg.includes("INVALID_ARGUMENT") || errMsg.includes("PERMISSION_DENIED")) {
             errorClaveOQuota = errMsg;
@@ -1115,6 +1113,10 @@
     throw new Error(ultimoError || "No se pudo conectar con el servicio de IA.");
   }
 
+
+
+
+  
   async function mejorarSeccionConGemini(numSeccion) {
     const apiKey = obtenerGeminiKey();
     if (!apiKey) return;
