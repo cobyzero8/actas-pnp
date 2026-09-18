@@ -913,22 +913,7 @@
           </div>
         </div>
 
-        <!-- MÓDULO DE AUDITORÍA Y VERIFICACIÓN CON IA AL FINAL DE LA REDACCIÓN -->
-        <div class="section-block" style="background: #f0fdf4; border: 2px dashed #16a34a; padding: 16px; margin-top: 20px; border-radius: 8px;">
-          <div class="section-title" style="color: #15803d; margin-top: 0; font-size: 14px;">
-            🤖 Auditoría Procesal del Acta según Delito Configurado
-          </div>
-          <p style="font-size: 12px; color: #166534; margin-bottom: 12px;">
-            La IA revisará la totalidad de las secciones redactadas para verificar que se cumplan las diligencias mínimas exigidas por ley conforme al delito en cuestión.
-          </p>
-          
-          <button type="button" id="btn_audit_ia" onclick="auditarActaCompletaConGemini()" class="btn" style="background: #15803d; color: white; font-weight: bold; padding: 10px 18px; font-size: 13px; width: 100%; border: none; border-radius: 6px; cursor: pointer;">
-            🔍 Auditar y Verificar Acta Completa con IA
-          </button>
-
-          <div id="box_resultado_auditoria" style="display: none; margin-top: 14px; background: #ffffff; padding: 14px; border: 1.5px solid #86efac; border-radius: 6px; font-size: 12px; line-height: 1.6; color: #1e293b; max-height: 380px; overflow-y: auto;"></div>
-        </div>
-
+        
         <div class="wizard-buttons">
           <button type="button" class="btn btn-secondary" onclick="navegarEtapa(-1)">⬅️ Etapa Anterior</button>
           
@@ -1026,173 +1011,9 @@
     }
   });
 
-  /* ==========================================================================
-     INTEGRACIÓN CON GEMINI IA PARA REDACCIÓN Y AUDITORÍA DE ACTAS PNP
-     ========================================================================== */
+ 
 
-  function obtenerGeminiKey() {
-    let key = localStorage.getItem('pnp_gemini_api_key') || (typeof CONFIG !== 'undefined' ? CONFIG.GEMINI_API_KEY : '');
-    if (!key || key.trim() === '') {
-      key = prompt("🔑 Ingrese su API Key de Google Gemini (AI Studio):");
-      if (key && key.trim() !== '') {
-        localStorage.setItem('pnp_gemini_api_key', key.trim());
-      } else {
-        alert("⚠️ No se ingresó una API Key. La función de IA estará deshabilitada.");
-        return null;
-      }
-    }
-    return key.trim();
-  }
 
-  function cambiarGeminiApiKey() {
-    const keyActual = localStorage.getItem('pnp_gemini_api_key') || '';
-    const nuevaKey = prompt("🔑 Ingrese su API Key de Google Gemini (AI Studio):", keyActual);
-    if (nuevaKey !== null) {
-      if (nuevaKey.trim() !== '') {
-        localStorage.setItem('pnp_gemini_api_key', nuevaKey.trim());
-        alert("✅ API Key actualizada correctamente.");
-      } else {
-        localStorage.removeItem('pnp_gemini_api_key');
-        alert("ℹ️ API Key eliminada.");
-      }
-    }
-  }
-
-// 1. Función de consulta directa a la API
-  async function consultarApiGemini(prompt, apiKey) {
-    const cleanKey = encodeURIComponent(apiKey);
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${cleanKey}`;
-
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-    });
-
-    const data = await res.json().catch(() => ({}));
-
-    if (res.ok && data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-      return data.candidates[0].content.parts[0].text;
-    }
-
-    if (res.status === 429) throw new Error("Cuota saturada. Espera 15 segundos.");
-    if (res.status === 503) throw new Error("Servidor ocupado. Intenta de nuevo en unos segundos.");
-    throw new Error(data.error?.message || `Error HTTP ${res.status}`);
-  }
-
-  // 2. Función para pulir TODAS las secciones de un solo golpe
-  async function mejorarTodasLasSeccionesConIA() {
-    const apiKey = obtenerGeminiKey();
-    if (!apiKey) return;
-
-    const btn = document.getElementById('btn_audit_ia');
-    const cantSec = parseInt(document.getElementById('cant_secciones')?.value, 10) || 1;
-    const delito = localStorage.getItem('pnp_delito_seleccionado') || "DILIGENCIA POLICIAL GENERAL";
-
-    let borradorCompleto = "";
-    for (let i = 1; i <= cantSec; i++) {
-      const tit = document.getElementById(`titulo_sec_${i}`)?.value || `SECCIÓN ${i}`;
-      const txt = document.getElementById(`agregar_intervencion_${i}`)?.value || "";
-      borradorCompleto += `=== SECCION_${i} ===\nTITULO: ${tit}\nTEXTO:\n${txt}\n\n`;
-    }
-
-    if (!borradorCompleto.trim()) {
-      alert("⚠️ Escriba o cargue una plantilla antes de pulir con IA.");
-      return;
-    }
-
-    const textoOriginalBtn = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = "⏳ Pulida integral de todas las secciones con IA...";
-
-    const promptText = `Eres un instructor experto en redacción de Actas Policiales de la Policía Nacional del Perú (PNP).
-DELITO: "${delito}"
-
-TAREA:
-Mejora la redacción técnico-policial de TODAS las secciones proporcionadas.
-Mantén los nombres, DNI, fechas, horas, marcas y placas exactamente igual.
-
-FORMATO OBLIGATORIO DE RESPUESTA:
-Devuelve el resultado separando cada sección estrictamente con la etiqueta "=== SECCION_X ===" (donde X es el número de sección), seguido inmediatamente por el texto mejorado. Sin intros ni comentarios.
-
-BORRADOR COMPLETO:
-${borradorCompleto}`;
-
-    try {
-      const resultado = await consultarApiGemini(promptText, apiKey);
-      
-      // Separar la respuesta y distribuirla en cada caja de texto
-      for (let i = 1; i <= cantSec; i++) {
-        const regex = new RegExp(`=== SECCION_${i} ===\\s*([\\s\\S]*?)(?=(=== SECCION_|\\n*$))`, 'i');
-        const match = resultado.match(regex);
-        if (match && match[1]) {
-          const areaTexto = document.getElementById(`agregar_intervencion_${i}`);
-          if (areaTexto) areaTexto.value = match[1].trim();
-        }
-      }
-      alert("✅ ¡Todas las secciones fueron pulidas con éxito en una sola llamada!");
-    } catch (err) {
-      alert("❌ Error: " + err.message);
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = textoOriginalBtn;
-    }
-  }
-  
-
-  async function auditarActaCompletaConGemini() {
-    const apiKey = obtenerGeminiKey();
-    if (!apiKey) return;
-
-    const btn = document.getElementById('btn_audit_ia');
-    const boxResult = document.getElementById('box_resultado_auditoria');
-    const delito = localStorage.getItem('pnp_delito_seleccionado') || "DILIGENCIA / INTERVENCIÓN POLICIAL GENERAL";
-    const cantSec = parseInt(document.getElementById('cant_secciones')?.value, 10) || 1;
-
-    let textoCompletoActa = "";
-    for (let i = 1; i <= cantSec; i++) {
-      const tit = document.getElementById(`titulo_sec_${i}`)?.value || `SECCIÓN ${i}`;
-      const txt = document.getElementById(`agregar_intervencion_${i}`)?.value || "";
-      if (txt.trim()) {
-        textoCompletoActa += `${tit}\n${txt}\n\n`;
-      }
-    }
-
-    if (!textoCompletoActa.trim()) {
-      alert("⚠️ No hay texto redactado en las secciones para realizar la auditoría.");
-      return;
-    }
-
-    btn.disabled = true;
-    btn.innerHTML = "⏳ Verificando coherencia y requisitos legales por delito...";
-    boxResult.style.display = "block";
-    boxResult.innerHTML = "<em>🔎 Analizando el acta completa respecto al delito de <strong>" + delito + "</strong>...</em>";
-
-    const promptAudit = `Eres un Comandante PNP Auditor Legal y Perito en Documentación Policial Procesal.
-Analiza la siguiente redacción completa de un "Acta de Intervención Policial" cuyo delito imputado es: "${delito}".
-
-TEXTO DEL ACTA COMPLETA:
-"""
-${textoCompletoActa}
-"""
-
-EVALÚA Y RESPONDE EN UN FORMATO CLARO CON LOS SIGUIENTES PUNTOS:
-1. 🟢 **ASPECTOS CORRECTOS:** Breve resumen de lo bien estructurado.
-2. ⚠️ **OBSERVACIONES / OMISIONES DETECTADAS:** Identifica si falta alguna diligencia u obligación procedimental clave según el delito de "${delito}" (ej. Lectura de derechos, consulta E-SINPOL, prueba RETRAN, pesaje/decomiso en TID, comunicación al RMP, o datos de vehiculo/intervenido).
-3. 📝 **RECOMENDACIÓN DE MEJORA COMPLETA:** Presenta una versión integral corregida y pulida del acta completa.`;
-
-    try {
-      const resultadoAudit = await consultarApiGemini(promptAudit, apiKey);
-      if (resultadoAudit) {
-        boxResult.innerHTML = resultadoAudit.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      }
-    } catch (err) {
-      boxResult.innerHTML = `<span style="color:#b91c1c;">❌ Error en la auditoría: ${err.message}</span>`;
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = "🔍 Auditar y Verificar Acta Completa con IA";
-    }
-  }
 
   async function obtenerUbicacionGPS(idInputLugar, idBoton) {
     if (!navigator.geolocation) {
@@ -2052,10 +1873,7 @@ EVALÚA Y RESPONDE EN UN FORMATO CLARO CON LOS SIGUIENTES PUNTOS:
               <button type="button" id="btn_mic_${i}" onclick="alternarDictadoVoz('agregar_intervencion_${i}', 'btn_mic_${i}')" class="btn btn-secondary" style="width: auto; padding: 3px 8px; font-size: 11px;">
                 🎤 Dictar por Voz
               </button>
-              <button type="button" id="btn_ia_${i}" onclick="mejorarSeccionConGemini(${i})" class="btn" style="width: auto; padding: 4px 10px; font-size: 11px; background: #7c3aed; color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 4px;">
-                ✨ Mejorar con IA
-              </button>
-            </div>
+             </div>
           </div>
           <textarea id="agregar_intervencion_${i}" class="narrativa-textarea" rows="8" onfocus="textareaActivoId='agregar_intervencion_${i}'" placeholder="Redacte o dicte los hechos correspondientes a esta sección...">${contenidoPrevio}</textarea>
         </div>
