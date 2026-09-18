@@ -1058,21 +1058,21 @@
     }
   }
 
-  async function consultarApiGemini(prompt, apiKey) {
+ async function consultarApiGemini(prompt, apiKey) {
     const cleanKey = encodeURIComponent(apiKey);
     const payload = {
       contents: [{ parts: [{ text: prompt }] }]
     };
 
-    // Modelos estandarizados válidos para el endpoint v1beta
+    // Modelo principal verificado + respaldos
     const modelosPrueba = [
+      'gemini-3.6-flash',
       'gemini-2.5-flash',
       'gemini-2.0-flash',
       'gemini-1.5-flash'
     ];
 
     let ultimoError = null;
-    let errorClaveOQuota = null;
 
     for (const model of modelosPrueba) {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${cleanKey}`;
@@ -1089,11 +1089,25 @@
           return data.candidates[0].content.parts[0].text;
         }
 
-        const errMsg = data.error?.message || `HTTP ${res.status}`;
+        // Manejo de cuota gratuita (429) o saturación momentánea (503)
+        if (res.status === 429) {
+          ultimoError = "Límite de cuota gratuita alcanzado (máx. 5 peticiones/minuto). Espera unos 15-20 segundos e intenta de nuevo.";
+          continue; // Pasa al siguiente modelo si el actual está bloqueado por cuota
+        }
 
+        if (res.status === 503) {
+          ultimoError = "Servidor saturado momentáneamente (Alta demanda en Google AI).";
+          continue;
+        }
+
+        const errMsg = data.error?.message || `HTTP ${res.status}`;
+        
         if (res.status === 400 || res.status === 401 || res.status === 403) {
           if (errMsg.includes("API key") || errMsg.includes("INVALID_ARGUMENT") || errMsg.includes("PERMISSION_DENIED")) {
-            errorClaveOQuota = errMsg;
+            if (confirm(`❌ Error de API Key: ${errMsg}\n\n¿Deseas borrar la clave guardada para ingresar una nueva?`)) {
+              localStorage.removeItem('pnp_gemini_api_key');
+            }
+            throw new Error(`API Key no válida: ${errMsg}`);
           }
         }
 
@@ -1101,13 +1115,6 @@
       } catch (e) {
         ultimoError = e.message;
       }
-    }
-
-    if (errorClaveOQuota) {
-      if (confirm(`❌ Error de autenticación o API Key: ${errorClaveOQuota}\n\n¿Deseas borrar la clave guardada e ingresar una nueva?`)) {
-        localStorage.removeItem('pnp_gemini_api_key');
-      }
-      throw new Error(`API Key inválida o no habilitada: ${errorClaveOQuota}`);
     }
 
     throw new Error(ultimoError || "No se pudo conectar con el servicio de IA.");
