@@ -1079,12 +1079,12 @@ async function consultarApiGemini(prompt, apiKey, onStatusUpdate = () => {}) {
           return data.candidates[0].content.parts[0].text;
         }
 
-        // Si es 429 (límite de cuota) o 503 (servidor saturado), reintenta automáticamente en segundo plano
+        // Manejo silencioso de error 429 (Rate Limit) o 503 (High Demand)
         if (res.status === 429 || res.status === 503) {
           if (intento < maxReintentos) {
-            const segundosPausa = intento * 6; // Pausa progresiva de 6s, 12s...
-            onStatusUpdate(`⏳ Servidor ocupado. Reintentando en ${segundosPausa}s (${intento}/${maxReintentos})...`);
-            await new Promise(resolve => setTimeout(resolve, segundosPausa * 1000));
+            const esperaMs = 3000 * intento; // Pausa automática de 3s, luego 6s
+            onStatusUpdate(`⏳ Ajustando cuota... Reintentando en ${esperaMs / 1000}s (${intento}/${maxReintentos})`);
+            await new Promise(resolve => setTimeout(resolve, esperaMs));
             continue;
           }
         }
@@ -1107,7 +1107,7 @@ async function consultarApiGemini(prompt, apiKey, onStatusUpdate = () => {}) {
       }
     }
 
-    throw new Error("El servicio de IA tardó demasiado en responder. Por favor, reintenta en un momento.");
+    throw new Error("Límite de cuota alcanzado momentáneamente. Espera 5 segundos e intenta de nuevo.");
   }
   
 
@@ -1161,7 +1161,7 @@ BORRADOR POLICIAL:
         areaTexto.value = resultadoTexto.trim();
       }
     } catch (err) {
-      alert("❌ Error al procesar con IA: " + err.message);
+      alert("❌ " + err.message);
     } finally {
       btn.disabled = false;
       btn.innerHTML = textoBtnOriginal;
