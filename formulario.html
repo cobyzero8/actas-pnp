@@ -453,6 +453,10 @@
         ⚡ Cargar Prueba (1 Efectivo PNP + 1 Intervenido + 1 Vehículo)
       </button>
 
+      <button type="button" onclick="cambiarGeminiApiKey()" class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 11px; background: #6b21a8; color: white; border: none;">
+        🔑 Configurar API Key IA
+      </button>
+
       <button type="button" onclick="cerrarSesion()" class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size: 11px;">Salir</button>
     </div>
 
@@ -1029,15 +1033,86 @@
   function obtenerGeminiKey() {
     let key = localStorage.getItem('pnp_gemini_api_key') || (typeof CONFIG !== 'undefined' ? CONFIG.GEMINI_API_KEY : '');
     if (!key || key.trim() === '') {
-      key = prompt("🔑 Ingrese su API Key de Gemini para activar la IA:");
+      key = prompt("🔑 Ingrese su API Key de Google Gemini (AI Studio):");
       if (key && key.trim() !== '') {
         localStorage.setItem('pnp_gemini_api_key', key.trim());
       } else {
-        alert("⚠️ No se ingresó una API Key válida. La función de IA no estará disponible.");
+        alert("⚠️ No se ingresó una API Key. La función de IA estará deshabilitada.");
         return null;
       }
     }
     return key.trim();
+  }
+
+  function cambiarGeminiApiKey() {
+    const keyActual = localStorage.getItem('pnp_gemini_api_key') || '';
+    const nuevaKey = prompt("🔑 Ingrese su API Key de Google Gemini (AI Studio):", keyActual);
+    if (nuevaKey !== null) {
+      if (nuevaKey.trim() !== '') {
+        localStorage.setItem('pnp_gemini_api_key', nuevaKey.trim());
+        alert("✅ API Key actualizada correctamente.");
+      } else {
+        localStorage.removeItem('pnp_gemini_api_key');
+        alert("ℹ️ API Key eliminada.");
+      }
+    }
+  }
+
+  async function consultarApiGemini(prompt, apiKey) {
+    const cleanKey = encodeURIComponent(apiKey);
+    const payload = {
+      contents: [{ parts: [{ text: prompt }] }]
+    };
+
+    // Lista de modelos compatibles en v1beta
+    const modelosPrueba = [
+      'gemini-2.5-flash',
+      'gemini-2.0-flash',
+      'gemini-1.5-flash',
+      'gemini-1.5-flash-latest'
+    ];
+
+    let ultimoError = null;
+    let errorClaveOQuota = null;
+
+    for (const model of modelosPrueba) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${cleanKey}`;
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok) {
+          return data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        }
+
+        const errMsg = data.error?.message || `HTTP ${res.status}`;
+        
+        // Detectar si el problema es de la clave API o permisos
+        if (res.status === 400 || res.status === 401 || res.status === 403) {
+          if (errMsg.includes("API key") || errMsg.includes("INVALID_ARGUMENT") || errMsg.includes("PERMISSION_DENIED")) {
+            errorClaveOQuota = errMsg;
+          }
+        }
+
+        ultimoError = errMsg;
+      } catch (e) {
+        ultimoError = e.message;
+      }
+    }
+
+    if (errorClaveOQuota) {
+      if (confirm(`❌ Error de autenticación o API Key: ${errorClaveOQuota}\n\n¿Deseas borrar la clave guardada e ingresar una nueva?`)) {
+        localStorage.removeItem('pnp_gemini_api_key');
+      }
+      throw new Error(`API Key inválida o no habilitada: ${errorClaveOQuota}`);
+    }
+
+    throw new Error(ultimoError || "No se pudo conectar con el servicio de IA.");
   }
 
   async function mejorarSeccionConGemini(numSeccion) {
@@ -1141,41 +1216,6 @@ EVALÚA Y RESPONDE EN UN FORMATO CLARO CON LOS SIGUIENTES PUNTOS:
       btn.disabled = false;
       btn.innerHTML = "🔍 Auditar y Verificar Acta Completa con IA";
     }
-  }
-
-  async function consultarApiGemini(prompt, apiKey) {
-    const cleanKey = encodeURIComponent(apiKey);
-    const payload = {
-      contents: [{ parts: [{ text: prompt }] }]
-    };
-
-    const endpoints = [
-      { ver: 'v1beta', model: 'gemini-1.5-flash' },
-      { ver: 'v1beta', model: 'gemini-2.0-flash' },
-      { ver: 'v1', model: 'gemini-1.5-flash' }
-    ];
-
-    let lastErr = null;
-    for (const ep of endpoints) {
-      const url = `https://generativelanguage.googleapis.com/${ep.ver}/models/${ep.model}:generateContent?key=${cleanKey}`;
-      try {
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        if (res.ok) {
-          const data = await res.json();
-          return data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        } else {
-          const errData = await res.json().catch(() => ({}));
-          lastErr = errData.error?.message || `HTTP ${res.status}`;
-        }
-      } catch (e) {
-        lastErr = e.message;
-      }
-    }
-    throw new Error(lastErr || "No se pudo conectar a la API de Gemini.");
   }
 
   async function obtenerUbicacionGPS(idInputLugar, idBoton) {
