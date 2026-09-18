@@ -1058,113 +1058,84 @@
     }
   }
 
-async function consultarApiGemini(prompt, apiKey, onStatusUpdate = () => {}) {
+// 1. Función de consulta directa a la API
+  async function consultarApiGemini(prompt, apiKey) {
     const cleanKey = encodeURIComponent(apiKey);
-    const payload = { contents: [{ parts: [{ text: prompt }] }] };
-    const model = 'gemini-3.6-flash';
-    const maxReintentos = 2;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${cleanKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${cleanKey}`;
 
-    for (let intento = 1; intento <= maxReintentos; intento++) {
-      try {
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
 
-        const data = await res.json().catch(() => ({}));
+    const data = await res.json().catch(() => ({}));
 
-        if (res.ok && data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-          return data.candidates[0].content.parts[0].text;
-        }
-
-        // Manejo de tasa límite (429) y servidor ocupado (503)
-        if (res.status === 429 || res.status === 503) {
-          if (intento < maxReintentos) {
-            const esperaSeg = 35; // Pausa de 35s para cubrir los 33.6s solicitados por la API
-            for (let s = esperaSeg; s > 0; s--) {
-              onStatusUpdate(`⏳ Cuota libre llena. Reintentando en ${s}s...`);
-              await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-            continue;
-          }
-        }
-
-        const errMsg = data.error?.message || `Error HTTP ${res.status}`;
-
-        if (res.status === 400 || res.status === 401 || res.status === 403) {
-          if (errMsg.includes("API key") || errMsg.includes("INVALID_ARGUMENT") || errMsg.includes("PERMISSION_DENIED")) {
-            if (confirm(`❌ Error de API Key: ${errMsg}\n\n¿Deseas borrar la clave guardada para ingresar una nueva?`)) {
-              localStorage.removeItem('pnp_gemini_api_key');
-            }
-            throw new Error(`API Key no válida: ${errMsg}`);
-          }
-        }
-
-        throw new Error(errMsg);
-
-      } catch (e) {
-        if (e.message.includes("API Key") || intento === maxReintentos) throw e;
-      }
+    if (res.ok && data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+      return data.candidates[0].content.parts[0].text;
     }
 
-    throw new Error("Límite de cuota temporal. Espera unos segundos e intenta nuevamente.");
+    if (res.status === 429) throw new Error("Cuota saturada. Espera 15 segundos.");
+    if (res.status === 503) throw new Error("Servidor ocupado. Intenta de nuevo en unos segundos.");
+    throw new Error(data.error?.message || `Error HTTP ${res.status}`);
   }
 
-  async function mejorarSeccionConGemini(numSeccion) {
+  // 2. Función para pulir TODAS las secciones de un solo golpe
+  async function mejorarTodasLasSeccionesConIA() {
     const apiKey = obtenerGeminiKey();
     if (!apiKey) return;
 
-    const areaTexto = document.getElementById(`agregar_intervencion_${numSeccion}`);
-    const tituloSec = document.getElementById(`titulo_sec_${numSeccion}`)?.value || "DILIGENCIA POLICIAL";
-    const btn = document.getElementById(`btn_ia_${numSeccion}`);
-    const borrador = areaTexto ? areaTexto.value.trim() : "";
-    const delito = localStorage.getItem('pnp_delito_seleccionado') || "DILIGENCIA / INTERVENCIÓN POLICIAL GENERAL";
+    const btn = document.getElementById('btn_audit_ia');
+    const cantSec = parseInt(document.getElementById('cant_secciones')?.value, 10) || 1;
+    const delito = localStorage.getItem('pnp_delito_seleccionado') || "DILIGENCIA POLICIAL GENERAL";
 
-    if (!borrador) {
-      alert("⚠️ Ingrese un borrador o datos clave en el cuadro antes de solicitar la mejora con IA.");
+    let borradorCompleto = "";
+    for (let i = 1; i <= cantSec; i++) {
+      const tit = document.getElementById(`titulo_sec_${i}`)?.value || `SECCIÓN ${i}`;
+      const txt = document.getElementById(`agregar_intervencion_${i}`)?.value || "";
+      borradorCompleto += `=== SECCION_${i} ===\nTITULO: ${tit}\nTEXTO:\n${txt}\n\n`;
+    }
+
+    if (!borradorCompleto.trim()) {
+      alert("⚠️ Escriba o cargue una plantilla antes de pulir con IA.");
       return;
     }
 
-    const textoBtnOriginal = btn.innerHTML;
+    const textoOriginalBtn = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = "⏳ Puliendo...";
+    btn.innerHTML = "⏳ Pulida integral de todas las secciones con IA...";
 
-    const promptText = `Eres un instructor experto en derecho procesal penal peruano y redacción de Actas de Intervención Policial de la Policía Nacional del Perú (PNP).
-
-PRESUNTO DELITO CONFIGURADO: "${delito}"
-SECCIÓN A REDACTAR: "${tituloSec}"
+    const promptText = `Eres un instructor experto en redacción de Actas Policiales de la Policía Nacional del Perú (PNP).
+DELITO: "${delito}"
 
 TAREA:
-Mejora el siguiente borrador para que tenga un lenguaje técnico, formal y jurídico-policial conforme a la normativa de la PNP.
+Mejora la redacción técnico-policial de TODAS las secciones proporcionadas.
+Mantén los nombres, DNI, fechas, horas, marcas y placas exactamente igual.
 
-REGLAS ESTRICTAS:
-1. Emplea terminología policial peruana (ej. "flagrancia delictiva", "intervención en cumplimiento de la función policial", "registro de seguridad preliminar", "actitud elusiva / sospechosa", "traslado por medidas de seguridad").
-2. Adapta la terminología específicamente al delito de "${delito}".
-3. Respeta rigurosamente los datos reales (nombres, DNI, fechas, horas, números de placa, direcciones, marcas, modelos, nombres de fiscales). NO inventes datos.
-4. Devuelve ÚNICAMENTE la redacción mejorada para esta sección, sin saludos, notas ni explicaciones adicionales.
+FORMATO OBLIGATORIO DE RESPUESTA:
+Devuelve el resultado separando cada sección estrictamente con la etiqueta "=== SECCION_X ===" (donde X es el número de sección), seguido inmediatamente por el texto mejorado. Sin intros ni comentarios.
 
-BORRADOR POLICIAL:
-"${borrador}"`;
+BORRADOR COMPLETO:
+${borradorCompleto}`;
 
     try {
-      const resultadoTexto = await consultarApiGemini(promptText, apiKey, (mensajeEstado) => {
-        btn.innerHTML = mensajeEstado;
-      });
-
-      if (resultadoTexto) {
-        areaTexto.value = resultadoTexto.trim();
+      const resultado = await consultarApiGemini(promptText, apiKey);
+      
+      // Separar la respuesta y distribuirla en cada caja de texto
+      for (let i = 1; i <= cantSec; i++) {
+        const regex = new RegExp(`=== SECCION_${i} ===\\s*([\\s\\S]*?)(?=(=== SECCION_|\\n*$))`, 'i');
+        const match = resultado.match(regex);
+        if (match && match[1]) {
+          const areaTexto = document.getElementById(`agregar_intervencion_${i}`);
+          if (areaTexto) areaTexto.value = match[1].trim();
+        }
       }
+      alert("✅ ¡Todas las secciones fueron pulidas con éxito en una sola llamada!");
     } catch (err) {
-      // Notificación visual dentro del propio botón sin abrir popups de alert()
-      btn.style.background = "#dc2626";
-      btn.innerHTML = "⚠️ Límite saturado";
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      alert("❌ Error: " + err.message);
     } finally {
       btn.disabled = false;
-      btn.style.background = "#7c3aed";
-      btn.innerHTML = textoBtnOriginal;
+      btn.innerHTML = textoOriginalBtn;
     }
   }
   
