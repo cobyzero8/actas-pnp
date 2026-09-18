@@ -1058,12 +1058,9 @@
     }
   }
 
- async function consultarApiGemini(prompt, apiKey) {
+async function consultarApiGemini(prompt, apiKey, onStatusUpdate = () => {}) {
     const cleanKey = encodeURIComponent(apiKey);
-    const payload = {
-      contents: [{ parts: [{ text: prompt }] }]
-    };
-
+    const payload = { contents: [{ parts: [{ text: prompt }] }] };
     const model = 'gemini-3.6-flash';
     const maxReintentos = 3;
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${cleanKey}`;
@@ -1082,18 +1079,14 @@
           return data.candidates[0].content.parts[0].text;
         }
 
-        // Si la cuota gratuita por minuto se superó (429)
-        if (res.status === 429) {
-          throw new Error("Límite de la versión gratuita alcanzado (máx. 5 consultas/minuto). Espera 15 segundos e intenta de nuevo.");
-        }
-
-        // Si hay alta demanda en los servidores (503), espera 6 segundos antes de reintentar
-        if (res.status === 503) {
+        // Si es 429 (límite de cuota) o 503 (servidor saturado), reintenta automáticamente en segundo plano
+        if (res.status === 429 || res.status === 503) {
           if (intento < maxReintentos) {
-            await new Promise(resolve => setTimeout(resolve, 6000));
+            const segundosPausa = intento * 6; // Pausa progresiva de 6s, 12s...
+            onStatusUpdate(`⏳ Servidor ocupado. Reintentando en ${segundosPausa}s (${intento}/${maxReintentos})...`);
+            await new Promise(resolve => setTimeout(resolve, segundosPausa * 1000));
             continue;
           }
-          throw new Error("Servidores de Google con alta demanda. Espera 10 segundos y reintenta.");
         }
 
         const errMsg = data.error?.message || `Error HTTP ${res.status}`;
@@ -1110,20 +1103,20 @@
         throw new Error(errMsg);
 
       } catch (e) {
-        if (intento === maxReintentos || e.message.includes("Límite") || e.message.includes("API Key")) {
-          throw e;
-        }
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        if (e.message.includes("API Key") || intento === maxReintentos) throw e;
       }
     }
+
+    throw new Error("El servicio de IA tardó demasiado en responder. Por favor, reintenta en un momento.");
   }
+  
 
 
 
   
 
   
-  async function mejorarSeccionConGemini(numSeccion) {
+async function mejorarSeccionConGemini(numSeccion) {
     const apiKey = obtenerGeminiKey();
     if (!apiKey) return;
 
@@ -1150,9 +1143,9 @@ SECCIÓN A REDACTAR: "${tituloSec}"
 TAREA:
 Mejora el siguiente borrador para que tenga un lenguaje técnico, formal y jurídico-policial conforme a la normativa de la PNP.
 
-REGLAS STRICTAS:
+REGLAS ESTRICTAS:
 1. Emplea terminología policial peruana (ej. "flagrancia delictiva", "intervención en cumplimiento de la función policial", "registro de seguridad preliminar", "actitud elusiva / sospechosa", "traslado por medidas de seguridad").
-2. Adapta la terminología Específicamente al delito de "${delito}".
+2. Adapta la terminología específicamente al delito de "${delito}".
 3. Respeta rigurosamente los datos reales (nombres, DNI, fechas, horas, números de placa, direcciones, marcas, modelos, nombres de fiscales). NO inventes datos.
 4. Devuelve ÚNICAMENTE la redacción mejorada para esta sección, sin saludos, notas ni explicaciones adicionales.
 
@@ -1160,7 +1153,10 @@ BORRADOR POLICIAL:
 "${borrador}"`;
 
     try {
-      const resultadoTexto = await consultarApiGemini(promptText, apiKey);
+      const resultadoTexto = await consultarApiGemini(promptText, apiKey, (mensajeEstado) => {
+        btn.innerHTML = mensajeEstado;
+      });
+
       if (resultadoTexto) {
         areaTexto.value = resultadoTexto.trim();
       }
@@ -1171,6 +1167,8 @@ BORRADOR POLICIAL:
       btn.innerHTML = textoBtnOriginal;
     }
   }
+
+  
 
   async function auditarActaCompletaConGemini() {
     const apiKey = obtenerGeminiKey();
