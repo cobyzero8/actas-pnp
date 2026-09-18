@@ -1062,7 +1062,7 @@ async function consultarApiGemini(prompt, apiKey, onStatusUpdate = () => {}) {
     const cleanKey = encodeURIComponent(apiKey);
     const payload = { contents: [{ parts: [{ text: prompt }] }] };
     const model = 'gemini-3.6-flash';
-    const maxReintentos = 3;
+    const maxReintentos = 2;
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${cleanKey}`;
 
     for (let intento = 1; intento <= maxReintentos; intento++) {
@@ -1079,12 +1079,14 @@ async function consultarApiGemini(prompt, apiKey, onStatusUpdate = () => {}) {
           return data.candidates[0].content.parts[0].text;
         }
 
-        // Manejo silencioso de error 429 (Rate Limit) o 503 (High Demand)
+        // Manejo de tasa límite (429) y servidor ocupado (503)
         if (res.status === 429 || res.status === 503) {
           if (intento < maxReintentos) {
-            const esperaMs = 3000 * intento; // Pausa automática de 3s, luego 6s
-            onStatusUpdate(`⏳ Ajustando cuota... Reintentando en ${esperaMs / 1000}s (${intento}/${maxReintentos})`);
-            await new Promise(resolve => setTimeout(resolve, esperaMs));
+            const esperaSeg = 35; // Pausa de 35s para cubrir los 33.6s solicitados por la API
+            for (let s = esperaSeg; s > 0; s--) {
+              onStatusUpdate(`⏳ Cuota libre llena. Reintentando en ${s}s...`);
+              await new Promise(resolve => setTimeout(resolve, 1000));
+            }
             continue;
           }
         }
@@ -1107,16 +1109,10 @@ async function consultarApiGemini(prompt, apiKey, onStatusUpdate = () => {}) {
       }
     }
 
-    throw new Error("Límite de cuota alcanzado momentáneamente. Espera 5 segundos e intenta de nuevo.");
+    throw new Error("Límite de cuota temporal. Espera unos segundos e intenta nuevamente.");
   }
-  
 
-
-
-  
-
-  
-async function mejorarSeccionConGemini(numSeccion) {
+  async function mejorarSeccionConGemini(numSeccion) {
     const apiKey = obtenerGeminiKey();
     if (!apiKey) return;
 
@@ -1161,13 +1157,16 @@ BORRADOR POLICIAL:
         areaTexto.value = resultadoTexto.trim();
       }
     } catch (err) {
-      alert("❌ " + err.message);
+      // Notificación visual dentro del propio botón sin abrir popups de alert()
+      btn.style.background = "#dc2626";
+      btn.innerHTML = "⚠️ Límite saturado";
+      await new Promise(resolve => setTimeout(resolve, 3000));
     } finally {
       btn.disabled = false;
+      btn.style.background = "#7c3aed";
       btn.innerHTML = textoBtnOriginal;
     }
   }
-
   
 
   async function auditarActaCompletaConGemini() {
