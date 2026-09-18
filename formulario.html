@@ -1064,56 +1064,63 @@
       contents: [{ parts: [{ text: prompt }] }]
     };
 
-    // Modelos activos
-    const modelos = ['gemini-3.6-flash', 'gemini-2.5-flash'];
+    const model = 'gemini-3.6-flash';
     const maxReintentos = 3;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${cleanKey}`;
 
-    for (const model of modelos) {
-      for (let intento = 1; intento <= maxReintentos; intento++) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${cleanKey}`;
-        try {
-          const res = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-          });
+    for (let intento = 1; intento <= maxReintentos; intento++) {
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
 
-          const data = await res.json().catch(() => ({}));
+        const data = await res.json().catch(() => ({}));
 
-          if (res.ok && data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-            return data.candidates[0].content.parts[0].text;
-          }
-
-          // Si el servidor está saturado (503) o con límite de cuota (429), reintenta tras una pausa
-          if (res.status === 503 || res.status === 429) {
-            if (intento < maxReintentos) {
-              await new Promise(resolve => setTimeout(resolve, 2500 * intento));
-              continue;
-            }
-          }
-
-          const errMsg = data.error?.message || `Error HTTP ${res.status}`;
-
-          if (res.status === 400 || res.status === 401 || res.status === 403) {
-            if (errMsg.includes("API key") || errMsg.includes("INVALID_ARGUMENT") || errMsg.includes("PERMISSION_DENIED")) {
-              if (confirm(`❌ Error de API Key: ${errMsg}\n\n¿Deseas borrar la clave guardada para ingresar una nueva?`)) {
-                localStorage.removeItem('pnp_gemini_api_key');
-              }
-              throw new Error(`API Key no válida: ${errMsg}`);
-            }
-          }
-
-          break; // Si es un error definitivo de sintaxis o modelo, pasa al siguiente modelo
-        } catch (e) {
-          if (e.message.includes("API Key no válida")) throw e;
-          if (intento === maxReintentos) break;
+        if (res.ok && data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+          return data.candidates[0].content.parts[0].text;
         }
+
+        // Si la cuota gratuita por minuto se superó (429)
+        if (res.status === 429) {
+          throw new Error("Límite de la versión gratuita alcanzado (máx. 5 consultas/minuto). Espera 15 segundos e intenta de nuevo.");
+        }
+
+        // Si hay alta demanda en los servidores (503), espera 6 segundos antes de reintentar
+        if (res.status === 503) {
+          if (intento < maxReintentos) {
+            await new Promise(resolve => setTimeout(resolve, 6000));
+            continue;
+          }
+          throw new Error("Servidores de Google con alta demanda. Espera 10 segundos y reintenta.");
+        }
+
+        const errMsg = data.error?.message || `Error HTTP ${res.status}`;
+
+        if (res.status === 400 || res.status === 401 || res.status === 403) {
+          if (errMsg.includes("API key") || errMsg.includes("INVALID_ARGUMENT") || errMsg.includes("PERMISSION_DENIED")) {
+            if (confirm(`❌ Error de API Key: ${errMsg}\n\n¿Deseas borrar la clave guardada para ingresar una nueva?`)) {
+              localStorage.removeItem('pnp_gemini_api_key');
+            }
+            throw new Error(`API Key no válida: ${errMsg}`);
+          }
+        }
+
+        throw new Error(errMsg);
+
+      } catch (e) {
+        if (intento === maxReintentos || e.message.includes("Límite") || e.message.includes("API Key")) {
+          throw e;
+        }
+        await new Promise(resolve => setTimeout(resolve, 5000));
       }
     }
-
-    throw new Error("Los servidores de Google IA presentan alta demanda momentánea. Reintenta en 10 segundos.");
   }
 
+
+
+  
 
   
   async function mejorarSeccionConGemini(numSeccion) {
