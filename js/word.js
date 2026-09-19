@@ -6,7 +6,7 @@
 const CATALOGO_ACTAS = [
   { 
     id: "acta_intervencion", 
-    aliases: ["intervencion", "acta_intervencion", "01_ACTA_DE_INTERVENCION_POLICIAL"], 
+    aliases: ["intervencion", "acta_intervencion", "01_ACTA_DE_INTERVENCION_POLICIAL", "acta_intervencion_policial"], 
     titulo: "01. Acta de Intervención Policial", 
     archivo: "plantilla/acta_intervencion.docx", 
     llevaHora: true, 
@@ -96,15 +96,22 @@ const CATALOGO_ACTAS = [
   },
   { 
     id: "acta_ocurrencia", 
-    aliases: ["acta_ocurrencia", "ocurrencia"], 
-    titulo: "12. Acta de Ocurrencia", 
+    aliases: [
+      "acta_ocurrencia", 
+      "ocurrencia", 
+      "acta_ocurrencia_accidente", 
+      "ocurrencia_accidente", 
+      "14. Acta de Ocurrencia (Accidente)", 
+      "Acta de Ocurrencia Policial"
+    ], 
+    titulo: "12. Acta de Ocurrencia Policial", 
     archivo: "plantilla/acta_ocurrencia.docx", 
     llevaHora: true, 
     esIndividual: false 
   },
   { 
     id: "acta_intervencion_control_identidad", 
-    aliases: ["acta_intervencion_control_identidad", "control_identidad"], 
+    aliases: ["acta_intervencion_control_identidad", "control_identidad", "13. Control de Identidad"], 
     titulo: "13. Acta de Intervención y Control de Identidad", 
     archivo: "plantilla/acta_intervencion_control_identidad.docx", 
     llevaHora: true, 
@@ -183,7 +190,6 @@ function registrarActaManual(nuevaActa) {
   if (!existe) {
     CATALOGO_ACTAS.push(estructuraCompleta);
     actasManualesAdicionales.push(estructuraCompleta);
-    console.log(`✅ Acta manual '${estructuraCompleta.titulo}' registrada con éxito.`);
   }
 }
 
@@ -529,7 +535,16 @@ function obtenerDatosMapeadosSituacionVehicular() {
 document.addEventListener('DOMContentLoaded', () => {
   delitoConfigurado = localStorage.getItem('pnp_delito_seleccionado') || "DILIGENCIA POLICIAL INDEPENDIENTE";
   const actasJSON = localStorage.getItem('pnp_actas_seleccionadas');
-  idsActasConfiguradas = actasJSON ? JSON.parse(actasJSON) : ["acta_constatacion"];
+  
+  // Asumir 'acta_ocurrencia' si no se especificó ninguna selección previa en menu.html
+  try {
+    idsActasConfiguradas = actasJSON ? JSON.parse(actasJSON) : ["acta_ocurrencia"];
+    if (!Array.isArray(idsActasConfiguradas) || idsActasConfiguradas.length === 0) {
+      idsActasConfiguradas = ["acta_ocurrencia"];
+    }
+  } catch (e) {
+    idsActasConfiguradas = ["acta_ocurrencia"];
+  }
 
   const actasManualesGuardadas = localStorage.getItem('pnp_actas_manuales_custom');
   if (actasManualesGuardadas) {
@@ -557,30 +572,42 @@ if (formExpediente) {
 
     actasAProcesarSecuencia = [];
     
+    // Si la lista está vacía al procesar, forzar acta_ocurrencia
+    if (!idsActasConfiguradas || idsActasConfiguradas.length === 0) {
+      idsActasConfiguradas = ["acta_ocurrencia"];
+    }
+
     idsActasConfiguradas.forEach(idSel => {
       const idLimpio = (typeof idSel === 'object' && idSel !== null) ? idSel.id : idSel;
       
       let coincide = CATALOGO_ACTAS.find(acta => 
-        acta.id === idLimpio || acta.aliases.includes(idLimpio)
+        acta.id === idLimpio || (acta.aliases && acta.aliases.some(alias => alias.toLowerCase() === String(idLimpio).toLowerCase()))
       );
 
       if (!coincide) {
-        const nombreArchivo = `${idLimpio}.docx`;
-        coincide = {
-          id: idLimpio,
-          aliases: [idLimpio],
-          titulo: (typeof idSel === 'object' && idSel.titulo) ? idSel.titulo : `Acta de ${idLimpio}`,
-          archivo: `plantilla/${nombreArchivo}`,
-          llevaHora: true,
-          esIndividual: true,
-          esVehicular: idLimpio.includes('vehicular') || idLimpio.includes('s_v')
-        };
+        // Fallback robusto hacia acta_ocurrencia si no se halla coincidencia directa
+        if (String(idLimpio).toLowerCase().includes("ocurrencia")) {
+          coincide = CATALOGO_ACTAS.find(a => a.id === "acta_ocurrencia");
+        } else {
+          const nombreArchivo = `${idLimpio}.docx`;
+          coincide = {
+            id: idLimpio,
+            aliases: [idLimpio],
+            titulo: (typeof idSel === 'object' && idSel.titulo) ? idSel.titulo : `Acta de ${idLimpio}`,
+            archivo: `plantilla/${nombreArchivo}`,
+            llevaHora: true,
+            esIndividual: true,
+            esVehicular: String(idLimpio).includes('vehicular') || String(idLimpio).includes('s_v')
+          };
+        }
       }
 
-      actasAProcesarSecuencia.push(coincide);
+      if (coincide && !actasAProcesarSecuencia.some(a => a.id === coincide.id)) {
+        actasAProcesarSecuencia.push(coincide);
+      }
     });
 
-    // Mover "acta_intervencion" al final de la secuencia de procesamiento
+    // Mover "acta_intervencion" al final si existe
     const indexIntervencion = actasAProcesarSecuencia.findIndex(a => a.id === 'acta_intervencion');
     if (indexIntervencion !== -1) {
       const [actaIntervencionObj] = actasAProcesarSecuencia.splice(indexIntervencion, 1);
@@ -791,7 +818,9 @@ function prepararYMostrarVistaPrevia() {
   const vehiculosPNPObj = {};
   for (let i = 1; i <= cantVeh; i++) {
     const inputElem = document.getElementById(`placa_policial_${i}`);
-    vehiculosPNPObj[`placa_policial${i}`] = inputElem ? (inputElem.value.trim() || "S/P") : "S/P";
+    const valPlaca = inputElem ? (inputElem.value.trim() || "S/P") : "S/P";
+    vehiculosPNPObj[`placa_policial${i}`] = valPlaca;
+    vehiculosPNPObj[`placa_policial_${i}`] = valPlaca;
   }
 
   const cantSecElem = document.getElementById('cant_secciones');
@@ -877,8 +906,8 @@ function prepararYMostrarVistaPrevia() {
     agraviado: agraviadoVal,
     actividad_realizada: actividadTexto,
     documentos_retran: procesarDocumentosRNT(),
-    hora1: regPersonal.horaInicio,
-    hora2: regPersonal.horaTermino,
+    hora1: regPersonal.horaInicio || datosFormularioBase.hora1 || "08:00",
+    hora2: regPersonal.horaTermino || datosFormularioBase.hora2 || "08:30",
     hora3: lecturaDerechos.horaInicio,
     hora4: lecturaDerechos.horaTermino,
     hora5: hora5Val,
@@ -942,7 +971,7 @@ function mostrarModalVistaPrevia() {
 
   let htmlActas = "";
   actasAProcesarSecuencia.forEach((acta) => {
-    const hor = horariosPorActa[acta.id] || { horaInicio: "-", horaTermino: "-" };
+    const hor = horariosPorActa[acta.id] || { horaInicio: d.hora1 || "-", horaTermino: d.hora2 || "-" };
     htmlActas += `
       <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:10px; border-radius:6px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
         <div>
