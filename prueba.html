@@ -115,7 +115,6 @@
     </div>
 
     <script>
-        // Cargar clave guardada al iniciar la página
         document.addEventListener("DOMContentLoaded", () => {
             const claveGuardada = localStorage.getItem("google_gemini_key");
             if (claveGuardada && document.getElementById('apiKeyInput')) {
@@ -173,10 +172,10 @@
                 Si un campo no es legible, pon "".
                 `;
 
-                // Modelo actualizado a gemini-1.5-flash-latest para la API v1beta
-                const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+                // URL actualizada al nuevo modelo gemini-3.6-flash requerido por la API de Google
+                const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
 
-                let respuesta = await fetch(urlAPI, {
+                const respuesta = await fetch(urlAPI, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -192,26 +191,6 @@
                     })
                 });
 
-                // Si por alguna razón falla el endpoint, hace intento de respaldo con gemini-2.0-flash
-                if (!respuesta.ok) {
-                    const urlRespaldos = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-                    respuesta = await fetch(urlRespaldos, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            contents: [{
-                                parts: [
-                                    { text: promptInstrucciones },
-                                    { inline_data: { mime_type: mimeType, data: base64Data } }
-                                ]
-                            }],
-                            generationConfig: {
-                                response_mime_type: "application/json"
-                            }
-                        })
-                    });
-                }
-
                 const data = await respuesta.json();
 
                 if (data.error) {
@@ -225,7 +204,7 @@
                 const textoJSON = data.candidates[0].content.parts[0].text;
                 const jsonResultado = JSON.parse(textoJSON);
 
-                // Asignar los datos extraídos a los textbox
+                // Asignación de datos a las cajas de texto
                 document.getElementById('num_dni').value = jsonResultado.num_dni || '';
 
                 const nombreCompleto = `${jsonResultado.nombres || ''} ${jsonResultado.apellidos || ''}`.trim();
