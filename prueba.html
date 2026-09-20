@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba OCR DNI - Actas PNP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 450px;
+            margin: 0 auto;
+            background-color: #f4f4f9;
+        }
+        .card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #1a237e;
+            margin-top: 0;
+        }
+        .campo {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        input[type="text"], input[type="password"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        .btn-principal {
+            width: 100%;
+            background-color: #1a237e;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-secundario {
+            width: 100%;
+            background-color: #455a64;
+            color: white;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        .sec-config {
+            background: #eef2f7;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Prueba OCR DNI</h2>
+
+        <!-- Configuración de API Key desde la misma web -->
+        <div class="sec-config">
+            <label for="apiKeyInput">Configurar API Key OpenRouter:</label>
+            <input type="password" id="apiKeyInput" placeholder="Pega aquí tu sk-or-v1-...">
+            <button type="button" class="btn-secundario" onclick="guardarApiKey()">💾 Guardar Clave en Navegador</button>
+        </div>
+
+        <!-- Entrada para la cámara o foto -->
+        <div class="campo">
+            <label for="fotoDNI">Foto del DNI:</label>
+            <input type="file" id="fotoDNI" accept="image/*" capture="environment">
+            <button type="button" id="btnProcesar" class="btn-principal" onclick="procesarDNIOpenRouter()">📷 Escanear DNI</button>
+        </div>
+
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
+
+        <!-- Formulario -->
+        <div class="campo">
+            <label for="num_dni">Número de DNI:</label>
+            <input type="text" id="num_dni" placeholder="Se completará solo...">
+        </div>
+
+        <div class="campo">
+            <label for="nombres_apellidos">Nombres y Apellidos:</label>
+            <input type="text" id="nombres_apellidos" placeholder="Se completará solo...">
+        </div>
+
+        <div class="campo">
+            <label for="estado_civil">Estado Civil:</label>
+            <input type="text" id="estado_civil" placeholder="Se completará solo...">
+        </div>
+
+        <div class="campo">
+            <label for="edad">Edad (Calculada):</label>
+            <input type="text" id="edad" placeholder="Se completará solo...">
+        </div>
+    </div>
+
+    <script src="js/ocr_dni.js"></script>
+</body>
+</html>
