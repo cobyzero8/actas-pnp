@@ -153,7 +153,6 @@
             }
 
             const archivo = inputFoto.files[0];
-            // Detecta automáticamente si es PNG, JPG, JPEG o WEBP
             const mimeType = archivo.type || "image/jpeg";
 
             try {
@@ -174,10 +173,10 @@
                 Si un campo no es legible, pon "".
                 `;
 
-                // Conexión directa a la API gratuita de Gemini 1.5 Flash
-                const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                // Modelo actualizado a gemini-1.5-flash-latest para la API v1beta
+                const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
 
-                const respuesta = await fetch(urlAPI, {
+                let respuesta = await fetch(urlAPI, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -192,6 +191,26 @@
                         }
                     })
                 });
+
+                // Si por alguna razón falla el endpoint, hace intento de respaldo con gemini-2.0-flash
+                if (!respuesta.ok) {
+                    const urlRespaldos = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    respuesta = await fetch(urlRespaldos, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [
+                                    { text: promptInstrucciones },
+                                    { inline_data: { mime_type: mimeType, data: base64Data } }
+                                ]
+                            }],
+                            generationConfig: {
+                                response_mime_type: "application/json"
+                            }
+                        })
+                    });
+                }
 
                 const data = await respuesta.json();
 
@@ -228,7 +247,6 @@
             }
         }
 
-        // Convierte cualquier formato de imagen a Base64 puro
         function extraerBytesBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -238,7 +256,6 @@
             });
         }
 
-        // Calcula la edad exacta en años
         function calcularEdad(fechaNacStr) {
             const nacimiento = new Date(fechaNacStr);
             const hoy = new Date();
