@@ -32,7 +32,7 @@
             margin-bottom: 5px;
             color: #333;
         }
-        input[type="text"], input[type="password"], input[type="file"], select {
+        input[type="text"], input[type="password"], input[type="file"] {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
@@ -74,42 +74,25 @@
 <body>
 
     <div class="card">
-        <h2>Prueba OCR DNI Multi-IA</h2>
+        <h2>Prueba OCR DNI (Google AI)</h2>
 
         <!-- Configuración de API Key -->
         <div class="sec-config">
-            <label for="apiKeyInput">API Key de OpenRouter:</label>
-            <input type="password" id="apiKeyInput" placeholder="Pega aquí tu sk-or-v1-...">
+            <label for="apiKeyInput">API Key de Google AI Studio:</label>
+            <input type="password" id="apiKeyInput" placeholder="Pega aquí tu AIzaSy...">
             <button type="button" class="btn-secundario" onclick="guardarApiKey()">💾 Guardar Clave</button>
-        </div>
-
-        <!-- Selector de Modelo de IA -->
-        <div class="campo">
-            <label for="modelSelect">Elegir Modelo de IA:</label>
-            <select id="modelSelect">
-                <!-- Opción 1: Gemini 2.0 (Gratis) -->
-                <option value="google/gemini-2.0-flash-exp:free">Google Gemini 2.0 Flash (Gratis)</option>
-                <!-- Opción 2: Meta Llama 3.2 Vision (Gratis) -->
-                <option value="meta-llama/llama-3.2-11b-vision-instruct:free">Meta Llama 3.2 Vision (Gratis)</option>
-                <!-- Opción 3: Qwen 2 VL (Gratis) -->
-                <option value="qwen/qwen-2-vl-72b-instruct:free">Qwen 2 VL 72B (Gratis)</option>
-                <!-- Opción 4: Claude 3.5 Sonnet (Requiere saldo en OpenRouter) -->
-                <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (Requiere saldo)</option>
-                <!-- Opción 5: Claude 3 Haiku (Requiere saldo) -->
-                <option value="anthropic/claude-3-haiku">Claude 3 Haiku (Muy barato)</option>
-            </select>
         </div>
 
         <!-- Entrada para la foto -->
         <div class="campo">
             <label for="fotoDNI">Foto del DNI:</label>
             <input type="file" id="fotoDNI" accept="image/*" capture="environment">
-            <button type="button" id="btnProcesar" class="btn-principal" onclick="procesarDNIOpenRouter()">📷 Escanear DNI</button>
+            <button type="button" id="btnProcesar" class="btn-principal" onclick="procesarDNIDirecto()">📷 Escanear DNI</button>
         </div>
 
         <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
 
-        <!-- Formulario -->
+        <!-- Formulario que se autocompleta -->
         <div class="campo">
             <label for="num_dni">Número de DNI:</label>
             <input type="text" id="num_dni" placeholder="Se completará solo...">
