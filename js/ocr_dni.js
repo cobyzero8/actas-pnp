@@ -1,63 +1,69 @@
-// Recupera la clave de Google AI Studio guardada en el navegador
-document.addEventListener("DOMContentLoaded", () => {
-    const claveGuardada = localStorage.getItem("google_gemini_key");
-    if (claveGuardada && document.getElementById('apiKeyInput')) {
-        document.getElementById('apiKeyInput').value = claveGuardada;
-    }
-});
+/**
+ * MÓDULO EXCLUSIVO: OCR DNI DE INTERVENIDOS (GOOGLE GEMINI IA)
+ * Archivo: js/ocr_dni.js
+ * Descripción: Maneja únicamente el escaneo de la foto del DNI y autocompleta 
+ * los campos de la tarjeta del intervenido correspondiente.
+ */
 
-function guardarApiKey() {
-    const key = document.getElementById('apiKeyInput').value.trim();
-    if (!key) {
-        alert("Por favor, ingresa tu API Key de Google AI Studio.");
-        return;
+// 1. Abre el selector de cámara/archivo de la tarjeta del intervenido
+function escanearDNICard(idCard) {
+    const inputFoto = document.getElementById(`foto_dni_${idCard}`);
+    if (inputFoto) {
+        inputFoto.click();
     }
-    localStorage.setItem("google_gemini_key", key);
-    alert("¡API Key de Google guardada con éxito!");
 }
 
-async function procesarDNIDirecto() {
-    let apiKey = document.getElementById('apiKeyInput').value.trim();
-    if (!apiKey) {
-        apiKey = localStorage.getItem("google_gemini_key");
-    }
+// 2. Procesa la foto del DNI y llena solo los campos del intervenido
+async function procesarDNICard(idCard) {
+    const inputFoto = document.getElementById(`foto_dni_${idCard}`);
+    const btnEscanear = document.getElementById(`btn_ocr_${idCard}`);
 
-    if (!apiKey) {
-        alert("Ingresa tu API Key de Google AI Studio (obtenida en aistudio.google.com).");
+    if (!inputFoto || !inputFoto.files || !inputFoto.files[0]) {
         return;
     }
 
-    const inputFoto = document.getElementById('fotoDNI');
-    const btnProcesar = document.getElementById('btnProcesar');
+    let apiKey = localStorage.getItem("google_gemini_key");
 
-    if (!inputFoto.files || !inputFoto.files[0]) {
-        alert("Por favor, selecciona o toma una foto del DNI primero.");
-        return;
+    if (!apiKey) {
+        apiKey = prompt("🔑 Ingresa tu API Key de Google AI Studio:");
+        if (apiKey && apiKey.trim() !== "") {
+            localStorage.setItem("google_gemini_key", apiKey.trim());
+        } else {
+            alert("⚠️ Se requiere la API Key de Gemini para escanear el DNI.");
+            inputFoto.value = "";
+            return;
+        }
     }
 
     const archivo = inputFoto.files[0];
+    const mimeType = archivo.type || "image/jpeg";
+    const textoOriginalBtn = btnEscanear ? btnEscanear.innerHTML : "";
 
     try {
-        if (btnProcesar) btnProcesar.innerText = "⏳ Escaneando DNI con Gemini...";
+        if (btnEscanear) {
+            btnEscanear.disabled = true;
+            btnEscanear.innerHTML = "⏳ Leyendo DNI...";
+            btnEscanear.style.background = "#d97706";
+        }
 
-        // Convertir foto a Base64
-        const base64Data = await extraerBytesBase64(archivo);
+        const base64Data = await extraerBytesBase64DNI(archivo);
 
         const promptInstrucciones = `
-        Analiza la imagen de este DNI (peruano) y extrae los datos.
-        Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura exacta (sin texto ni formato markdown adicional):
+        Analiza la imagen de este DNI peruano y extrae los datos del ciudadano.
+        Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura exacta:
         {
             "num_dni": "Número de 8 dígitos",
-            "apellidos": "Apellidos completos",
+            "apellidos": "Apellidos completos en MAYÚSCULAS",
             "nombres": "Nombres completos",
             "fecha_nacimiento": "YYYY-MM-DD",
-            "estado_civil": "SOLTERO, CASADO, VIUDO o DIVORCIADO"
+            "estado_civil": "SOLTERO, CASADO, VIUDO o CONVIVIENTE",
+            "domicilio": "Dirección exacta",
+            "lugar_nacimiento": "Lugar de nacimiento"
         }
-        Si un campo no es legible, pon "".
+        Si un campo no es legible, devuelve "".
         `;
 
-        // Petición directa a la API de Google Gemini (Gratuita)
-        const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
         const respuesta = await fetch(urlAPI, {
             method: "POST",
@@ -66,7 +72,7 @@ async function procesarDNIDirecto() {
                 contents: [{
                     parts: [
                         { text: promptInstrucciones },
-                        { inline_data: { mime_type: "image/jpeg", data: base64Data } }
+                        { inline_data: { mime_type: mimeType, data: base64Data } }
                     ]
                 }],
                 generationConfig: {
@@ -82,60 +88,76 @@ async function procesarDNIDirecto() {
         }
 
         if (!data.candidates || !data.candidates[0]) {
-            throw new Error("No se pudo interpretar la imagen. Revisa la nitidez de la foto.");
+            throw new Error("No se pudo interpretar la imagen del DNI.");
         }
 
-        const textoJSON = data.candidates[0].content.parts[0].text;
-        const jsonResultado = JSON.parse(textoJSON);
+        const res = JSON.parse(data.candidates[0].content.parts[0].text);
 
-        // Llenar campos automáticamente en el HTML
-        if (document.getElementById('num_dni')) {
-            document.getElementById('num_dni').value = jsonResultado.num_dni || '';
+        // Llenar campos exclusivamente en la tarjeta del intervenido objetivo
+        if (res.num_dni && document.getElementById(`intervenido_dni_${idCard}`)) {
+            document.getElementById(`intervenido_dni_${idCard}`).value = res.num_dni;
         }
 
-        const nombreCompleto = `${jsonResultado.nombres || ''} ${jsonResultado.apellidos || ''}`.trim();
-        if (document.getElementById('nombres_apellidos')) {
-            document.getElementById('nombres_apellidos').value = nombreCompleto;
+        if ((res.apellidos || res.nombres) && document.getElementById(`intervenido_nombre_${idCard}`)) {
+            const aps = (res.apellidos || '').toUpperCase().trim();
+            const noms = (res.nombres || '').trim();
+            document.getElementById(`intervenido_nombre_${idCard}`).value = aps ? `${aps}, ${noms}` : noms;
         }
 
-        if (document.getElementById('estado_civil')) {
-            document.getElementById('estado_civil').value = jsonResultado.estado_civil || '';
+        if (res.fecha_nacimiento && document.getElementById(`edad_${idCard}`)) {
+            const edad = calcularEdadDNI(res.fecha_nacimiento);
+            if (edad) document.getElementById(`edad_${idCard}`).value = edad;
         }
 
-        if (jsonResultado.fecha_nacimiento && document.getElementById('edad')) {
-            document.getElementById('edad').value = calcularEdad(jsonResultado.fecha_nacimiento);
+        if (res.estado_civil && document.getElementById(`estado_civil_${idCard}`)) {
+            const est = res.estado_civil.toUpperCase();
+            const select = document.getElementById(`estado_civil_${idCard}`);
+            if (est.includes("CASAD")) select.value = "casado";
+            else if (est.includes("VIUD")) select.value = "viudo";
+            else if (est.includes("CONVIV")) select.value = "conviviente";
+            else select.value = "soltero";
         }
 
-        alert("¡Datos del DNI cargados correctamente!");
+        if (res.domicilio && document.getElementById(`domicilio_${idCard}`)) {
+            document.getElementById(`domicilio_${idCard}`).value = res.domicilio;
+        }
+
+        if (res.lugar_nacimiento && document.getElementById(`natural_${idCard}`)) {
+            document.getElementById(`natural_${idCard}`).value = res.lugar_nacimiento;
+        }
+
+        alert("✅ Datos del DNI cargados en el intervenido.");
 
     } catch (error) {
-        console.error("Error al procesar el DNI:", error);
-        alert(`Ocurrió un detalle:\n${error.message}`);
+        console.error("Error OCR DNI:", error);
+        alert(`⚠️ No se pudo procesar la foto:\n${error.message}`);
     } finally {
-        if (btnProcesar) btnProcesar.innerText = "📷 Escanear DNI";
+        if (btnEscanear) {
+            btnEscanear.disabled = false;
+            btnEscanear.innerHTML = textoOriginalBtn;
+            btnEscanear.style.background = "";
+        }
+        inputFoto.value = "";
     }
 }
 
-// Convierte la imagen a formato Base64 para enviarla a Google
-function extraerBytesBase64(file) {
+// Funciones auxiliares internas aisladas
+function extraerBytesBase64DNI(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = error => reject(error);
+        reader.onerror = err => reject(err);
     });
 }
 
-// Calcula la edad en años a partir de YYYY-MM-DD
-function calcularEdad(fechaNacStr) {
+function calcularEdadDNI(fechaNacStr) {
     const nacimiento = new Date(fechaNacStr);
     const hoy = new Date();
-
     if (isNaN(nacimiento.getTime())) return "";
 
     let edad = hoy.getFullYear() - nacimiento.getFullYear();
     const difMeses = hoy.getMonth() - nacimiento.getMonth();
-
     if (difMeses < 0 || (difMeses === 0 && hoy.getDate() < nacimiento.getDate())) {
         edad--;
     }
