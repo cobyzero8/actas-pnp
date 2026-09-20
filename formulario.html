@@ -933,7 +933,6 @@
 </div>
 
 <script src="js/auth.js"></script>
-<script src="js/ocr_dni.js"></script>
 <script src="js/word.js"></script>
 
 <script>
@@ -1011,6 +1010,10 @@
       mostrarEtapa(1);
     }
   });
+
+ 
+
+
 
   async function obtenerUbicacionGPS(idInputLugar, idBoton) {
     if (!navigator.geolocation) {
@@ -1496,8 +1499,6 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #fee2e2; padding-bottom: 4px; flex-wrap: wrap; gap: 6px;">
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             <span style="font-weight: bold; color: #991b1b; font-size: 13px;">👤 Persona Intervenida N° <span class="num-intervenido"></span></span>
-            <button type="button" id="btn_ocr_${id}" onclick="escanearDNICard(${id})" style="padding: 3px 8px; font-size: 11px; background: #0284c7; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">📷 Escanear DNI con IA</button>
-            <input type="file" id="foto_dni_${id}" accept="image/*" capture="environment" style="display: none;" onchange="procesarDNICard(${id})">
           </div>
           ${!esPrimero ? `<button type="button" onclick="eliminarIntervenidoCard(${id})" style="padding: 3px 8px; font-size: 11px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">🗑️ Eliminar</button>` : '<span style="font-size: 10px; color: #991b1b; font-weight: bold;">[PRINCIPAL]</span>'}
         </div>
@@ -1935,7 +1936,7 @@
     document.getElementById('cant_secciones').value = 3; construirSeccionesNarrativa();
     const hora = getVal('hora_intervencion', '21:40'); const fechaFormateada = getVal('fecha'); const lugar = getVal('lugar', 'la Av. Circunvalación N° 410'); const unidadPol = getVal('unidad_policial', 'DEPINCRI-Huanta'); const unidadDisp = getVal('unidad_disposicion', 'DEPINCRI-Huanta'); const fiscal = getVal('fiscal', 'Ernesto ARROYO MEDINA'); const agraviado = getVal('agraviado', 'Pedro Luis VÁSQUEZ CALDERÓN (29)'); const pnp1 = getVal('placa_policial_1', 'PL-14176'); const horaFin = getVal('hora2', '22:30');
     const listaPNP = obtenerListaEfectivosPNP(); const pnpPrincipal = listaPNP[0] || { grado: "S3", nombre: "TORRES PALOMINO, Renzo Gabriel", cip: "31425556" }; const pnpNomInv = formatearNombreInvertido(pnpPrincipal.nombre);
-    const otrosPNPTexto = listaPNP.length > 1 ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP${formatearNombreInvertido(p.nombre)}`).join(', ')}` : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
+    const otrosPNPTexto = listaPNP.length > 1 ? `en compañía del ${listaPNP.slice(1).map(p => `${p.grado} PNP ${formatearNombreInvertido(p.nombre)}`).join(', ')}` : "en compañía del SO3 PNP Juan Carlos PÉREZ GÓMEZ";
     const persona = obtenerListaIntervenidos()[0] || { nombre: "QUISPE MAMANI, Jhonathan Alex", edad: "26", dni: "72109876", natural: "Huanta", estado_civil: "soltero", ocupacion: "mototaxista", domicilio: "Barrio de Hospital S/N - Huanta", celular: "912304958" };
     const personaNomInv = formatearNombreInvertido(persona.nombre);
     const veh = obtenerListaVehiculos()[0] || { placa: "4567-3Y", clase_vehiculo: "TRIMOVIL", marca: "Ronco", modelo: "Pantera-B150", color: "Negro", anio_fab: "2022", num_motor: "157FMI-2022098", num_chasis: "LTMKD0798F5108917" };
