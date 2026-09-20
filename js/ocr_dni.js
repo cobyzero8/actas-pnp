@@ -4,20 +4,30 @@
  * Descripción: Maneja la configuración de la API Key y el escaneo de DNI con Gemini 3.6 Flash.
  */
 
-// 1. Permite cambiar o configurar la API Key de Gemini desde el botón del formulario
+// 1. Configuración de API Key desde el botón "🔑 Configurar API Key IA"
 function cambiarGeminiApiKey() {
     const actualKey = localStorage.getItem("google_gemini_key") || "";
-    const nuevaKey = prompt("🔑 Configurar API Key de Google AI Studio (Gemini):", actualKey);
+    const keyMascara = actualKey ? `${actualKey.substring(0, 6)}...${actualKey.slice(-4)}` : "No configurada";
+    
+    const nuevaKey = prompt(
+        `🔑 Configurar API Key de Google AI Studio (Gemini):\n\nEstado actual: ${keyMascara}\n\nIngresa la nueva API Key (deja en blanco para eliminar):`, 
+        actualKey
+    );
+
     if (nuevaKey !== null) {
-        if (nuevaKey.trim() !== "") {
-            localStorage.setItem("google_gemini_key", nuevaKey.trim());
-            alert("✅ ¡API Key guardada con éxito!");
+        const keyLimpia = nuevaKey.trim();
+        if (keyLimpia !== "") {
+            localStorage.setItem("google_gemini_key", keyLimpia);
+            alert("✅ ¡API Key guardada correctamente!");
         } else {
             localStorage.removeItem("google_gemini_key");
             alert("ℹ️ API Key eliminada.");
         }
     }
 }
+
+// Hacer global la función para asegurar su ejecución desde onclick en formulario.html
+window.cambiarGeminiApiKey = cambiarGeminiApiKey;
 
 // 2. Abre el selector de cámara/archivo de la tarjeta del intervenido
 function escanearDNICard(idCard) {
@@ -27,7 +37,7 @@ function escanearDNICard(idCard) {
     }
 }
 
-// 3. Procesa la foto del DNI y llena solo los campos del intervenido
+// 3. Procesa la foto del DNI y llena los campos de la tarjeta del intervenido
 async function procesarDNICard(idCard) {
     const inputFoto = document.getElementById(`foto_dni_${idCard}`);
     const btnEscanear = document.getElementById(`btn_ocr_${idCard}`);
@@ -77,7 +87,7 @@ async function procesarDNICard(idCard) {
         Si un campo no es legible, devuelve "".
         `;
 
-        // URL actualizada al modelo gemini-3.6-flash
+        // URL configurada con el modelo gemini-3.6-flash
         const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
 
         const respuesta = await fetch(urlAPI, {
@@ -108,7 +118,6 @@ async function procesarDNICard(idCard) {
 
         const res = JSON.parse(data.candidates[0].content.parts[0].text);
 
-        // Llenar campos exclusivamente en la tarjeta del intervenido
         if (res.num_dni && document.getElementById(`intervenido_dni_${idCard}`)) {
             document.getElementById(`intervenido_dni_${idCard}`).value = res.num_dni;
         }
@@ -156,7 +165,6 @@ async function procesarDNICard(idCard) {
     }
 }
 
-// Funciones auxiliares internas
 function extraerBytesBase64DNI(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
