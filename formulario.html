@@ -269,6 +269,28 @@
     summary { user-select: none; outline: none; }
     summary::-webkit-details-marker { display: none; }
 
+    /* Estilo del Botón Scan DNI */
+    .btn-scan-dni {
+      background: #2563eb;
+      color: #ffffff !important;
+      font-weight: bold;
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 5px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+      transition: all 0.2s ease;
+      border: none;
+    }
+    .btn-scan-dni:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+    }
+
     @media (max-width: 900px) {
       #contenedorPaso2Grid {
         grid-template-columns: 1fr !important;
@@ -447,8 +469,13 @@
 <div class="container" style="max-width: 1150px;">
   <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
-      <a href="menu.html" style="text-decoration: none; color: var(--primary, #003366); font-weight: bold; font-size: 13px;">← Cambiar Delito / Actas</a>
+      <a href="menu.html" style="text-decoration: none; color: var(--primary); font-weight: bold; font-size: 13px;">← Cambiar Delito / Actas</a>
       
+      <!-- BOTÓN SCAN DNI REQUERIDO -->
+      <a href="prueba.html" target="_blank" class="btn-scan-dni">
+        📷 Scan DNI
+      </a>
+
       <button type="button" onclick="cargarDatosEjemplo()" class="btn btn-primary" style="width: auto; padding: 6px 14px; font-size: 12px; background: #0d9488; border-color: #0d9488;">
         ⚡ Cargar Prueba (1 Efectivo PNP + 1 Intervenido + 1 Vehículo)
       </button>
@@ -1009,93 +1036,7 @@
     } else {
       mostrarEtapa(1);
     }
-
-    // CAPTURA AUTOMÁTICA DE DATOS PROCESADOS EN PRUEBA.HTML
-    capturarDatosDePruebaHTML();
-
-    const formExp = document.getElementById('expedienteForm');
-    if (formExp) {
-      formExp.addEventListener('submit', (e) => {
-        e.preventDefault();
-        guardarEstadoFormulario();
-        if (typeof window.generarExpedienteWord === 'function') {
-          window.generarExpedienteWord();
-        } else if (typeof window.generarExpediente === 'function') {
-          window.generarExpediente();
-        } else {
-          prepararYMostrarVistaPrevia();
-        }
-      });
-    }
   });
-
-  // FUNCIÓN PARA JALAR DATOS DESDE PRUEBA.HTML A LAS CAJAS DE TEXTO
-  function capturarDatosDePruebaHTML() {
-    const datosRaw = localStorage.getItem('dni_escaneado_temp');
-    if (!datosRaw) return;
-
-    try {
-      const datos = JSON.parse(datosRaw);
-      const targetId = localStorage.getItem('target_intervenido_id') || "1";
-
-      if (datos.num_dni) {
-        const inpDni = document.getElementById(`intervenido_dni_${targetId}`);
-        if (inpDni) inpDni.value = datos.num_dni;
-      }
-
-      const apellidos = (datos.apellidos || '').trim().toUpperCase();
-      const nombres = (datos.nombres || '').trim();
-      if (apellidos || nombres) {
-        const inpNombre = document.getElementById(`intervenido_nombre_${targetId}`);
-        if (inpNombre) inpNombre.value = `${apellidos}, ${nombres}`.trim();
-      }
-
-      if (datos.estado_civil) {
-        const estadoLower = datos.estado_civil.toLowerCase();
-        const selectEstado = document.getElementById(`estado_civil_${targetId}`);
-        if (selectEstado) {
-          for (let option of selectEstado.options) {
-            if (estadoLower.includes(option.value)) {
-              selectEstado.value = option.value;
-              break;
-            }
-          }
-        }
-      }
-
-      if (datos.fecha_nacimiento) {
-        const inpEdad = document.getElementById(`edad_${targetId}`);
-        if (inpEdad) inpEdad.value = calcularEdad(datos.fecha_nacimiento);
-      }
-
-      // Limpiamos las llaves temporales tras asignar los valores
-      localStorage.removeItem('dni_escaneado_temp');
-      localStorage.removeItem('target_intervenido_id');
-
-      alert(`✅ Datos de DNI cargados correctamente en la persona N° ${targetId}.`);
-
-    } catch (error) {
-      console.error("Error al capturar datos de prueba.html:", error);
-    }
-  }
-
-  function irAEscanerDNI(idIntervenido) {
-    guardarEstadoFormulario();
-    localStorage.setItem('target_intervenido_id', idIntervenido);
-    window.location.href = 'prueba.html';
-  }
-
-  function calcularEdad(fechaNacStr) {
-    const nacimiento = new Date(fechaNacStr);
-    const hoy = new Date();
-    if (isNaN(nacimiento.getTime())) return "";
-    let edad = hoy.getFullYear() - nacimiento.getFullYear();
-    const difMeses = hoy.getMonth() - nacimiento.getMonth();
-    if (difMeses < 0 || (difMeses === 0 && hoy.getDate() < nacimiento.getDate())) {
-      edad--;
-    }
-    return edad.toString();
-  }
 
   async function obtenerUbicacionGPS(idInputLugar, idBoton) {
     if (!navigator.geolocation) {
@@ -1581,11 +1522,6 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #fee2e2; padding-bottom: 4px; flex-wrap: wrap; gap: 6px;">
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             <span style="font-weight: bold; color: #991b1b; font-size: 13px;">👤 Persona Intervenida N° <span class="num-intervenido"></span></span>
-            
-            <!-- BOTÓN PARA ABRIR EL ESCÁNER DE PRUEBA.HTML -->
-            <button type="button" onclick="irAEscanerDNI(${id})" style="padding: 3px 8px; font-size: 11px; background: #0284c7; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
-              📷 Escanear DNI (prueba.html)
-            </button>
           </div>
           ${!esPrimero ? `<button type="button" onclick="eliminarIntervenidoCard(${id})" style="padding: 3px 8px; font-size: 11px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">🗑️ Eliminar</button>` : '<span style="font-size: 10px; color: #991b1b; font-weight: bold;">[PRINCIPAL]</span>'}
         </div>
@@ -1739,7 +1675,7 @@
     agregarEfectivoPNPCard({ grado: "S3", nombre: "TORRES PALOMINO, Renzo Gabriel", cip: "31425556" });
 
     document.getElementById('contenedor_intervenidos').innerHTML = ""; contadorIntervenidos = 0;
-    agregarIntervenidoCard({ nombre: "TORRES PALOMINO, Renzo Gabriel", dni: "75432189", licencia: "Q75432189", categoria_licencia: "B-IIc", edad: "22", estado_civil: "soltero", natural: "Ayacucho", celular: "956789012", papa: "Pedro", mama: "Rosa", ocupacion: "desempleado", domicilio: "Jr. Ayacucho N° 140 - Huanta", asistido_confianza: "su hermana María TORRES PALOMINO (Cel: 956789012)", asistido_confianza_registro: "no deseando ser asistido por ninguna persona" });
+    agregarIntervenidoCard({ nombre: "TORRES PALOMINO, Renzo Gabriel", dni: "75432189", licencia: "Q75432189", categoria_licencia: "B-IIc", edad: "22", estado_civil: "soltero", natural: "Ayacucho", celular: "956789012", papa: "Pedro", mama: "Rosa", ocupacion: "desempleado", domicilio: "Jr. Ayacucho N° 140 - Huanta", asistido: "su hermana María TORRES PALOMINO (Cel: 956789012)", asistido_registro: "no deseando ser asistido por ninguna persona" });
 
     document.getElementById('contenedor_vehiculos').innerHTML = ""; contadorVehiculos = 0;
     agregarVehiculoCard({ placa: "4567-3Y", clase_vehiculo: "TRIMOVIL", marca: "Ronco", modelo: "Pantera-B150", color: "Negro", anio_fab: "2022", num_motor: "157FMI-2022098", num_chasis: "LTMKD0798F5108917" });
@@ -1987,143 +1923,6 @@
     txt.focus();
   }
 
-  function prepararYMostrarVistaPrevia() {
-    guardarEstadoFormulario();
-    const body = document.getElementById('contenidoVistaPreviaBody');
-    if (!body) return;
-
-    const fechaObj = extraerFechaPartes();
-    const lugar = getVal('lugar', 'No especificado');
-    const dist = getVal('distrito', 'Huanta');
-    const prov = getVal('provincia', 'Huanta');
-    const horaInt = getVal('hora_intervencion', '--:--');
-    const delito = localStorage.getItem('pnp_delito_seleccionado') || 'NO ESPECIFICADO';
-    const fiscal = getVal('fiscal', 'No especificado');
-    const agraviado = getVal('agraviado', 'EL ESTADO');
-    
-    const efectivos = obtenerListaEfectivosPNP();
-    const intervenidos = obtenerListaIntervenidos();
-    const vehiculos = obtenerListaVehiculos();
-
-    let html = `
-      <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #1e293b;">
-        <h3 style="text-align: center; color: #003366; margin-top: 0; text-transform: uppercase;">Resumen de Expediente Policial</h3>
-        <div style="background: #e2e8f0; padding: 8px 12px; border-radius: 4px; font-weight: bold; margin-bottom: 12px; color: #0f172a;">
-          📌 DELITO: ${delito}
-        </div>
-        
-        <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 12px;">
-          <tr>
-            <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold; width: 30%; background: #f1f5f9;">Fecha y Hora:</td>
-            <td style="padding: 6px; border: 1px solid #cbd5e1;">${fechaObj.dia} de ${fechaObj.mes} de ${fechaObj.anio} a las ${horaInt} hrs</td>
-          </tr>
-          <tr>
-            <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold; background: #f1f5f9;">Lugar:</td>
-            <td style="padding: 6px; border: 1px solid #cbd5e1;">${lugar} (${dist} - ${prov})</td>
-          </tr>
-          <tr>
-            <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold; background: #f1f5f9;">Fiscal RMP:</td>
-            <td style="padding: 6px; border: 1px solid #cbd5e1;">${fiscal}</td>
-          </tr>
-          <tr>
-            <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold; background: #f1f5f9;">Agraviado:</td>
-            <td style="padding: 6px; border: 1px solid #cbd5e1;">${agraviado}</td>
-          </tr>
-        </table>
-
-        <h4 style="color: #003366; border-bottom: 1px solid #003366; padding-bottom: 3px; margin-bottom: 6px;">👮‍♂️ Personal PNP Interviniente (${efectivos.length}):</h4>
-        <ul style="margin-top: 0; padding-left: 20px;">
-          ${efectivos.map(e => `<li><strong>${e.grado} PNP ${formatearNombreInvertido(e.nombre)}</strong> - CIP N° ${e.cip}</li>`).join('')}
-        </ul>
-
-        <h4 style="color: #003366; border-bottom: 1px solid #003366; padding-bottom: 3px; margin-bottom: 6px;">👤 Persona(s) Intervenida(s) (${intervenidos.length}):</h4>
-        <ul style="margin-top: 0; padding-left: 20px;">
-          ${intervenidos.map(i => `<li><strong>${formatearNombreInvertido(i.nombre)}</strong> (${i.edad} años) - DNI N° ${i.dni} | Dom: ${i.domicilio}</li>`).join('')}
-        </ul>
-
-        <h4 style="color: #003366; border-bottom: 1px solid #003366; padding-bottom: 3px; margin-bottom: 6px;">🚘 Vehículo(s) Involucrado(s) (${vehiculos.length}):</h4>
-        <ul style="margin-top: 0; padding-left: 20px;">
-          ${vehiculos.map(v => `<li>${formatearDetalleVehiculo(v)}</li>`).join('')}
-        </ul>
-
-        <h4 style="color: #003366; border-bottom: 1px solid #003366; padding-bottom: 3px; margin-bottom: 6px;">📝 Redacción de las Secciones del Acta:</h4>
-    `;
-
-    const cantSec = parseInt(document.getElementById('cant_secciones')?.value, 10) || 1;
-    for (let i = 1; i <= cantSec; i++) {
-      const tit = getVal(`titulo_sec_${i}`, `SECCIÓN ${i}`);
-      const txt = getVal(`agregar_intervencion_${i}`, '(Sin contenido)');
-      html += `
-        <div style="margin-bottom: 10px; background: #ffffff; padding: 10px; border: 1px solid #e2e8f0; border-radius: 4px;">
-          <strong style="color: #0284c7; font-size: 12px; display: block; margin-bottom: 4px;">${tit}</strong>
-          <p style="white-space: pre-wrap; font-size: 11px; margin: 0; font-family: monospace;">${txt}</p>
-        </div>
-      `;
-    }
-
-    html += `</div>`;
-    body.innerHTML = html;
-
-    const modal = document.getElementById('modalVistaPrevia');
-    if (modal) modal.style.display = 'flex';
-  }
-
-  function cerrarModalVistaPrevia() {
-    const modal = document.getElementById('modalVistaPrevia');
-    if (modal) modal.style.display = 'none';
-  }
-
-  function confirmarYGenerarExpedienteDesdePrevia() {
-    cerrarModalVistaPrevia();
-    if (typeof window.generarExpedienteWord === 'function') {
-      window.generarExpedienteWord();
-    } else if (typeof window.generarExpediente === 'function') {
-      window.generarExpediente();
-    } else {
-      alert("📦 Iniciando proceso de generación de expediente Word/ZIP...");
-    }
-  }
-
-  function cancelarProcesoHoras() {
-    const modal = document.getElementById('modalHoras');
-    if (modal) modal.style.display = 'none';
-  }
-
-  function confirmarHoraActaActual() {
-    const hInicio = document.getElementById('modalHoraInicio')?.value;
-    const hTermino = document.getElementById('modalHoraTermino')?.value;
-    if (!hInicio || !hTermino) {
-      alert("⚠️ Ingrese ambas horas (Inicio y Término).");
-      return;
-    }
-    const modal = document.getElementById('modalHoras');
-    if (modal) modal.style.display = 'none';
-  }
-
-  function cambiarGeminiApiKey() {
-    const keyActual = localStorage.getItem('google_gemini_key') || localStorage.getItem('gemini_api_key') || '';
-    const nuevaKey = prompt("🔑 Ingrese su API Key de Google Gemini AI:", keyActual);
-    if (nuevaKey !== null) {
-      const keyLimpia = nuevaKey.trim();
-      localStorage.setItem('google_gemini_key', keyLimpia);
-      localStorage.setItem('gemini_api_key', keyLimpia);
-      alert("✅ API Key de Gemini guardada correctamente.");
-    }
-  }
-
-  function cerrarSesion() {
-    if (typeof window.logout === 'function') {
-      window.logout();
-    } else if (typeof window.supabase !== 'undefined' && window.supabase.auth) {
-      window.supabase.auth.signOut().then(() => {
-        window.location.href = 'index.html';
-      });
-    } else {
-      localStorage.removeItem('pnp_sesion_activa');
-      window.location.href = 'index.html';
-    }
-  }
-
   function cargarModelo01HurtoAgravado() {
     document.getElementById('cant_secciones').value = 3; construirSeccionesNarrativa();
     const hora = getVal('hora_intervencion', '11:20');
@@ -2206,7 +2005,7 @@
     document.getElementById('agregar_intervencion_1').value = `--- Siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv}, en patrullaje motorizado a bordo de la unidad ${pnp1}, procedieron a la intervención de: ${personaNomInv} (${persona.edad} años), identificado con DNI N° ${persona.dni}, natural de ${persona.natural}, estado civil ${persona.estado_civil}, ocupación ${persona.ocupacion}, domiciliado en ${persona.domicilio}, conductor del vehículo de ${formatearDetalleVehiculo(veh)}.\n\n01. Circunstancias Precedentes: El personal policial advirtió que el vehículo antes mencionado realizaba maniobras temerarias y desplazamientos en zigzag, poniendo en peligro inminente la integridad de los peatones y conductores de la zona.\n\n02. Circunstancias Concomitantes: Al intervenir el vehículo y solicitar la documentación correspondiente al conductor, se percibió un fuerte aliento alcohólico, incoherencia al hablar y signos evidentes de ebriedad (ojo congestivo, desorientación).\n\n03. Circunstancias Posteriores: Al intervenido luego de hacerle de conocimiento el motivo de la intervención policial, de conformidad a las normativas vigentes y al Art. 307.2 del RETRAN, se procedió la Ejecución de pruebas de equilibrio y coordinación (Test de Hogan y Romberg).`;
 
     document.getElementById('titulo_sec_2').value = "II. PRUEBAS DE COORDINACIÓN Y/O EQUILIBRIO (RETRAN):";
-    document.getElementById('agregar_intervencion_2').value = `--- Con relación al Acta de Intervención Policial, y en aplicación al Art. 307.4 del RETRAN, se procede a realizar las siguiente (s) prueba (s) de equilibrio y/o coordinación:\n\n1. Andar con los ojos vendados o cerrados y los brazos en alto, poniendo un pie justo delante de otro, sobre una línea recta: [ NO PASÓ (X) ]\n2. Juntar los dedos índices de cada mano, a la altura de la barbilla, estando los ojos cerrados y partiendo de los brazos extendidos hacia abajo: [ NO PASÓ (X) ]\n3. Juntar el dedo índice de una mano con la nariz, estando con los ojos cerrados y partiendo de los brazos extendidos hacia abajo: [ NO PASÓ (X) ]\n4. Situar el individuo de pie con los pies juntos, las manos extendidas hacia adelante y con los ojos cerrados (PRUEBA DE ROMBERG): [ NO PASÓ (X) ]\n\n--- Asimismo, le dio a conocer sus derechos previstos en el Artículo 71 del CPP, se procedió a su traslado a la oficina de la ${unidadPol} para las diligencias correspondientes, dejando constancia que el intervenido ha recibido buen trato físico y psicológico. Los datos consultados en E-SINPOL PNP dieron resultado “NEGATIVO” para requisitorias. La persona intervenida es puesta a disposición de la ${unidadDisp} en calidad de DETENIDO.`;
+    document.getElementById('agregar_intervencion_2').value = `--- Con relación al Acta de Intervención Policial, y en aplicación al Art. 307.4 del RETRAN, se procede a realizar las siguiente (s) prueba (s) de equilibrio y/o coordinación:\n\n1. Andar con los ojos vendados o cerrados y los brazos en alto, poniendo un pie justo delante de otro, sobre una línea recta: [ NO PASÓ (X) ]\n2. Juntar los dedos índices de cada mano, a la altura de la barbilla, estando los ojos cerrados y partiendo de los brazos extendidos hacia abajo: [ NO PASÓ (X) ]\n3. Juntar el dedo índice de una mano con la nariz, estando con los ojos cerrados y partiendo de los brazos extendidos hacia abajo: [ NO PASÓ (X) ]\n4. Situar el individuo de pie con los pies juntos, las hands extendidas hacia adelante y con los ojos cerrados (PRUEBA DE ROMBERG): [ NO PASÓ (X) ]\n\n--- Asimismo, le dio a conocer sus derechos previstos en el Artículo 71 del CPP, se procedió a su traslado a la oficina de la ${unidadPol} para las diligencias correspondientes, dejando constancia que el intervenido ha recibido buen trato físico y psicológico. Los datos consultados en E-SINPOL PNP dieron resultado “NEGATIVO” para requisitorias. La persona intervenida es puesta a disposición de la ${unidadDisp} en calidad de DETENIDO.`;
 
     document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
     document.getElementById('agregar_intervencion_3').value = `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}.\n\n--- Siendo las ${horaFin} horas del mismo día se dio por concluida la diligencia.\nSe adjunta:`;
@@ -2280,7 +2079,7 @@
     document.getElementById('agregar_intervencion_1').value = `--- Siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv}, procedieron a la intervención de:\n1. ${formatearNombreInvertido(p1.nombre)} (${p1.edad} años), DNI N° ${p1.dni}.\n2. ${formatearNombreInvertido(p2.nombre)} (${p2.edad} años), DNI N° ${p2.dni}.`;
 
     document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
-    document.getElementById('agregar_intervencion_2').value = `01. Circunstancias Precedentes: En patrullaje preventivo por el sector, se observó una pelea tumultuaria (trifulca) entre varios sujetos en la vía pública, lanzándose objetos contundentes (botellas de vidrio).\n\n02. Circunstancias Concomitantes: El personal policial intervino de inmediato para restablecer el orden público, logrando intervenir a los dos ciudadanos antes indicados, quienes se agredían mutuamente con puñetes y patadas. El intervenido ${formatearNombreInvertido(p1.nombre)} presentaba un corte sangrante en el cuero cabelludo producto de un botellazo.\n\n03. Circunstancias Posteriores: Se prestó el primer auxilio trasladando al herido al Hospital de Huanta para su atención médica con custodia policial, conducen al segundo intervenido a la ${unidadDisp} para las investigaciones por el delito de Lesiones Mutuas.`;
+    document.getElementById('agregar_intervencion_2').value = `01. Circunstancias Precedentes: En patrullaje preventivo por el sector, se observó una pelea tumultuaria (trifulca) entre varios sujetos en la vía pública, lanzándose objetos contundentes (botellas de vidrio).\n\n02. Circunstancias Concomitantes: El personal policial intervino de inmediato para restablecer el orden público, logrando intervenir a los dos ciudadanos antes indicados, quienes se agredían mutuamente con puñetes y patadas. El intervenido ${formatearNombreInvertido(p1.nombre)} presentaba un corte sangrante en el cuero cabelludo producto de un botellazo.\n\n03. Circunstancias Posteriores: Se prestó el primer auxilio trasladando al herido al Hospital de Huanta para su atención médica con custodia policial, conduciento al segundo intervenido a la ${unidadDisp} para las investigaciones por el delito de Lesiones Mutuas.`;
 
     document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
     document.getElementById('agregar_intervencion_3').value = `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}.\n\n--- Siendo las ${horaFin} horas del mismo día se dio por concluida la diligencia.\nSe adjunta:`;
@@ -2378,7 +2177,7 @@
 
     document.getElementById('titulo_sec_2').value = "II. CONSULTA E-SINPOL PNP Y RESULTADO DE REQUISITORIA:";
     if (getVal('resultado_esinpol') === 'POSITIVO') {
-      document.getElementById('agregar_intervencion_2').value = `--- Que los datos brindados por la persona intervenida al ser consultados mediante el sistema virtual policial E-SINPOL PNP, su información básica personal dio como resultado “POSITIVO” para requisitorias vigentes:\n\nTIPO: ${getVal('tipo_requisitoria')}\nMOTIVO: ${getVal('motivo_requisitoria')}\nJUZGADO: ${getVal('juzgado_requisitoria')}\nDOCUMENTO: ${getVal('documento_requisitoria')}\nFECHA: ${getVal('fecha_requisitoria')}\nSITUACIÓN: ${getVal('situacion_requisitoria')}\n\n--- Se le informó expresamente que el motivo de su intervención es por encontrarse requisitoriado por el Delito de ${getVal('motivo_requisitoria')}, en agravio de ${getVal('agraviado')}, solicitado por el ${getVal('juzgado_requisitoria')}, mediante el ${getVal('documento_requisitoria')} de fecha ${getVal('fecha_requisitoria')}, a quién luego de hacerle de conocimiento el motivo de la intervención policial, sus derechos previstos en el Artículo 71 del Nuevo Código Procesal Penal, se le trasladó a la Comisaría para las diligencias correspondientes, dejando constancia que el intervenido ha recibido buen trato físico y psicológico, siendo tratado con dignidad y respeto; así también se precisa que las Actas que se adjuntan a la presente se realizaron en esta dependencia por medidas de seguridad del personal policial interviniente y del propio intervenido.`;
+      document.getElementById('agregar_intervencion_2').value = `--- Que los datos brindados por la persona intervenida al ser consultados mediante el sistema virtual policial E-SINPOL PNP, su información básica personal dio como resultado “POSITIVO” para requisitorias vigentes:\n\nTIPO: ${getVal('tipo_requisitoria')}\nMOTIVO: ${getVal('motivo_requisitoria')}\nJUZGADO: ${getVal('juzgado_requisitoria')}\nDOCUMENTO: ${getVal('documento_requisitoria')}\nFECHA: ${getVal('fecha_requisitoria')}\nSITUACIÓN: ${getVal('situacion_requisitoria')}\n\n--- Se le informó expresamente que el motivo de su intervención es por encontrarse requisitoriado por el Delito de ${getVal('motivo_requisitoria')}, en agravio de ${getVal('agraviado')}, solicitado por el ${getVal('juzgado_requisitoria')}, mediante el ${getVal('documento_requisitoria')} de fecha ${getVal('fecha_requisitoria')}, a quién luego de hacerle de conocimiento el motivo de la intervención policial, sus derechos previstos en el Artículo 71 del Nuevo Código Procesal Penal, se le trasladó a la Comisaría para las diligencias correspondientes, dejando constancia que el intervenido ha recibido buen trato físico y psicológico, siendo treatedo con dignidad y respeto; así también se precisa que las Actas que se adjuntan a la presente se realizaron en esta dependencia por medidas de seguridad del personal policial interviniente y del propio intervenido.`;
     } else {
       document.getElementById('agregar_intervencion_2').value = `--- Que los datos brindados por la persona intervenida al ser consultados mediante el sistema virtual policial E-SINPOL PNP, su información básica personal dio como resultado “NEGATIVO” para requisitorias vigentes.\n\n--- Se procedió a su plena identificación conforme a ley, retornando a sus actividades habituales sin inconvenientes, habiendo recibido buen trato físico y psicológico durante la diligencia.`;
     }
