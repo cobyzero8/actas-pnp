@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prueba OCR DNI - Actas PNP</title>
+    <title>Prueba OCR DNI y TIV - Actas PNP</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
-            max-width: 450px;
+            max-width: 950px;
             margin: 0 auto;
             background-color: #f4f4f9;
         }
-        .card {
+        .container {
             background: #ffffff;
             padding: 20px;
             border-radius: 10px;
@@ -22,19 +22,47 @@
             text-align: center;
             color: #1a237e;
             margin-top: 0;
+            margin-bottom: 15px;
+        }
+        .sec-config {
+            background: #eef2f7;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .grid-dos-columnas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            align-items: start;
+        }
+        .card-seccion {
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .titulo-seccion {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1a237e;
+            border-bottom: 2px solid #1a237e;
+            padding-bottom: 6px;
+            margin-bottom: 15px;
         }
         .campo {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         label {
             display: block;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             color: #333;
+            font-size: 13px;
         }
         input[type="text"], input[type="password"], input[type="file"] {
             width: 100%;
-            padding: 10px;
+            padding: 9px;
             border: 1px solid #ccc;
             border-radius: 5px;
             box-sizing: border-box;
@@ -44,13 +72,23 @@
             width: 100%;
             background-color: #1a237e;
             color: white;
-            padding: 12px;
+            padding: 10px;
             border: none;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 5px;
+            transition: background 0.2s;
+        }
+        .btn-principal:hover {
+            background-color: #0d1259;
+        }
+        .btn-vehiculo {
+            background-color: #d97706;
+        }
+        .btn-vehiculo:hover {
+            background-color: #b45309;
         }
         .btn-secundario {
             width: 100%;
@@ -63,54 +101,126 @@
             cursor: pointer;
             margin-top: 5px;
         }
-        .sec-config {
-            background: #eef2f7;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 20px;
+        .grid-campos-vehiculo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        @media (max-width: 500px) {
+            .grid-dos-columnas {
+                grid-template-columns: 1fr;
+            }
+            .grid-campos-vehiculo {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>Prueba OCR DNI (Google AI)</h2>
+    <div class="container">
+        <h2>Prueba OCR DNI y Tarjeta de Propiedad (Google AI)</h2>
 
         <!-- Configuración de API Key -->
         <div class="sec-config">
             <label for="apiKeyInput">API Key de Google AI Studio:</label>
-            <input type="password" id="apiKeyInput" placeholder="Pega aquí tu AIzaSy...">
-            <button type="button" class="btn-secundario" onclick="guardarApiKey()">💾 Guardar Clave</button>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <input type="password" id="apiKeyInput" placeholder="Pega aquí tu AIzaSy..." style="flex: 1; min-width: 200px;">
+                <button type="button" class="btn-secundario" onclick="guardarApiKey()" style="width: auto; padding: 0 15px;">💾 Guardar Clave</button>
+            </div>
         </div>
 
-        <!-- Entrada para la foto -->
-        <div class="campo">
-            <label for="fotoDNI">Foto del DNI:</label>
-            <input type="file" id="fotoDNI" accept="image/*" capture="environment">
-            <button type="button" id="btnProcesar" class="btn-principal" onclick="procesarDNIDirecto()">📷 Escanear DNI</button>
-        </div>
+        <div class="grid-dos-columnas">
+            
+            <!-- SECCIÓN 1: ESCÁNER DNI -->
+            <div class="card-seccion">
+                <div class="titulo-seccion">🪪 1. Escáner de DNI (Persona)</div>
 
-        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
+                <div class="campo">
+                    <label for="fotoDNI">Foto del DNI:</label>
+                    <input type="file" id="fotoDNI" accept="image/*" capture="environment">
+                    <button type="button" id="btnProcesarDNI" class="btn-principal" onclick="procesarDNIDirecto()">📷 Escanear DNI</button>
+                </div>
 
-        <!-- Formulario que se autocompleta -->
-        <div class="campo">
-            <label for="num_dni">Número de DNI:</label>
-            <input type="text" id="num_dni" placeholder="Se completará solo...">
-        </div>
+                <hr style="margin: 15px 0; border: 0; border-top: 1px dashed #ccc;">
 
-        <div class="campo">
-            <label for="nombres_apellidos">Nombres y Apellidos:</label>
-            <input type="text" id="nombres_apellidos" placeholder="Se completará solo...">
-        </div>
+                <div class="campo">
+                    <label for="num_dni">Número de DNI:</label>
+                    <input type="text" id="num_dni" placeholder="Se completará solo...">
+                </div>
 
-        <div class="campo">
-            <label for="estado_civil">Estado Civil:</label>
-            <input type="text" id="estado_civil" placeholder="Se completará solo...">
-        </div>
+                <div class="campo">
+                    <label for="nombres_apellidos">Nombres y Apellidos:</label>
+                    <input type="text" id="nombres_apellidos" placeholder="Se completará solo...">
+                </div>
 
-        <div class="campo">
-            <label for="edad">Edad (Calculada):</label>
-            <input type="text" id="edad" placeholder="Se completará solo...">
+                <div class="campo">
+                    <label for="estado_civil">Estado Civil:</label>
+                    <input type="text" id="estado_civil" placeholder="Se completará solo...">
+                </div>
+
+                <div class="campo">
+                    <label for="edad">Edad (Calculada):</label>
+                    <input type="text" id="edad" placeholder="Se completará solo...">
+                </div>
+            </div>
+
+            <!-- SECCIÓN 2: ESCÁNER TARJETA DE PROPIEDAD / TIV -->
+            <div class="card-seccion">
+                <div class="titulo-seccion">🚘 2. Escáner TIV / Tarjeta Propiedad</div>
+
+                <div class="campo">
+                    <label for="fotoTIV">Fotos TIV (Ambas caras / Múltiples):</label>
+                    <input type="file" id="fotoTIV" accept="image/*" capture="environment" multiple>
+                    <button type="button" id="btnProcesarTIV" class="btn-principal btn-vehiculo" onclick="procesarTIVDirecto()">🚗 Escanear Tarjeta TIV</button>
+                </div>
+
+                <hr style="margin: 15px 0; border: 0; border-top: 1px dashed #ccc;">
+
+                <div class="grid-campos-vehiculo">
+                    <div class="campo">
+                        <label for="placa">Placa:</label>
+                        <input type="text" id="placa" style="font-weight: bold;" placeholder="Ej: 4567-3Y">
+                    </div>
+
+                    <div class="campo">
+                        <label for="clase">Clase:</label>
+                        <input type="text" id="clase" placeholder="Ej: TRIMOVIL">
+                    </div>
+
+                    <div class="campo">
+                        <label for="marca">Marca:</label>
+                        <input type="text" id="marca" placeholder="Ej: Ronco">
+                    </div>
+
+                    <div class="campo">
+                        <label for="modelo">Modelo:</label>
+                        <input type="text" id="modelo" placeholder="Ej: Pantera-B150">
+                    </div>
+
+                    <div class="campo">
+                        <label for="color">Color:</label>
+                        <input type="text" id="color" placeholder="Ej: Negro">
+                    </div>
+
+                    <div class="campo">
+                        <label for="anio_fab">Año Fab.:</label>
+                        <input type="text" id="anio_fab" placeholder="Ej: 2022">
+                    </div>
+
+                    <div class="campo">
+                        <label for="num_motor">N° Motor:</label>
+                        <input type="text" id="num_motor" placeholder="Ej: 157FMI-2022098">
+                    </div>
+
+                    <div class="campo">
+                        <label for="num_chasis">N° Chasis:</label>
+                        <input type="text" id="num_chasis" placeholder="Ej: LTMKD0798F5108917">
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -132,19 +242,25 @@
             alert("¡API Key guardada con éxito en este navegador!");
         }
 
-        async function procesarDNIDirecto() {
+        function obtenerApiKey() {
             let apiKey = document.getElementById('apiKeyInput').value.trim();
             if (!apiKey) {
                 apiKey = localStorage.getItem("google_gemini_key");
             }
-
             if (!apiKey) {
                 alert("Por favor, ingresa tu API Key de Google AI Studio en la casilla superior y presiona 'Guardar Clave'.");
-                return;
+                return null;
             }
+            return apiKey;
+        }
+
+        /* ================= PROCESAR DNI ================= */
+        async function procesarDNIDirecto() {
+            const apiKey = obtenerApiKey();
+            if (!apiKey) return;
 
             const inputFoto = document.getElementById('fotoDNI');
-            const btnProcesar = document.getElementById('btnProcesar');
+            const btnProcesar = document.getElementById('btnProcesarDNI');
 
             if (!inputFoto.files || !inputFoto.files[0]) {
                 alert("Por favor, selecciona o toma una foto del DNI primero.");
@@ -172,7 +288,6 @@
                 Si un campo no es legible, pon "".
                 `;
 
-                // URL actualizada al nuevo modelo gemini-3.6-flash requerido por la API de Google
                 const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
 
                 const respuesta = await fetch(urlAPI, {
@@ -198,13 +313,12 @@
                 }
 
                 if (!data.candidates || !data.candidates[0]) {
-                    throw new Error("No se pudo leer la imagen. Intenta con una foto más clara.");
+                    throw new Error("No se pudo leer la imagen del DNI. Intenta con una foto más clara.");
                 }
 
                 const textoJSON = data.candidates[0].content.parts[0].text;
                 const jsonResultado = JSON.parse(textoJSON);
 
-                // Asignación de datos a las cajas de texto
                 document.getElementById('num_dni').value = jsonResultado.num_dni || '';
 
                 const nombreCompleto = `${jsonResultado.nombres || ''} ${jsonResultado.apellidos || ''}`.trim();
@@ -220,9 +334,99 @@
 
             } catch (error) {
                 console.error("Error al procesar el DNI:", error);
-                alert(`Error al procesar:\n${error.message}`);
+                alert(`Error al procesar DNI:\n${error.message}`);
             } finally {
                 if (btnProcesar) btnProcesar.innerText = "📷 Escanear DNI";
+            }
+        }
+
+        /* ================= PROCESAR TARJETA DE PROPIEDAD (TIV) ================= */
+        async function procesarTIVDirecto() {
+            const apiKey = obtenerApiKey();
+            if (!apiKey) return;
+
+            const inputFoto = document.getElementById('fotoTIV');
+            const btnProcesar = document.getElementById('btnProcesarTIV');
+
+            if (!inputFoto.files || inputFoto.files.length === 0) {
+                alert("Por favor, selecciona al menos una foto de la Tarjeta de Propiedad / TIV.");
+                return;
+            }
+
+            try {
+                if (btnProcesar) btnProcesar.innerText = "⏳ Escaneando TIV con Gemini...";
+
+                const parts = [
+                    { 
+                        text: `
+                        Analiza las imágenes adjuntas de la Tarjeta de Identificación Vehicular (TIV / Tarjeta de Propiedad de Perú) y extrae todos los datos del vehículo.
+                        Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura exacta (sin texto ni formato markdown adicional):
+                        {
+                            "placa": "Número de placa (ej. 4567-3Y o A1B-234)",
+                            "clase": "Clase del vehículo (ej. TRIMOVIL, AUTOMOVIL, CAMIONETA, MOTOCICLETA, OMNIBUS, etc.)",
+                            "marca": "Marca registrada del vehículo",
+                            "modelo": "Modelo exacto del vehículo",
+                            "color": "Color o colores principales del vehículo",
+                            "anio_fab": "Año de fabricación en 4 dígitos (ej. 2022)",
+                            "num_motor": "Número o código de motor",
+                            "num_chasis": "Número de chasis, serie o VIN"
+                        }
+                        Si un campo no es visible o no es legible, coloca "".
+                        ` 
+                    }
+                ];
+
+                // Convertir todas las fotos seleccionadas a partes Inline Data
+                for (let i = 0; i < inputFoto.files.length; i++) {
+                    const file = inputFoto.files[i];
+                    const base64Data = await extraerBytesBase64(file);
+                    const mimeType = file.type || "image/jpeg";
+                    parts.push({ inline_data: { mime_type: mimeType, data: base64Data } });
+                }
+
+                const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
+
+                const respuesta = await fetch(urlAPI, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: parts }],
+                        generationConfig: {
+                            response_mime_type: "application/json"
+                        }
+                    })
+                });
+
+                const data = await respuesta.json();
+
+                if (data.error) {
+                    throw new Error(`Google API: ${data.error.message || JSON.stringify(data.error)}`);
+                }
+
+                if (!data.candidates || !data.candidates[0]) {
+                    throw new Error("No se pudo procesar la tarjeta de propiedad. Intenta tomar fotos más nítidas.");
+                }
+
+                const textoJSON = data.candidates[0].content.parts[0].text;
+                const jsonResultado = JSON.parse(textoJSON);
+
+                // Asignar valores a las casillas del vehículo
+                document.getElementById('placa').value = jsonResultado.placa || '';
+                document.getElementById('clase').value = jsonResultado.clase || '';
+                document.getElementById('marca').value = jsonResultado.marca || '';
+                document.getElementById('modelo').value = jsonResultado.modelo || '';
+                document.getElementById('color').value = jsonResultado.color || '';
+                document.getElementById('anio_fab').value = jsonResultado.anio_fab || '';
+                document.getElementById('num_motor').value = jsonResultado.num_motor || '';
+                document.getElementById('num_chasis').value = jsonResultado.num_chasis || '';
+
+                alert("¡Datos de la Tarjeta Vehicular (TIV) cargados correctamente!");
+
+            } catch (error) {
+                console.error("Error al procesar la TIV:", error);
+                alert(`Error al procesar la Tarjeta de Propiedad:\n${error.message}`);
+            } finally {
+                if (btnProcesar) btnProcesar.innerText = "🚗 Escanear Tarjeta TIV";
             }
         }
 
