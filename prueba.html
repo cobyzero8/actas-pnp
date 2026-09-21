@@ -52,10 +52,6 @@
             cursor: pointer;
             margin-top: 10px;
         }
-        .btn-principal:disabled {
-            background-color: #9fa8da;
-            cursor: not-allowed;
-        }
         .btn-secundario {
             width: 100%;
             background-color: #455a64;
@@ -66,18 +62,6 @@
             font-size: 14px;
             cursor: pointer;
             margin-top: 5px;
-        }
-        .btn-exito {
-            width: 100%;
-            background-color: #2e7d32;
-            color: white;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
         }
         .sec-config {
             background: #eef2f7;
@@ -108,7 +92,7 @@
 
         <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
 
-        <!-- Formulario que se autocompleta en esta misma página -->
+        <!-- Formulario que se autocompleta -->
         <div class="campo">
             <label for="num_dni">Número de DNI:</label>
             <input type="text" id="num_dni" placeholder="Se completará solo...">
@@ -128,10 +112,6 @@
             <label for="edad">Edad (Calculada):</label>
             <input type="text" id="edad" placeholder="Se completará solo...">
         </div>
-
-        <button type="button" id="btnIrFormulario" class="btn-exito" style="display:none;" onclick="irAFormulario()">
-            ➡️ Llevar estos datos a formulario.html
-        </button>
     </div>
 
     <script>
@@ -175,10 +155,7 @@
             const mimeType = archivo.type || "image/jpeg";
 
             try {
-                if (btnProcesar) {
-                    btnProcesar.innerText = "⏳ Escaneando DNI con Gemini...";
-                    btnProcesar.disabled = true;
-                }
+                if (btnProcesar) btnProcesar.innerText = "⏳ Escaneando DNI con Gemini...";
 
                 const base64Data = await extraerBytesBase64(archivo);
 
@@ -195,7 +172,7 @@
                 Si un campo no es legible, pon "".
                 `;
 
-                // URL corregida con el modelo actualizado para evitar el error de suspensión
+                // URL actualizada al nuevo modelo gemini-3.6-flash requerido por la API de Google
                 const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
 
                 const respuesta = await fetch(urlAPI, {
@@ -227,7 +204,7 @@
                 const textoJSON = data.candidates[0].content.parts[0].text;
                 const jsonResultado = JSON.parse(textoJSON);
 
-                // 1. Asignación directa a las cajas de texto de esta misma página (prueba.html)
+                // Asignación de datos a las cajas de texto
                 document.getElementById('num_dni').value = jsonResultado.num_dni || '';
 
                 const nombreCompleto = `${jsonResultado.nombres || ''} ${jsonResultado.apellidos || ''}`.trim();
@@ -239,25 +216,14 @@
                     document.getElementById('edad').value = calcularEdad(jsonResultado.fecha_nacimiento);
                 }
 
-                // 2. Duplicamos la información guardándola en localStorage para que formulario.html la lea
-                localStorage.setItem('dni_escaneado_temp', JSON.stringify(jsonResultado));
-
-                document.getElementById('btnIrFormulario').style.display = 'block';
-                alert("¡Datos del DNI cargados correctamente en este formulario y listos para enviar!");
+                alert("¡Datos del DNI cargados correctamente!");
 
             } catch (error) {
                 console.error("Error al procesar el DNI:", error);
                 alert(`Error al procesar:\n${error.message}`);
             } finally {
-                if (btnProcesar) {
-                    btnProcesar.innerText = "📷 Escanear DNI";
-                    btnProcesar.disabled = false;
-                }
+                if (btnProcesar) btnProcesar.innerText = "📷 Escanear DNI";
             }
-        }
-
-        function irAFormulario() {
-            window.location.href = "formulario.html";
         }
 
         function extraerBytesBase64(file) {
