@@ -273,9 +273,12 @@
         </div>
     </div>
 
-    <script>
+   <script>
         let supabaseClient = null;
         let canalRealtime = null;
+
+        // URL por defecto de tu proyecto en Supabase
+        const URL_SUPABASE_DEFECTO = "https://hicjmlcdnrcjriuqhppb.supabase.co";
 
         document.addEventListener("DOMContentLoaded", () => {
             // Cargar Gemini Key
@@ -283,7 +286,7 @@
             if (geminiKey) document.getElementById('apiKeyInput').value = geminiKey;
 
             // Cargar Supabase Config
-            const sbUrl = localStorage.getItem("sb_url") || "https://hicjmlcdnrcjriuqhppb.supabase.co";
+            const sbUrl = localStorage.getItem("sb_url") || URL_SUPABASE_DEFECTO;
             const sbKey = localStorage.getItem("sb_key") || "";
             const sala = localStorage.getItem("sb_sala") || "1234";
 
@@ -298,54 +301,64 @@
 
         function guardarConfiguracion() {
             const geminiKey = document.getElementById('apiKeyInput').value.trim();
-            const sbUrl = document.getElementById('sbUrl').value.trim();
+            let sbUrl = document.getElementById('sbUrl').value.trim() || URL_SUPABASE_DEFECTO;
             const sbKey = document.getElementById('sbKey').value.trim();
             const sala = document.getElementById('codigoSala').value.trim() || "1234";
 
             if (geminiKey) localStorage.setItem("google_gemini_key", geminiKey);
-            if (sbUrl) localStorage.setItem("sb_url", sbUrl);
-            if (sbKey) localStorage.setItem("sb_key", sbKey);
+            localStorage.setItem("sb_url", sbUrl);
             localStorage.setItem("sb_sala", sala);
 
-            if (!sbUrl || !sbKey) {
-                alert("⚠️ Para la sincronización en vivo debes colocar la Supabase URL y Anon Key (Ajustes Avanzados).");
+            if (!sbKey) {
+                alert("⚠️ Para conectar necesitas pegar la 'Supabase Anon Key' en 'Ajustes Avanzados'.");
                 return;
             }
 
+            localStorage.setItem("sb_key", sbKey);
             iniciarSincronizacionSupabase(sbUrl, sbKey, sala);
-            alert(`✅ Configuración guardada. Conectado a la Sala: ${sala}`);
         }
 
         /* ================= SINCRONIZACIÓN EN TIEMPO REAL CON SUPABASE ================= */
         function iniciarSincronizacionSupabase(url, key, sala) {
+            const badge = document.getElementById('estadoConexion');
+            badge.innerText = "🟡 Conectando...";
+            badge.className = "status-badge status-off";
+
             try {
-                if (canalRealtime) {
+                if (canalRealtime && supabaseClient) {
                     supabaseClient.removeChannel(canalRealtime);
                 }
 
                 supabaseClient = window.supabase.createClient(url, key);
 
-                // Crear o unirse al canal de la sala
-                canalRealtime = supabaseClient.channel(`sala_ocr_${sala}`);
+                // Crear canal en tiempo real para la sala específica
+                canalRealtime = supabaseClient.channel(`sala_ocr_${sala}`, {
+                    config: { broadcast: { self: true } }
+                });
 
                 canalRealtime
                     .on('broadcast', { event: 'nuevo_escaneo_ocr' }, (payload) => {
                         console.log("⚡ Datos recibidos por Realtime:", payload);
                         procesarDatosRecibidosEnVivo(payload.payload);
                     })
-                    .subscribe((status) => {
-                        const badge = document.getElementById('estadoConexion');
+                    .subscribe((status, err) => {
                         if (status === 'SUBSCRIBED') {
                             badge.innerText = `🟢 Conectado (Sala: ${sala})`;
                             badge.className = "status-badge status-on";
-                        } else {
-                            badge.innerText = "🔴 Desconectado";
+                        } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+                            badge.innerText = "🔴 Error de Conexión";
                             badge.className = "status-badge status-off";
+                            console.error("Error al conectar Supabase Realtime:", err || status);
+                        } else {
+                            badge.innerText = `🟡 Estado: ${status}`;
                         }
                     });
 
             } catch (err) {
-                console.error("Error al iniciar Supabase Realtime:", err);
+                console.error("Error al iniciar Supabase:", err);
+                badge.innerText = "🔴 Error de Configuración";
+                badge.className = "status-badge status-off";
+                alert(`⚠️ Error de conexión Supabase:\n${err.message}`);
             }
         }
 
