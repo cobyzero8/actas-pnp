@@ -1510,6 +1510,12 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #fee2e2; padding-bottom: 4px; flex-wrap: wrap; gap: 6px;">
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             <span style="font-weight: bold; color: #991b1b; font-size: 13px;">👤 Persona Intervenida N° <span class="num-intervenido"></span></span>
+            
+            <!-- CONTROLES PARA ESCANEAR DNI CON GEMINI AI -->
+            <input type="file" id="fotoDNI_${id}" accept="image/*" capture="environment" style="display: none;" onchange="procesarDNIDesdeTarjeta(${id})">
+            <button type="button" id="btn_ocr_${id}" onclick="document.getElementById('fotoDNI_${id}').click()" style="padding: 3px 8px; font-size: 11px; background: #0284c7; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+              📷 Escanear DNI (IA)
+            </button>
           </div>
           ${!esPrimero ? `<button type="button" onclick="eliminarIntervenidoCard(${id})" style="padding: 3px 8px; font-size: 11px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">🗑️ Eliminar</button>` : '<span style="font-size: 10px; color: #991b1b; font-weight: bold;">[PRINCIPAL]</span>'}
         </div>
@@ -2025,10 +2031,12 @@
   }
 
   function cambiarGeminiApiKey() {
-    const keyActual = localStorage.getItem('gemini_api_key') || '';
+    const keyActual = localStorage.getItem('google_gemini_key') || localStorage.getItem('gemini_api_key') || '';
     const nuevaKey = prompt("🔑 Ingrese su API Key de Google Gemini AI:", keyActual);
     if (nuevaKey !== null) {
-      localStorage.setItem('gemini_api_key', nuevaKey.trim());
+      const keyLimpia = nuevaKey.trim();
+      localStorage.setItem('google_gemini_key', keyLimpia);
+      localStorage.setItem('gemini_api_key', keyLimpia);
       alert("✅ API Key de Gemini guardada correctamente.");
     }
   }
@@ -2044,6 +2052,136 @@
       localStorage.removeItem('pnp_sesion_activa');
       window.location.href = 'index.html';
     }
+  }
+
+  async function procesarDNIDesdeTarjeta(id) {
+    const apiKey = localStorage.getItem("google_gemini_key") || localStorage.getItem("gemini_api_key");
+    
+    if (!apiKey) {
+      alert("⚠️ No se encontró la API Key de Gemini. Por favor, configúrala mediante el botón '🔑 Configurar API Key IA' en la cabecera.");
+      return;
+    }
+
+    const inputFoto = document.getElementById(`fotoDNI_${id}`);
+    const btnOCR = document.getElementById(`btn_ocr_${id}`);
+
+    if (!inputFoto || !inputFoto.files || !inputFoto.files[0]) return;
+
+    const archivo = inputFoto.files[0];
+    const mimeType = archivo.type || "image/jpeg";
+
+    try {
+      if (btnOCR) {
+        btnOCR.innerText = "⏳ Escaneando...";
+        btnOCR.disabled = true;
+      }
+
+      const base64Data = await extraerBytesBase64(archivo);
+
+      const promptInstrucciones = `
+        Analiza la imagen de este DNI (peruano) y extrae los datos.
+        Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura exacta (sin texto ni formato markdown adicional):
+        {
+            "num_dni": "Número de 8 dígitos",
+            "apellidos": "Apellidos completos",
+            "nombres": "Nombres completos",
+            "fecha_nacimiento": "YYYY-MM-DD",
+            "estado_civil": "SOLTERO, CASADO, VIUDO o DIVORCIADO"
+        }
+        Si un campo no es legible, pon "".
+      `;
+
+      const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+      const respuesta = await fetch(urlAPI, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: promptInstrucciones },
+              { inline_data: { mime_type: mimeType, data: base64Data } }
+            ]
+          }],
+          generationConfig: {
+            response_mime_type: "application/json"
+          }
+        })
+      });
+
+      const data = await respuesta.json();
+
+      if (data.error) {
+        throw new Error(`Google API: ${data.error.message || JSON.stringify(data.error)}`);
+      }
+
+      if (!data.candidates || !data.candidates[0]) {
+        throw new Error("No se pudo leer la imagen. Intenta con una foto más clara.");
+      }
+
+      const textoJSON = data.candidates[0].content.parts[0].text;
+      const jsonResultado = JSON.parse(textoJSON);
+
+      if (jsonResultado.num_dni) {
+        document.getElementById(`intervenido_dni_${id}`).value = jsonResultado.num_dni;
+      }
+
+      const apellidos = (jsonResultado.apellidos || '').trim().toUpperCase();
+      const nombres = (jsonResultado.nombres || '').trim();
+      if (apellidos || nombres) {
+        document.getElementById(`intervenido_nombre_${id}`).value = `${apellidos}, ${nombres}`.trim();
+      }
+
+      if (jsonResultado.estado_civil) {
+        const estadoLower = jsonResultado.estado_civil.toLowerCase();
+        const selectEstado = document.getElementById(`estado_civil_${id}`);
+        if (selectEstado) {
+          for (let option of selectEstado.options) {
+            if (estadoLower.includes(option.value)) {
+              selectEstado.value = option.value;
+              break;
+            }
+          }
+        }
+      }
+
+      if (jsonResultado.fecha_nacimiento) {
+        document.getElementById(`edad_${id}`).value = calcularEdad(jsonResultado.fecha_nacimiento);
+      }
+
+      alert(`✅ DNI N° ${jsonResultado.num_dni || ''} cargado correctamente en la tarjeta N° ${id}.`);
+
+    } catch (error) {
+      console.error("Error al procesar el DNI:", error);
+      alert(`⚠️ Error al procesar el DNI:\n${error.message}`);
+    } finally {
+      if (btnOCR) {
+        btnOCR.innerText = "📷 Escanear DNI (IA)";
+        btnOCR.disabled = false;
+      }
+      inputFoto.value = "";
+    }
+  }
+
+  function extraerBytesBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = error => reject(error);
+    });
+  }
+
+  function calcularEdad(fechaNacStr) {
+    const nacimiento = new Date(fechaNacStr);
+    const hoy = new Date();
+    if (isNaN(nacimiento.getTime())) return "";
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const difMeses = hoy.getMonth() - nacimiento.getMonth();
+    if (difMeses < 0 || (difMeses === 0 && hoy.getDate() < nacimiento.getDate())) {
+      edad--;
+    }
+    return edad.toString();
   }
 
   function cargarModelo01HurtoAgravado() {
