@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prueba OCR DNI y TIV - Actas PNP</title>
+    <title>Prueba OCR DNI y TIV (Sincronizado Supabase) - Actas PNP</title>
+
+    <!-- Librería Supabase CDN -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -26,13 +30,25 @@
         }
         .sec-config {
             background: #eef2f7;
-            padding: 12px;
-            border-radius: 6px;
+            padding: 15px;
+            border-radius: 8px;
             margin-bottom: 20px;
+            border: 1px solid #d0d7de;
         }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+        .status-off { background: #fee2e2; color: #991b1b; }
+        .status-on { background: #dcfce7; color: #166534; }
+
         .grid-dos-columnas {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
             gap: 20px;
             align-items: start;
         }
@@ -41,6 +57,10 @@
             border: 1px solid #e0e0e0;
             padding: 15px;
             border-radius: 8px;
+            transition: background-color 0.4s ease;
+        }
+        .card-seccion.resaltar {
+            background-color: #e0f2fe !important;
         }
         .titulo-seccion {
             font-size: 16px;
@@ -72,7 +92,7 @@
             width: 100%;
             background-color: #1a237e;
             color: white;
-            padding: 10px;
+            padding: 11px;
             border: none;
             border-radius: 5px;
             font-size: 15px;
@@ -91,15 +111,15 @@
             background-color: #b45309;
         }
         .btn-secundario {
-            width: 100%;
             background-color: #455a64;
             color: white;
-            padding: 8px;
+            padding: 8px 15px;
             border: none;
             border-radius: 5px;
-            font-size: 14px;
+            font-size: 13px;
+            font-weight: bold;
             cursor: pointer;
-            margin-top: 5px;
+            border-radius: 4px;
         }
         .grid-campos-vehiculo {
             display: grid;
@@ -120,21 +140,50 @@
 <body>
 
     <div class="container">
-        <h2>Prueba OCR DNI y Tarjeta de Propiedad (Google AI)</h2>
+        <h2>Prueba OCR DNI y TIV (Sincronizado Celular ↔ PC)</h2>
 
-        <!-- Configuración de API Key -->
+        <!-- Panel de Configuración Supabase y Gemini -->
         <div class="sec-config">
-            <label for="apiKeyInput">API Key de Google AI Studio:</label>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <input type="password" id="apiKeyInput" placeholder="Pega aquí tu AIzaSy..." style="flex: 1; min-width: 200px;">
-                <button type="button" class="btn-secundario" onclick="guardarApiKey()" style="width: auto; padding: 0 15px;">💾 Guardar Clave</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+                <span style="font-weight: bold; color: #1a237e; font-size: 14px;">📡 Sincronización en Tiempo Real (Supabase)</span>
+                <span id="estadoConexion" class="status-badge status-off">🔴 Desconectado</span>
             </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+                <div>
+                    <label for="codigoSala">Código de Sala (Igual en Celular y PC):</label>
+                    <input type="text" id="codigoSala" value="1234" placeholder="Ej: 1234" style="font-weight: bold; text-align: center; color: #1a237e;">
+                </div>
+                <div>
+                    <label for="apiKeyInput">API Key de Google AI Studio:</label>
+                    <input type="password" id="apiKeyInput" placeholder="Pega tu AIzaSy...">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                <button type="button" class="btn-secundario" onclick="guardarConfiguracion()" style="background: #15803d;">💾 Conectar / Guardar Configuración</button>
+            </div>
+
+            <!-- Campos Opcionales de Supabase por si se desean personalizar -->
+            <details style="margin-top: 10px; font-size: 12px; color: #555;">
+                <summary style="cursor: pointer; font-weight: bold;">⚙️ Ajustes Avanzados Supabase (Opcional)</summary>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px;">
+                    <div>
+                        <label style="font-size: 11px;">Supabase URL:</label>
+                        <input type="text" id="sbUrl" placeholder="https://hicjmlcdnrcjriuqhppb.supabase.co" style="font-size: 12px; padding: 5px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 11px;">Supabase Anon Key:</label>
+                        <input type="password" id="sbKey" placeholder="eyJh..." style="font-size: 12px; padding: 5px;">
+                    </div>
+                </div>
+            </details>
         </div>
 
         <div class="grid-dos-columnas">
             
             <!-- SECCIÓN 1: ESCÁNER DNI -->
-            <div class="card-seccion">
+            <div class="card-seccion" id="cardDNI">
                 <div class="titulo-seccion">🪪 1. Escáner de DNI (Persona)</div>
 
                 <div class="campo">
@@ -167,11 +216,11 @@
             </div>
 
             <!-- SECCIÓN 2: ESCÁNER TARJETA DE PROPIEDAD / TIV -->
-            <div class="card-seccion">
+            <div class="card-seccion" id="cardTIV">
                 <div class="titulo-seccion">🚘 2. Escáner TIV / Tarjeta Propiedad</div>
 
                 <div class="campo">
-                    <label for="fotoTIV">Fotos TIV (Ambas caras / Múltiples):</label>
+                    <label for="fotoTIV">Foto(s) TIV (Ambas caras / Múltiples):</label>
                     <input type="file" id="fotoTIV" accept="image/*" capture="environment" multiple>
                     <button type="button" id="btnProcesarTIV" class="btn-principal btn-vehiculo" onclick="procesarTIVDirecto()">🚗 Escanear Tarjeta TIV</button>
                 </div>
@@ -225,21 +274,121 @@
     </div>
 
     <script>
+        let supabaseClient = null;
+        let canalRealtime = null;
+
         document.addEventListener("DOMContentLoaded", () => {
-            const claveGuardada = localStorage.getItem("google_gemini_key");
-            if (claveGuardada && document.getElementById('apiKeyInput')) {
-                document.getElementById('apiKeyInput').value = claveGuardada;
+            // Cargar Gemini Key
+            const geminiKey = localStorage.getItem("google_gemini_key");
+            if (geminiKey) document.getElementById('apiKeyInput').value = geminiKey;
+
+            // Cargar Supabase Config
+            const sbUrl = localStorage.getItem("sb_url") || "https://hicjmlcdnrcjriuqhppb.supabase.co";
+            const sbKey = localStorage.getItem("sb_key") || "";
+            const sala = localStorage.getItem("sb_sala") || "1234";
+
+            document.getElementById('sbUrl').value = sbUrl;
+            document.getElementById('sbKey').value = sbKey;
+            document.getElementById('codigoSala').value = sala;
+
+            if (sbUrl && sbKey) {
+                iniciarSincronizacionSupabase(sbUrl, sbKey, sala);
             }
         });
 
-        function guardarApiKey() {
-            const key = document.getElementById('apiKeyInput').value.trim();
-            if (!key) {
-                alert("Por favor, ingresa tu API Key de Google AI Studio (empieza por AIzaSy...).");
+        function guardarConfiguracion() {
+            const geminiKey = document.getElementById('apiKeyInput').value.trim();
+            const sbUrl = document.getElementById('sbUrl').value.trim();
+            const sbKey = document.getElementById('sbKey').value.trim();
+            const sala = document.getElementById('codigoSala').value.trim() || "1234";
+
+            if (geminiKey) localStorage.setItem("google_gemini_key", geminiKey);
+            if (sbUrl) localStorage.setItem("sb_url", sbUrl);
+            if (sbKey) localStorage.setItem("sb_key", sbKey);
+            localStorage.setItem("sb_sala", sala);
+
+            if (!sbUrl || !sbKey) {
+                alert("⚠️ Para la sincronización en vivo debes colocar la Supabase URL y Anon Key (Ajustes Avanzados).");
                 return;
             }
-            localStorage.setItem("google_gemini_key", key);
-            alert("¡API Key guardada con éxito en este navegador!");
+
+            iniciarSincronizacionSupabase(sbUrl, sbKey, sala);
+            alert(`✅ Configuración guardada. Conectado a la Sala: ${sala}`);
+        }
+
+        /* ================= SINCRONIZACIÓN EN TIEMPO REAL CON SUPABASE ================= */
+        function iniciarSincronizacionSupabase(url, key, sala) {
+            try {
+                if (canalRealtime) {
+                    supabaseClient.removeChannel(canalRealtime);
+                }
+
+                supabaseClient = window.supabase.createClient(url, key);
+
+                // Crear o unirse al canal de la sala
+                canalRealtime = supabaseClient.channel(`sala_ocr_${sala}`);
+
+                canalRealtime
+                    .on('broadcast', { event: 'nuevo_escaneo_ocr' }, (payload) => {
+                        console.log("⚡ Datos recibidos por Realtime:", payload);
+                        procesarDatosRecibidosEnVivo(payload.payload);
+                    })
+                    .subscribe((status) => {
+                        const badge = document.getElementById('estadoConexion');
+                        if (status === 'SUBSCRIBED') {
+                            badge.innerText = `🟢 Conectado (Sala: ${sala})`;
+                            badge.className = "status-badge status-on";
+                        } else {
+                            badge.innerText = "🔴 Desconectado";
+                            badge.className = "status-badge status-off";
+                        }
+                    });
+
+            } catch (err) {
+                console.error("Error al iniciar Supabase Realtime:", err);
+            }
+        }
+
+        function emitirDatosEnVivo(tipo, datos) {
+            if (canalRealtime) {
+                canalRealtime.send({
+                    type: 'broadcast',
+                    event: 'nuevo_escaneo_ocr',
+                    payload: { tipo, datos }
+                });
+            }
+        }
+
+        function procesarDatosRecibidosEnVivo(payload) {
+            if (payload.tipo === 'dni') {
+                const res = payload.datos;
+                document.getElementById('num_dni').value = res.num_dni || '';
+                document.getElementById('nombres_apellidos').value = `${res.nombres || ''} ${res.apellidos || ''}`.trim();
+                document.getElementById('estado_civil').value = res.estado_civil || '';
+                if (res.fecha_nacimiento) document.getElementById('edad').value = calcularEdad(res.fecha_nacimiento);
+                
+                resaltarCard('cardDNI');
+            } else if (payload.tipo === 'tiv') {
+                const res = payload.datos;
+                document.getElementById('placa').value = res.placa || '';
+                document.getElementById('clase').value = res.clase || '';
+                document.getElementById('marca').value = res.marca || '';
+                document.getElementById('modelo').value = res.modelo || '';
+                document.getElementById('color').value = res.color || '';
+                document.getElementById('anio_fab').value = res.anio_fab || '';
+                document.getElementById('num_motor').value = res.num_motor || '';
+                document.getElementById('num_chasis').value = res.num_chasis || '';
+
+                resaltarCard('cardTIV');
+            }
+        }
+
+        function resaltarCard(idCard) {
+            const el = document.getElementById(idCard);
+            if (el) {
+                el.classList.add('resaltar');
+                setTimeout(() => el.classList.remove('resaltar'), 1500);
+            }
         }
 
         function obtenerApiKey() {
@@ -248,7 +397,7 @@
                 apiKey = localStorage.getItem("google_gemini_key");
             }
             if (!apiKey) {
-                alert("Por favor, ingresa tu API Key de Google AI Studio en la casilla superior y presiona 'Guardar Clave'.");
+                alert("Por favor, ingresa tu API Key de Gemini en la casilla superior.");
                 return null;
             }
             return apiKey;
@@ -271,19 +420,19 @@
             const mimeType = archivo.type || "image/jpeg";
 
             try {
-                if (btnProcesar) btnProcesar.innerText = "⏳ Escaneando DNI con Gemini...";
+                if (btnProcesar) btnProcesar.innerText = "⏳ Escaneando DNI...";
 
                 const base64Data = await extraerBytesBase64(archivo);
 
                 const promptInstrucciones = `
                 Analiza la imagen de este DNI (peruano) y extrae los datos.
-                Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura exacta (sin texto ni formato markdown adicional):
+                Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura exacta (sin texto adicional):
                 {
                     "num_dni": "Número de 8 dígitos",
                     "apellidos": "Apellidos completos",
                     "nombres": "Nombres completos",
                     "fecha_nacimiento": "YYYY-MM-DD",
-                    "estado_civil": "SOLTERO, CASADO, VIUDO o DIVORCIADO"
+                    "estado_civil": "SOLTERO, CASADO, VIUDO o CONVIVIENTE"
                 }
                 Si un campo no es legible, pon "".
                 `;
@@ -300,47 +449,36 @@
                                 { inline_data: { mime_type: mimeType, data: base64Data } }
                             ]
                         }],
-                        generationConfig: {
-                            response_mime_type: "application/json"
-                        }
+                        generationConfig: { response_mime_type: "application/json" }
                     })
                 });
 
                 const data = await respuesta.json();
+                if (data.error) throw new Error(`Google API: ${data.error.message || JSON.stringify(data.error)}`);
+                if (!data.candidates || !data.candidates[0]) throw new Error("No se pudo interpretar la imagen del DNI.");
 
-                if (data.error) {
-                    throw new Error(`Google API: ${data.error.message || JSON.stringify(data.error)}`);
-                }
+                const res = JSON.parse(data.candidates[0].content.parts[0].text);
 
-                if (!data.candidates || !data.candidates[0]) {
-                    throw new Error("No se pudo leer la imagen del DNI. Intenta con una foto más clara.");
-                }
+                // Llenar campos locales
+                document.getElementById('num_dni').value = res.num_dni || '';
+                document.getElementById('nombres_apellidos').value = `${res.nombres || ''} ${res.apellidos || ''}`.trim();
+                document.getElementById('estado_civil').value = res.estado_civil || '';
+                if (res.fecha_nacimiento) document.getElementById('edad').value = calcularEdad(res.fecha_nacimiento);
 
-                const textoJSON = data.candidates[0].content.parts[0].text;
-                const jsonResultado = JSON.parse(textoJSON);
+                // Transmitir en vivo a la PC
+                emitirDatosEnVivo('dni', res);
 
-                document.getElementById('num_dni').value = jsonResultado.num_dni || '';
-
-                const nombreCompleto = `${jsonResultado.nombres || ''} ${jsonResultado.apellidos || ''}`.trim();
-                document.getElementById('nombres_apellidos').value = nombreCompleto;
-
-                document.getElementById('estado_civil').value = jsonResultado.estado_civil || '';
-
-                if (jsonResultado.fecha_nacimiento) {
-                    document.getElementById('edad').value = calcularEdad(jsonResultado.fecha_nacimiento);
-                }
-
-                alert("¡Datos del DNI cargados correctamente!");
+                alert("¡DNI escaneado y enviado a la PC!");
 
             } catch (error) {
-                console.error("Error al procesar el DNI:", error);
+                console.error("Error OCR DNI:", error);
                 alert(`Error al procesar DNI:\n${error.message}`);
             } finally {
                 if (btnProcesar) btnProcesar.innerText = "📷 Escanear DNI";
             }
         }
 
-        /* ================= PROCESAR TARJETA DE PROPIEDAD (TIV) ================= */
+        /* ================= PROCESAR TARJETA TIV ================= */
         async function procesarTIVDirecto() {
             const apiKey = obtenerApiKey();
             if (!apiKey) return;
@@ -354,20 +492,20 @@
             }
 
             try {
-                if (btnProcesar) btnProcesar.innerText = "⏳ Escaneando TIV con Gemini...";
+                if (btnProcesar) btnProcesar.innerText = "⏳ Escaneando TIV...";
 
                 const parts = [
                     { 
                         text: `
                         Analiza las imágenes adjuntas de la Tarjeta de Identificación Vehicular (TIV / Tarjeta de Propiedad de Perú) y extrae todos los datos del vehículo.
-                        Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura exacta (sin texto ni formato markdown adicional):
+                        Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura exacta (sin texto adicional):
                         {
                             "placa": "Número de placa (ej. 4567-3Y o A1B-234)",
-                            "clase": "Clase del vehículo (ej. TRIMOVIL, AUTOMOVIL, CAMIONETA, MOTOCICLETA, OMNIBUS, etc.)",
-                            "marca": "Marca registrada del vehículo",
+                            "clase": "Clase del vehículo (ej. TRIMOVIL, AUTOMOVIL, CAMIONETA, MOTOCICLETA, etc.)",
+                            "marca": "Marca del vehículo",
                             "modelo": "Modelo exacto del vehículo",
                             "color": "Color o colores principales del vehículo",
-                            "anio_fab": "Año de fabricación en 4 dígitos (ej. 2022)",
+                            "anio_fab": "Año de fabricación en 4 dígitos",
                             "num_motor": "Número o código de motor",
                             "num_chasis": "Número de chasis, serie o VIN"
                         }
@@ -376,7 +514,6 @@
                     }
                 ];
 
-                // Convertir todas las fotos seleccionadas a partes Inline Data
                 for (let i = 0; i < inputFoto.files.length; i++) {
                     const file = inputFoto.files[i];
                     const base64Data = await extraerBytesBase64(file);
@@ -391,40 +528,34 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         contents: [{ parts: parts }],
-                        generationConfig: {
-                            response_mime_type: "application/json"
-                        }
+                        generationConfig: { response_mime_type: "application/json" }
                     })
                 });
 
                 const data = await respuesta.json();
+                if (data.error) throw new Error(`Google API: ${data.error.message || JSON.stringify(data.error)}`);
+                if (!data.candidates || !data.candidates[0]) throw new Error("No se pudo procesar la tarjeta de propiedad.");
 
-                if (data.error) {
-                    throw new Error(`Google API: ${data.error.message || JSON.stringify(data.error)}`);
-                }
+                const res = JSON.parse(data.candidates[0].content.parts[0].text);
 
-                if (!data.candidates || !data.candidates[0]) {
-                    throw new Error("No se pudo procesar la tarjeta de propiedad. Intenta tomar fotos más nítidas.");
-                }
+                // Llenar campos locales
+                document.getElementById('placa').value = res.placa || '';
+                document.getElementById('clase').value = res.clase || '';
+                document.getElementById('marca').value = res.marca || '';
+                document.getElementById('modelo').value = res.modelo || '';
+                document.getElementById('color').value = res.color || '';
+                document.getElementById('anio_fab').value = res.anio_fab || '';
+                document.getElementById('num_motor').value = res.num_motor || '';
+                document.getElementById('num_chasis').value = res.num_chasis || '';
 
-                const textoJSON = data.candidates[0].content.parts[0].text;
-                const jsonResultado = JSON.parse(textoJSON);
+                // Transmitir en vivo a la PC
+                emitirDatosEnVivo('tiv', res);
 
-                // Asignar valores a las casillas del vehículo
-                document.getElementById('placa').value = jsonResultado.placa || '';
-                document.getElementById('clase').value = jsonResultado.clase || '';
-                document.getElementById('marca').value = jsonResultado.marca || '';
-                document.getElementById('modelo').value = jsonResultado.modelo || '';
-                document.getElementById('color').value = jsonResultado.color || '';
-                document.getElementById('anio_fab').value = jsonResultado.anio_fab || '';
-                document.getElementById('num_motor').value = jsonResultado.num_motor || '';
-                document.getElementById('num_chasis').value = jsonResultado.num_chasis || '';
-
-                alert("¡Datos de la Tarjeta Vehicular (TIV) cargados correctamente!");
+                alert("¡TIV escaneada y enviada a la PC!");
 
             } catch (error) {
-                console.error("Error al procesar la TIV:", error);
-                alert(`Error al procesar la Tarjeta de Propiedad:\n${error.message}`);
+                console.error("Error OCR TIV:", error);
+                alert(`Error al procesar Tarjeta de Propiedad:\n${error.message}`);
             } finally {
                 if (btnProcesar) btnProcesar.innerText = "🚗 Escanear Tarjeta TIV";
             }
@@ -442,12 +573,10 @@
         function calcularEdad(fechaNacStr) {
             const nacimiento = new Date(fechaNacStr);
             const hoy = new Date();
-
             if (isNaN(nacimiento.getTime())) return "";
 
             let edad = hoy.getFullYear() - nacimiento.getFullYear();
             const difMeses = hoy.getMonth() - nacimiento.getMonth();
-
             if (difMeses < 0 || (difMeses === 0 && hoy.getDate() < nacimiento.getDate())) {
                 edad--;
             }
