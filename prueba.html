@@ -1,180 +1,288 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Escáner DNI con IA - Prueba</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background: #f4f6f9;
-      max-width: 480px;
-      margin: 0 auto;
-    }
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      border-top: 4px solid #0284c7;
-    }
-    h2 {
-      margin-top: 0;
-      color: #003366;
-      font-size: 18px;
-    }
-    p {
-      font-size: 13px;
-      color: #64748b;
-    }
-    .btn {
-      background: #0284c7;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-      width: 100%;
-      margin-top: 10px;
-      font-size: 13px;
-    }
-    .btn:disabled {
-      background: #94a3b8;
-    }
-    .btn-secondary {
-      background: #64748b;
-    }
-    input[type="file"] {
-      margin: 15px 0;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    #estado {
-      margin-top: 15px;
-      font-weight: bold;
-      font-size: 13px;
-      color: #0369a1;
-      text-align: center;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba OCR DNI - Actas PNP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 450px;
+            margin: 0 auto;
+            background-color: #f4f4f9;
+        }
+        .card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #1a237e;
+            margin-top: 0;
+        }
+        .campo {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        input[type="text"], input[type="password"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        .btn-principal {
+            width: 100%;
+            background-color: #1a237e;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-principal:disabled {
+            background-color: #9fa8da;
+            cursor: not-allowed;
+        }
+        .btn-secundario {
+            width: 100%;
+            background-color: #455a64;
+            color: white;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        .btn-exito {
+            width: 100%;
+            background-color: #2e7d32;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .sec-config {
+            background: #eef2f7;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
 
-  <div class="card">
-    <h2>📷 Escáner de DNI con IA (Gemini)</h2>
-    <p>Toma una foto clara del DNI peruano. Al finalizar, la información se enviará automáticamente a las cajas de texto del formulario.</p>
-    
-    <input type="file" id="fotoInput" accept="image/*" capture="environment">
-    <button type="button" id="btnEscanear" class="btn" onclick="procesarFotoDNI()">🔍 Escanear y Enviar a Formulario</button>
-    <button type="button" class="btn btn-secondary" onclick="window.location.href='formulario.html'">⬅️ Cancelar / Volver</button>
+    <div class="card">
+        <h2>Prueba OCR DNI (Google AI)</h2>
 
-    <div id="estado"></div>
-  </div>
+        <!-- Configuración de API Key -->
+        <div class="sec-config">
+            <label for="apiKeyInput">API Key de Google AI Studio:</label>
+            <input type="password" id="apiKeyInput" placeholder="Pega aquí tu AIzaSy...">
+            <button type="button" class="btn-secundario" onclick="guardarApiKey()">💾 Guardar Clave</button>
+        </div>
 
-  <script>
-    async function procesarFotoDNI() {
-      let apiKey = localStorage.getItem("google_gemini_key") || localStorage.getItem("gemini_api_key");
-      
-      if (!apiKey) {
-        const nuevaKey = prompt("🔑 Ingrese su API Key de Google Gemini AI:");
-        if (nuevaKey && nuevaKey.trim() !== "") {
-          apiKey = nuevaKey.trim();
-          localStorage.setItem("google_gemini_key", apiKey);
-          localStorage.setItem("gemini_api_key", apiKey);
-        } else {
-          alert("⚠️ Se requiere la API Key de Gemini para continuar.");
-          return;
-        }
-      }
+        <!-- Entrada para la foto -->
+        <div class="campo">
+            <label for="fotoDNI">Foto del DNI:</label>
+            <input type="file" id="fotoDNI" accept="image/*" capture="environment">
+            <button type="button" id="btnProcesar" class="btn-principal" onclick="procesarDNIDirecto()">📷 Escanear DNI</button>
+        </div>
 
-      const fileInput = document.getElementById("fotoInput");
-      const estadoDiv = document.getElementById("estado");
-      const btn = document.getElementById("btnEscanear");
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
 
-      if (!fileInput.files || !fileInput.files[0]) {
-        alert("⚠️ Por favor, selecciona o toma una foto del DNI primero.");
-        return;
-      }
+        <!-- Formulario que se autocompleta en esta misma página -->
+        <div class="campo">
+            <label for="num_dni">Número de DNI:</label>
+            <input type="text" id="num_dni" placeholder="Se completará solo...">
+        </div>
 
-      const file = fileInput.files[0];
-      btn.disabled = true;
-      estadoDiv.innerText = "⏳ Leyendo DNI con IA de Google...";
+        <div class="campo">
+            <label for="nombres_apellidos">Nombres y Apellidos:</label>
+            <input type="text" id="nombres_apellidos" placeholder="Se completará solo...">
+        </div>
 
-      try {
-        const base64Data = await extraerBytesBase64(file);
+        <div class="campo">
+            <label for="estado_civil">Estado Civil:</label>
+            <input type="text" id="estado_civil" placeholder="Se completará solo...">
+        </div>
 
-        const promptInstrucciones = `
-          Analiza la imagen de este DNI (peruano) y extrae los datos.
-          Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura exacta (sin texto ni formato markdown adicional):
-          {
-              "num_dni": "Número de 8 dígitos",
-              "apellidos": "Apellidos completos",
-              "nombres": "Nombres completos",
-              "fecha_nacimiento": "YYYY-MM-DD",
-              "estado_civil": "SOLTERO, CASADO, VIUDO o DIVORCIADO"
-          }
-          Si un campo no es legible, pon "".
-        `;
+        <div class="campo">
+            <label for="edad">Edad (Calculada):</label>
+            <input type="text" id="edad" placeholder="Se completará solo...">
+        </div>
 
-        const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+        <button type="button" id="btnIrFormulario" class="btn-exito" style="display:none;" onclick="irAFormulario()">
+            ➡️ Llevar estos datos a formulario.html
+        </button>
+    </div>
 
-        const respuesta = await fetch(urlAPI, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                { text: promptInstrucciones },
-                { inline_data: { mime_type: file.type || "image/jpeg", data: base64Data } }
-              ]
-            }],
-            generationConfig: {
-              response_mime_type: "application/json"
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const claveGuardada = localStorage.getItem("google_gemini_key");
+            if (claveGuardada && document.getElementById('apiKeyInput')) {
+                document.getElementById('apiKeyInput').value = claveGuardada;
             }
-          })
         });
 
-        const data = await respuesta.json();
-
-        if (data.error) {
-          throw new Error(`Google API: ${data.error.message || JSON.stringify(data.error)}`);
+        function guardarApiKey() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            if (!key) {
+                alert("Por favor, ingresa tu API Key de Google AI Studio (empieza por AIzaSy...).");
+                return;
+            }
+            localStorage.setItem("google_gemini_key", key);
+            alert("¡API Key guardada con éxito en este navegador!");
         }
 
-        if (!data.candidates || !data.candidates[0]) {
-          throw new Error("No se obtuvo respuesta de la imagen. Intenta con otra foto.");
+        async function procesarDNIDirecto() {
+            let apiKey = document.getElementById('apiKeyInput').value.trim();
+            if (!apiKey) {
+                apiKey = localStorage.getItem("google_gemini_key");
+            }
+
+            if (!apiKey) {
+                alert("Por favor, ingresa tu API Key de Google AI Studio en la casilla superior y presiona 'Guardar Clave'.");
+                return;
+            }
+
+            const inputFoto = document.getElementById('fotoDNI');
+            const btnProcesar = document.getElementById('btnProcesar');
+
+            if (!inputFoto.files || !inputFoto.files[0]) {
+                alert("Por favor, selecciona o toma una foto del DNI primero.");
+                return;
+            }
+
+            const archivo = inputFoto.files[0];
+            const mimeType = archivo.type || "image/jpeg";
+
+            try {
+                if (btnProcesar) {
+                    btnProcesar.innerText = "⏳ Escaneando DNI con Gemini...";
+                    btnProcesar.disabled = true;
+                }
+
+                const base64Data = await extraerBytesBase64(archivo);
+
+                const promptInstrucciones = `
+                Analiza la imagen de este DNI (peruano) y extrae los datos.
+                Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura exacta (sin texto ni formato markdown adicional):
+                {
+                    "num_dni": "Número de 8 dígitos",
+                    "apellidos": "Apellidos completos",
+                    "nombres": "Nombres completos",
+                    "fecha_nacimiento": "YYYY-MM-DD",
+                    "estado_civil": "SOLTERO, CASADO, VIUDO o DIVORCIADO"
+                }
+                Si un campo no es legible, pon "".
+                `;
+
+                // URL corregida con el modelo actualizado para evitar el error de suspensión
+                const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+                const respuesta = await fetch(urlAPI, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: promptInstrucciones },
+                                { inline_data: { mime_type: mimeType, data: base64Data } }
+                            ]
+                        }],
+                        generationConfig: {
+                            response_mime_type: "application/json"
+                        }
+                    })
+                });
+
+                const data = await respuesta.json();
+
+                if (data.error) {
+                    throw new Error(`Google API: ${data.error.message || JSON.stringify(data.error)}`);
+                }
+
+                if (!data.candidates || !data.candidates[0]) {
+                    throw new Error("No se pudo leer la imagen. Intenta con una foto más clara.");
+                }
+
+                const textoJSON = data.candidates[0].content.parts[0].text;
+                const jsonResultado = JSON.parse(textoJSON);
+
+                // 1. Asignación directa a las cajas de texto de esta misma página (prueba.html)
+                document.getElementById('num_dni').value = jsonResultado.num_dni || '';
+
+                const nombreCompleto = `${jsonResultado.nombres || ''} ${jsonResultado.apellidos || ''}`.trim();
+                document.getElementById('nombres_apellidos').value = nombreCompleto;
+
+                document.getElementById('estado_civil').value = jsonResultado.estado_civil || '';
+
+                if (jsonResultado.fecha_nacimiento) {
+                    document.getElementById('edad').value = calcularEdad(jsonResultado.fecha_nacimiento);
+                }
+
+                // 2. Duplicamos la información guardándola en localStorage para que formulario.html la lea
+                localStorage.setItem('dni_escaneado_temp', JSON.stringify(jsonResultado));
+
+                document.getElementById('btnIrFormulario').style.display = 'block';
+                alert("¡Datos del DNI cargados correctamente en este formulario y listos para enviar!");
+
+            } catch (error) {
+                console.error("Error al procesar el DNI:", error);
+                alert(`Error al procesar:\n${error.message}`);
+            } finally {
+                if (btnProcesar) {
+                    btnProcesar.innerText = "📷 Escanear DNI";
+                    btnProcesar.disabled = false;
+                }
+            }
         }
 
-        const textoJSON = data.candidates[0].content.parts[0].text;
-        const jsonResultado = JSON.parse(textoJSON);
+        function irAFormulario() {
+            window.location.href = "formulario.html";
+        }
 
-        // Guardamos la respuesta procesada en la memoria temporal del navegador
-        localStorage.setItem('dni_escaneado_temp', JSON.stringify(jsonResultado));
+        function extraerBytesBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+        }
 
-        estadoDiv.innerText = "✅ ¡DNI escaneado con éxito! Redirigiendo...";
-        
-        setTimeout(() => {
-          window.location.href = "formulario.html";
-        }, 800);
+        function calcularEdad(fechaNacStr) {
+            const nacimiento = new Date(fechaNacStr);
+            const hoy = new Date();
 
-      } catch (err) {
-        console.error(err);
-        alert("⚠️ Error al escanear: " + err.message);
-        estadoDiv.innerText = "❌ No se pudo procesar la foto.";
-      } finally {
-        btn.disabled = false;
-      }
-    }
+            if (isNaN(nacimiento.getTime())) return "";
 
-    function extraerBytesBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = error => reject(error);
-      });
-    }
-  </script>
+            let edad = hoy.getFullYear() - nacimiento.getFullYear();
+            const difMeses = hoy.getMonth() - nacimiento.getMonth();
+
+            if (difMeses < 0 || (difMeses === 0 && hoy.getDate() < nacimiento.getDate())) {
+                edad--;
+            }
+            return edad.toString();
+        }
+    </script>
 </body>
 </html>
