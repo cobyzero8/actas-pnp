@@ -1010,6 +1010,9 @@
       mostrarEtapa(1);
     }
 
+    // CAPTURA AUTOMÁTICA DE DATOS PROCESADOS EN PRUEBA.HTML
+    capturarDatosDePruebaHTML();
+
     const formExp = document.getElementById('expedienteForm');
     if (formExp) {
       formExp.addEventListener('submit', (e) => {
@@ -1025,6 +1028,74 @@
       });
     }
   });
+
+  // FUNCIÓN PARA JALAR DATOS DESDE PRUEBA.HTML A LAS CAJAS DE TEXTO
+  function capturarDatosDePruebaHTML() {
+    const datosRaw = localStorage.getItem('dni_escaneado_temp');
+    if (!datosRaw) return;
+
+    try {
+      const datos = JSON.parse(datosRaw);
+      const targetId = localStorage.getItem('target_intervenido_id') || "1";
+
+      if (datos.num_dni) {
+        const inpDni = document.getElementById(`intervenido_dni_${targetId}`);
+        if (inpDni) inpDni.value = datos.num_dni;
+      }
+
+      const apellidos = (datos.apellidos || '').trim().toUpperCase();
+      const nombres = (datos.nombres || '').trim();
+      if (apellidos || nombres) {
+        const inpNombre = document.getElementById(`intervenido_nombre_${targetId}`);
+        if (inpNombre) inpNombre.value = `${apellidos}, ${nombres}`.trim();
+      }
+
+      if (datos.estado_civil) {
+        const estadoLower = datos.estado_civil.toLowerCase();
+        const selectEstado = document.getElementById(`estado_civil_${targetId}`);
+        if (selectEstado) {
+          for (let option of selectEstado.options) {
+            if (estadoLower.includes(option.value)) {
+              selectEstado.value = option.value;
+              break;
+            }
+          }
+        }
+      }
+
+      if (datos.fecha_nacimiento) {
+        const inpEdad = document.getElementById(`edad_${targetId}`);
+        if (inpEdad) inpEdad.value = calcularEdad(datos.fecha_nacimiento);
+      }
+
+      // Limpiamos las llaves temporales tras asignar los valores
+      localStorage.removeItem('dni_escaneado_temp');
+      localStorage.removeItem('target_intervenido_id');
+
+      alert(`✅ Datos de DNI cargados correctamente en la persona N° ${targetId}.`);
+
+    } catch (error) {
+      console.error("Error al capturar datos de prueba.html:", error);
+    }
+  }
+
+  function irAEscanerDNI(idIntervenido) {
+    guardarEstadoFormulario();
+    localStorage.setItem('target_intervenido_id', idIntervenido);
+    window.location.href = 'prueba.html';
+  }
+
+  function calcularEdad(fechaNacStr) {
+    const nacimiento = new Date(fechaNacStr);
+    const hoy = new Date();
+    if (isNaN(nacimiento.getTime())) return "";
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const difMeses = hoy.getMonth() - nacimiento.getMonth();
+    if (difMeses < 0 || (difMeses === 0 && hoy.getDate() < nacimiento.getDate())) {
+      edad--;
+    }
+    return edad.toString();
+  }
 
   async function obtenerUbicacionGPS(idInputLugar, idBoton) {
     if (!navigator.geolocation) {
@@ -1511,10 +1582,9 @@
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             <span style="font-weight: bold; color: #991b1b; font-size: 13px;">👤 Persona Intervenida N° <span class="num-intervenido"></span></span>
             
-            <!-- CONTROLES PARA ESCANEAR DNI CON GEMINI AI -->
-            <input type="file" id="fotoDNI_${id}" accept="image/*" capture="environment" style="display: none;" onchange="procesarDNIDesdeTarjeta(${id})">
-            <button type="button" id="btn_ocr_${id}" onclick="document.getElementById('fotoDNI_${id}').click()" style="padding: 3px 8px; font-size: 11px; background: #0284c7; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
-              📷 Escanear DNI (IA)
+            <!-- BOTÓN PARA ABRIR EL ESCÁNER DE PRUEBA.HTML -->
+            <button type="button" onclick="irAEscanerDNI(${id})" style="padding: 3px 8px; font-size: 11px; background: #0284c7; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+              📷 Escanear DNI (prueba.html)
             </button>
           </div>
           ${!esPrimero ? `<button type="button" onclick="eliminarIntervenidoCard(${id})" style="padding: 3px 8px; font-size: 11px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">🗑️ Eliminar</button>` : '<span style="font-size: 10px; color: #991b1b; font-weight: bold;">[PRINCIPAL]</span>'}
@@ -2054,136 +2124,6 @@
     }
   }
 
-  async function procesarDNIDesdeTarjeta(id) {
-    const apiKey = localStorage.getItem("google_gemini_key") || localStorage.getItem("gemini_api_key");
-    
-    if (!apiKey) {
-      alert("⚠️ No se encontró la API Key de Gemini. Por favor, configúrala mediante el botón '🔑 Configurar API Key IA' en la cabecera.");
-      return;
-    }
-
-    const inputFoto = document.getElementById(`fotoDNI_${id}`);
-    const btnOCR = document.getElementById(`btn_ocr_${id}`);
-
-    if (!inputFoto || !inputFoto.files || !inputFoto.files[0]) return;
-
-    const archivo = inputFoto.files[0];
-    const mimeType = archivo.type || "image/jpeg";
-
-    try {
-      if (btnOCR) {
-        btnOCR.innerText = "⏳ Escaneando...";
-        btnOCR.disabled = true;
-      }
-
-      const base64Data = await extraerBytesBase64(archivo);
-
-      const promptInstrucciones = `
-        Analiza la imagen de este DNI (peruano) y extrae los datos.
-        Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura exacta (sin texto ni formato markdown adicional):
-        {
-            "num_dni": "Número de 8 dígitos",
-            "apellidos": "Apellidos completos",
-            "nombres": "Nombres completos",
-            "fecha_nacimiento": "YYYY-MM-DD",
-            "estado_civil": "SOLTERO, CASADO, VIUDO o DIVORCIADO"
-        }
-        Si un campo no es legible, pon "".
-      `;
-
-      const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
-      const respuesta = await fetch(urlAPI, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{
-            parts: [
-              { text: promptInstrucciones },
-              { inline_data: { mime_type: mimeType, data: base64Data } }
-            ]
-          }],
-          generationConfig: {
-            response_mime_type: "application/json"
-          }
-        })
-      });
-
-      const data = await respuesta.json();
-
-      if (data.error) {
-        throw new Error(`Google API: ${data.error.message || JSON.stringify(data.error)}`);
-      }
-
-      if (!data.candidates || !data.candidates[0]) {
-        throw new Error("No se pudo leer la imagen. Intenta con una foto más clara.");
-      }
-
-      const textoJSON = data.candidates[0].content.parts[0].text;
-      const jsonResultado = JSON.parse(textoJSON);
-
-      if (jsonResultado.num_dni) {
-        document.getElementById(`intervenido_dni_${id}`).value = jsonResultado.num_dni;
-      }
-
-      const apellidos = (jsonResultado.apellidos || '').trim().toUpperCase();
-      const nombres = (jsonResultado.nombres || '').trim();
-      if (apellidos || nombres) {
-        document.getElementById(`intervenido_nombre_${id}`).value = `${apellidos}, ${nombres}`.trim();
-      }
-
-      if (jsonResultado.estado_civil) {
-        const estadoLower = jsonResultado.estado_civil.toLowerCase();
-        const selectEstado = document.getElementById(`estado_civil_${id}`);
-        if (selectEstado) {
-          for (let option of selectEstado.options) {
-            if (estadoLower.includes(option.value)) {
-              selectEstado.value = option.value;
-              break;
-            }
-          }
-        }
-      }
-
-      if (jsonResultado.fecha_nacimiento) {
-        document.getElementById(`edad_${id}`).value = calcularEdad(jsonResultado.fecha_nacimiento);
-      }
-
-      alert(`✅ DNI N° ${jsonResultado.num_dni || ''} cargado correctamente en la tarjeta N° ${id}.`);
-
-    } catch (error) {
-      console.error("Error al procesar el DNI:", error);
-      alert(`⚠️ Error al procesar el DNI:\n${error.message}`);
-    } finally {
-      if (btnOCR) {
-        btnOCR.innerText = "📷 Escanear DNI (IA)";
-        btnOCR.disabled = false;
-      }
-      inputFoto.value = "";
-    }
-  }
-
-  function extraerBytesBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result.split(',')[1]);
-      reader.onerror = error => reject(error);
-    });
-  }
-
-  function calcularEdad(fechaNacStr) {
-    const nacimiento = new Date(fechaNacStr);
-    const hoy = new Date();
-    if (isNaN(nacimiento.getTime())) return "";
-    let edad = hoy.getFullYear() - nacimiento.getFullYear();
-    const difMeses = hoy.getMonth() - nacimiento.getMonth();
-    if (difMeses < 0 || (difMeses === 0 && hoy.getDate() < nacimiento.getDate())) {
-      edad--;
-    }
-    return edad.toString();
-  }
-
   function cargarModelo01HurtoAgravado() {
     document.getElementById('cant_secciones').value = 3; construirSeccionesNarrativa();
     const hora = getVal('hora_intervencion', '11:20');
@@ -2340,7 +2280,7 @@
     document.getElementById('agregar_intervencion_1').value = `--- Siendo las ${hora} horas del ${fechaFormateada}, en ${lugar}, el suscrito ${pnpPrincipal.grado} PNP ${pnpNomInv}, procedieron a la intervención de:\n1. ${formatearNombreInvertido(p1.nombre)} (${p1.edad} años), DNI N° ${p1.dni}.\n2. ${formatearNombreInvertido(p2.nombre)} (${p2.edad} años), DNI N° ${p2.dni}.`;
 
     document.getElementById('titulo_sec_2').value = "II. CIRCUNSTANCIAS DE LA INTERVENCIÓN:";
-    document.getElementById('agregar_intervencion_2').value = `01. Circunstancias Precedentes: En patrullaje preventivo por el sector, se observó una pelea tumultuaria (trifulca) entre varios sujetos en la vía pública, lanzándose objetos contundentes (botellas de vidrio).\n\n02. Circunstancias Concomitantes: El personal policial intervino de inmediato para restablecer el orden público, logrando intervenir a los dos ciudadanos antes indicados, quienes se agredían mutuamente con puñetes y patadas. El intervenido ${formatearNombreInvertido(p1.nombre)} presentaba un corte sangrante en el cuero cabelludo producto de un botellazo.\n\n03. Circunstancias Posteriores: Se prestó el primer auxilio trasladando al herido al Hospital de Huanta para su atención médica con custodia policial, conduciendo al segundo intervenido a la ${unidadDisp} para las investigaciones por el delito de Lesiones Mutuas.`;
+    document.getElementById('agregar_intervencion_2').value = `01. Circunstancias Precedentes: En patrullaje preventivo por el sector, se observó una pelea tumultuaria (trifulca) entre varios sujetos en la vía pública, lanzándose objetos contundentes (botellas de vidrio).\n\n02. Circunstancias Concomitantes: El personal policial intervino de inmediato para restablecer el orden público, logrando intervenir a los dos ciudadanos antes indicados, quienes se agredían mutuamente con puñetes y patadas. El intervenido ${formatearNombreInvertido(p1.nombre)} presentaba un corte sangrante en el cuero cabelludo producto de un botellazo.\n\n03. Circunstancias Posteriores: Se prestó el primer auxilio trasladando al herido al Hospital de Huanta para su atención médica con custodia policial, conducen al segundo intervenido a la ${unidadDisp} para las investigaciones por el delito de Lesiones Mutuas.`;
 
     document.getElementById('titulo_sec_3').value = "III. COMUNICACIÓN AL RMP Y CIERRE:";
     document.getElementById('agregar_intervencion_3').value = `--- De los hechos se comunicó de manera inmediata y oportuna al RMP Abog. ${fiscal}.\n\n--- Siendo las ${horaFin} horas del mismo día se dio por concluida la diligencia.\nSe adjunta:`;
