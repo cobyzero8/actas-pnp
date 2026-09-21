@@ -52,6 +52,10 @@
             cursor: pointer;
             margin-top: 10px;
         }
+        .btn-principal:disabled {
+            background-color: #9fa8da;
+            cursor: not-allowed;
+        }
         .btn-secundario {
             width: 100%;
             background-color: #455a64;
@@ -155,7 +159,10 @@
             const mimeType = archivo.type || "image/jpeg";
 
             try {
-                if (btnProcesar) btnProcesar.innerText = "⏳ Escaneando DNI con Gemini...";
+                if (btnProcesar) {
+                    btnProcesar.innerText = "⏳ Escaneando DNI con Gemini...";
+                    btnProcesar.disabled = true;
+                }
 
                 const base64Data = await extraerBytesBase64(archivo);
 
@@ -172,8 +179,8 @@
                 Si un campo no es legible, pon "".
                 `;
 
-                // URL actualizada al nuevo modelo gemini-3.6-flash requerido por la API de Google
-                const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
+                // Modelo actualizado para la API de Google AI Studio
+                const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
                 const respuesta = await fetch(urlAPI, {
                     method: "POST",
@@ -222,7 +229,10 @@
                 console.error("Error al procesar el DNI:", error);
                 alert(`Error al procesar:\n${error.message}`);
             } finally {
-                if (btnProcesar) btnProcesar.innerText = "📷 Escanear DNI";
+                if (btnProcesar) {
+                    btnProcesar.innerText = "📷 Escanear DNI";
+                    btnProcesar.disabled = false;
+                }
             }
         }
 
