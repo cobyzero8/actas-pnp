@@ -1,10 +1,14 @@
 /**
- * MÓDULO EXCLUSIVO: OCR DNI DE INTERVENIDOS (GOOGLE GEMINI IA)
- * Archivo: js/ocr_dni.js
- * Descripción: Maneja la configuración de la API Key y el escaneo de DNI con Gemini 3.6 Flash.
+ * MÓDULO UNIFICADO OCR IA (GOOGLE GEMINI)
+ * Archivo: js/ocr.js (o js/ocr_dni.js)
+ * Descripción: Maneja la configuración de la API Key de Gemini 3.6 Flash y el escaneo inteligente
+ *              tanto para DNI de Intervenidos como para TIV (Tarjeta de Propiedad Vehicular).
  */
 
-// 1. Configuración de API Key desde el botón "🔑 Configurar API Key IA"
+// =========================================================================
+// 1. GESTIÓN GLOBAL DE API KEY GEMINI
+// =========================================================================
+
 function cambiarGeminiApiKey() {
     const actualKey = localStorage.getItem("google_gemini_key") || "";
     const keyMascara = actualKey ? `${actualKey.substring(0, 6)}...${actualKey.slice(-4)}` : "No configurada";
@@ -26,10 +30,28 @@ function cambiarGeminiApiKey() {
     }
 }
 
-// Hacer global la función para asegurar su ejecución desde onclick en formulario.html
+function obtenerApiKeyGemini() {
+    let apiKey = localStorage.getItem("google_gemini_key");
+    if (!apiKey) {
+        apiKey = prompt("🔑 Ingresa tu API Key de Google AI Studio:");
+        if (apiKey && apiKey.trim() !== "") {
+            apiKey = apiKey.trim();
+            localStorage.setItem("google_gemini_key", apiKey);
+        } else {
+            alert("⚠️ Se requiere la API Key de Gemini para realizar el escaneo OCR.");
+            return null;
+        }
+    }
+    return apiKey;
+}
+
+// Globalizar función para acceder desde cualquier botón HTML
 window.cambiarGeminiApiKey = cambiarGeminiApiKey;
 
-// 2. Abre el selector de cámara/archivo de la tarjeta del intervenido
+// =========================================================================
+// 2. ESCÁNER OCR DNI (PERSONAS / INTERVENIDOS)
+// =========================================================================
+
 function escanearDNICard(idCard) {
     const inputFoto = document.getElementById(`foto_dni_${idCard}`);
     if (inputFoto) {
@@ -37,26 +59,18 @@ function escanearDNICard(idCard) {
     }
 }
 
-// 3. Procesa la foto del DNI y llena los campos de la tarjeta del intervenido
 async function procesarDNICard(idCard) {
     const inputFoto = document.getElementById(`foto_dni_${idCard}`);
-    const btnEscanear = document.getElementById(`btn_ocr_${idCard}`);
+    const btnEscanear = document.getElementById(`btn_ocr_dni_${idCard}`) || document.getElementById(`btn_ocr_${idCard}`);
 
     if (!inputFoto || !inputFoto.files || !inputFoto.files[0]) {
         return;
     }
 
-    let apiKey = localStorage.getItem("google_gemini_key");
-
+    const apiKey = obtenerApiKeyGemini();
     if (!apiKey) {
-        apiKey = prompt("🔑 Ingresa tu API Key de Google AI Studio:");
-        if (apiKey && apiKey.trim() !== "") {
-            localStorage.setItem("google_gemini_key", apiKey.trim());
-        } else {
-            alert("⚠️ Se requiere la API Key de Gemini para escanear el DNI.");
-            inputFoto.value = "";
-            return;
-        }
+        inputFoto.value = "";
+        return;
     }
 
     const archivo = inputFoto.files[0];
@@ -70,7 +84,7 @@ async function procesarDNICard(idCard) {
             btnEscanear.style.background = "#d97706";
         }
 
-        const base64Data = await extraerBytesBase64DNI(archivo);
+        const base64Data = await extraerBytesBase64(archivo);
 
         const promptInstrucciones = `
         Analiza la imagen de este DNI peruano y extrae los datos del ciudadano.
@@ -87,7 +101,6 @@ async function procesarDNICard(idCard) {
         Si un campo no es legible, devuelve "".
         `;
 
-        // URL configurada con el modelo gemini-3.6-flash
         const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
 
         const respuesta = await fetch(urlAPI, {
@@ -150,11 +163,11 @@ async function procesarDNICard(idCard) {
             document.getElementById(`natural_${idCard}`).value = res.lugar_nacimiento;
         }
 
-        alert("✅ Datos del DNI cargados en el intervenido.");
+        alert("✅ Datos del DNI cargados exitosamente.");
 
     } catch (error) {
         console.error("Error OCR DNI:", error);
-        alert(`⚠️ No se pudo procesar la foto:\n${error.message}`);
+        alert(`⚠️ No se pudo procesar la foto del DNI:\n${error.message}`);
     } finally {
         if (btnEscanear) {
             btnEscanear.disabled = false;
@@ -165,7 +178,146 @@ async function procesarDNICard(idCard) {
     }
 }
 
-function extraerBytesBase64DNI(file) {
+// =========================================================================
+// 3. ESCÁNER OCR TIV (TARJETA DE PROPIEDAD VEHICULAR)
+// =========================================================================
+
+function escanearTIVCard(idCard) {
+    const inputFoto = document.getElementById(`foto_tiv_${idCard}`);
+    if (inputFoto) {
+        inputFoto.click();
+    }
+}
+
+async function procesarTIVCard(idCard) {
+    const inputFoto = document.getElementById(`foto_tiv_${idCard}`);
+    const btnEscanear = document.getElementById(`btn_ocr_tiv_${idCard}`);
+
+    if (!inputFoto || !inputFoto.files || inputFoto.files.length === 0) {
+        return;
+    }
+
+    const apiKey = obtenerApiKeyGemini();
+    if (!apiKey) {
+        inputFoto.value = "";
+        return;
+    }
+
+    const textoOriginalBtn = btnEscanear ? btnEscanear.innerHTML : "";
+
+    try {
+        if (btnEscanear) {
+            btnEscanear.disabled = true;
+            btnEscanear.innerHTML = "⏳ Escaneando TIV...";
+            btnEscanear.style.background = "#d97706";
+        }
+
+        const parts = [
+            {
+                text: `
+                Analiza las imágenes adjuntas de la Tarjeta de Identificación Vehicular (TIV / Tarjeta de Propiedad Peruana) y extrae todos los datos del vehículo.
+                Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura exacta:
+                {
+                    "placa": "Número de placa en mayúsculas (ej. 4567-3Y o A1B-234)",
+                    "clase": "Clase del vehículo en mayúsculas (ej. TRIMOVIL, AUTOMOVIL, CAMIONETA, MOTOCICLETA, etc.)",
+                    "marca": "Marca del vehículo",
+                    "modelo": "Modelo exacto del vehículo",
+                    "color": "Color o colores principales del vehículo",
+                    "anio_fab": "Año de fabricación en 4 dígitos",
+                    "num_motor": "Número o código de motor",
+                    "num_chasis": "Número de chasis, serie o VIN"
+                }
+                Si un campo no es visible o no es legible, coloca "".
+                `
+            }
+        ];
+
+        // Recorrer todas las fotos seleccionadas (admite 1 o 2 caras)
+        for (let i = 0; i < inputFoto.files.length; i++) {
+            const archivo = inputFoto.files[i];
+            const base64Data = await extraerBytesBase64(archivo);
+            const mimeType = archivo.type || "image/jpeg";
+            parts.push({ inline_data: { mime_type: mimeType, data: base64Data } });
+        }
+
+        const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
+
+        const respuesta = await fetch(urlAPI, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contents: [{ parts: parts }],
+                generationConfig: {
+                    response_mime_type: "application/json"
+                }
+            })
+        });
+
+        const data = await respuesta.json();
+
+        if (data.error) {
+            throw new Error(`Google API: ${data.error.message || JSON.stringify(data.error)}`);
+        }
+
+        if (!data.candidates || !data.candidates[0]) {
+            throw new Error("No se pudo procesar la tarjeta de propiedad.");
+        }
+
+        const res = JSON.parse(data.candidates[0].content.parts[0].text);
+
+        // Asignación de datos a la tarjeta vehicular correspondiente
+        if (res.placa && document.getElementById(`placa_vehiculo_${idCard}`)) {
+            document.getElementById(`placa_vehiculo_${idCard}`).value = res.placa;
+        }
+
+        if (res.clase && document.getElementById(`clase_vehiculo_${idCard}`)) {
+            document.getElementById(`clase_vehiculo_${idCard}`).value = res.clase;
+        }
+
+        if (res.marca && document.getElementById(`marca_vehiculo_${idCard}`)) {
+            document.getElementById(`marca_vehiculo_${idCard}`).value = res.marca;
+        }
+
+        if (res.modelo && document.getElementById(`modelo_vehiculo_${idCard}`)) {
+            document.getElementById(`modelo_vehiculo_${idCard}`).value = res.modelo;
+        }
+
+        if (res.color && document.getElementById(`color_vehiculo_${idCard}`)) {
+            document.getElementById(`color_vehiculo_${idCard}`).value = res.color;
+        }
+
+        if (res.anio_fab && document.getElementById(`anio_fab_vehiculo_${idCard}`)) {
+            document.getElementById(`anio_fab_vehiculo_${idCard}`).value = res.anio_fab;
+        }
+
+        if (res.num_motor && document.getElementById(`num_motor_vehiculo_${idCard}`)) {
+            document.getElementById(`num_motor_vehiculo_${idCard}`).value = res.num_motor;
+        }
+
+        if (res.num_chasis && document.getElementById(`num_chasis_vehiculo_${idCard}`)) {
+            document.getElementById(`num_chasis_vehiculo_${idCard}`).value = res.num_chasis;
+        }
+
+        alert("✅ Datos de la Tarjeta Vehicular (TIV) cargados exitosamente.");
+
+    } catch (error) {
+        console.error("Error OCR TIV:", error);
+        alert(`⚠️ No se pudo procesar la foto de la TIV:\n${error.message}`);
+    } finally {
+        if (btnEscanear) {
+            btnEscanear.disabled = false;
+            btnEscanear.innerHTML = textoOriginalBtn;
+            btnEscanear.style.background = "";
+        }
+        inputFoto.value = "";
+    }
+}
+
+// =========================================================================
+// 4. FUNCIONES AUXILIARES
+// =========================================================================
+
+function extraerBytesBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
