@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prueba OCR DNI y TIV (Sincronizado Supabase) - Actas PNP</title>
+    <title>Prueba OCR DNI y TIV (Sincronizado Celular ↔ PC) - Actas PNP</title>
 
     <!-- Librería Supabase CDN -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -111,7 +111,7 @@
             background-color: #b45309;
         }
         .btn-secundario {
-            background-color: #455a64;
+            background-color: #15803d;
             color: white;
             padding: 8px 15px;
             border: none;
@@ -119,7 +119,6 @@
             font-size: 13px;
             font-weight: bold;
             cursor: pointer;
-            border-radius: 4px;
         }
         .grid-campos-vehiculo {
             display: grid;
@@ -152,7 +151,7 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
                 <div>
                     <label for="codigoSala">Código de Sala (Igual en Celular y PC):</label>
-                    <input type="text" id="codigoSala" value="1234" placeholder="Ej: 1234" style="font-weight: bold; text-align: center; color: #1a237e;">
+                    <input type="text" id="codigoSala" value="1235" placeholder="Ej: 1235" style="font-weight: bold; text-align: center; color: #1a237e;">
                 </div>
                 <div>
                     <label for="apiKeyInput">API Key de Google AI Studio:</label>
@@ -161,10 +160,9 @@
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
-                <button type="button" class="btn-secundario" onclick="guardarConfiguracion()" style="background: #15803d;">💾 Conectar / Guardar Configuración</button>
+                <button type="button" class="btn-secundario" onclick="guardarConfiguracion()">💾 Conectar / Guardar Configuración</button>
             </div>
 
-            <!-- Campos Opcionales de Supabase por si se desean personalizar -->
             <details style="margin-top: 10px; font-size: 12px; color: #555;">
                 <summary style="cursor: pointer; font-weight: bold;">⚙️ Ajustes Avanzados Supabase (Opcional)</summary>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px;">
@@ -273,18 +271,16 @@
         </div>
     </div>
 
-   <script>
+    <script>
         let supabaseClient = null;
         let canalRealtime = null;
 
         const URL_SUPABASE_DEFECTO = "https://hicjmlcdnrcjriuqhppb.supabase.co";
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Cargar Gemini Key
             const geminiKey = localStorage.getItem("google_gemini_key");
             if (geminiKey) document.getElementById('apiKeyInput').value = geminiKey;
 
-            // Cargar Supabase Config
             const sbUrl = localStorage.getItem("sb_url") || URL_SUPABASE_DEFECTO;
             const sbKey = localStorage.getItem("sb_key") || "";
             const sala = localStorage.getItem("sb_sala") || "1235";
@@ -416,7 +412,6 @@
             try {
                 if (btnProcesar) btnProcesar.innerText = "⏳ Optimizando y escaneando DNI...";
 
-                // Compresión previa de la imagen a max 1280px y 80% calidad JPEG
                 const base64Data = await comprimirImagenBase64(archivo, 1280, 0.8);
 
                 const promptInstrucciones = `
@@ -432,7 +427,7 @@
                 Si un campo no es legible, pon "".
                 `;
 
-                const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
+                const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
                 const respuesta = await fetch(urlAPI, {
                     method: "POST",
@@ -446,6 +441,8 @@
                         }],
                         generationConfig: { response_mime_type: "application/json" }
                     })
+                }).catch(err => {
+                    throw new Error("No se pudo conectar con los servidores de Google (Verifica tu conexión a internet o desactiva VPN/bloqueadores).");
                 });
 
                 const data = await respuesta.json();
@@ -502,12 +499,11 @@
 
                 for (let i = 0; i < inputFoto.files.length; i++) {
                     const file = inputFoto.files[i];
-                    // Compresión previa de cada foto
                     const base64Data = await comprimirImagenBase64(file, 1280, 0.8);
                     parts.push({ inline_data: { mime_type: "image/jpeg", data: base64Data } });
                 }
 
-                const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
+                const urlAPI = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
                 const respuesta = await fetch(urlAPI, {
                     method: "POST",
@@ -516,6 +512,8 @@
                         contents: [{ parts: parts }],
                         generationConfig: { response_mime_type: "application/json" }
                     })
+                }).catch(err => {
+                    throw new Error("No se pudo conectar con los servidores de Google (Verifica tu conexión a internet o desactiva VPN/bloqueadores).");
                 });
 
                 const data = await respuesta.json();
