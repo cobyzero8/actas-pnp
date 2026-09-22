@@ -220,6 +220,16 @@
             </div>
 
         </div>
+
+
+        <!-- PANEL DE EXPORTACIÓN RÁPIDA -->
+        <div style="margin-top: 20px; background: #e8eaf6; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #c5cae9;">
+            <h3 style="margin-top: 0; color: #1a237e; font-size: 15px;">📤 Enviar Ficha a la PC</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                <button type="button" class="btn-secundario" onclick="enviarWhatsApp()" style="background: #128c7e; font-weight: bold; padding: 10px 18px;">💬 Enviar por WhatsApp</button>
+                <button type="button" class="btn-secundario" onclick="copiarFichaTexto()" style="background: #2e7d32; font-weight: bold; padding: 10px 18px;">📋 Copiar Texto</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -428,6 +438,49 @@
                 edad--;
             }
             return edad.toString();
+        }
+
+        function armarTextoFicha() {
+            const dni = document.getElementById('num_dni').value || '-';
+            const nombre = document.getElementById('nombres_apellidos').value || '-';
+            const estadoCivil = document.getElementById('estado_civil').value || '-';
+            const edad = document.getElementById('edad').value || '-';
+
+            const placa = document.getElementById('placa').value || '-';
+            const clase = document.getElementById('clase').value || '-';
+            const marca = document.getElementById('marca').value || '-';
+            const modelo = document.getElementById('modelo').value || '-';
+            const color = document.getElementById('color').value || '-';
+            const anio = document.getElementById('anio_fab').value || '-';
+            const motor = document.getElementById('num_motor').value || '-';
+            const chasis = document.getElementById('num_chasis').value || '-';
+
+            return `*DATOS DE PERSONA*
+DNI: ${dni}
+Nombre: ${nombre}
+Estado Civil: ${estadoCivil} | Edad: ${edad}
+
+*DATOS DEL VEHÍCULO*
+Placa: ${placa}
+Clase: ${clase} | Marca: ${marca} | Modelo: ${modelo}
+Color: ${color} | Año: ${anio}
+N° Motor: ${motor}
+N° Chasis: ${chasis}`;
+        }
+
+        function enviarWhatsApp() {
+            const texto = armarTextoFicha();
+            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+            window.open(url, '_blank');
+        }
+
+        function copiarFichaTexto() {
+            const texto = armarTextoFicha();
+            navigator.clipboard.writeText(texto).then(() => {
+                alert("📋 ¡Ficha copiada! Ya puedes pegarla.");
+            }).catch(err => {
+                alert("Error al copiar: " + err);
+            });
         }
     </script>
 </body>
