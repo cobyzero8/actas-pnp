@@ -155,6 +155,20 @@ function obtenerRutaArchivoActa(acta, vehiculo) {
   const esSituacionVehicular = idLimpio.includes('situacion_vehicular') || idLimpio.includes('s_v');
 
   if (esSituacionVehicular) {
+    // 1. REVISAR SI EXISTE SELECCIÓN MANUAL GUARDADA EN SITUACIÓN VEHICULAR
+    const rawSV = localStorage.getItem('pnp_sv_estado_formulario');
+    if (rawSV) {
+      try {
+        const estadoSV = JSON.parse(rawSV);
+        if (estadoSV.tipo_formato === 'MOTOTAXI' || estadoSV.tipo_formato === 'MOTOCICLETA') {
+          return 'plantilla/acta_s_v_vehiculo_menor.docx';
+        } else if (estadoSV.tipo_formato === 'MAYOR') {
+          return 'plantilla/acta_s_v_vehiculo_mayor.docx';
+        }
+      } catch (e) {}
+    }
+
+    // 2. SI NO HAY SELECCIÓN MANUAL, EVALUAR SEGÚN LA CLASE DE VEHÍCULO
     const claseRaw = (vehiculo && (vehiculo.clase_vehiculo || vehiculo.clase)) ? (vehiculo.clase_vehiculo || vehiculo.clase) : '';
     const claseUpper = claseRaw.toUpperCase().trim();
     const palabrasVehiculoMenor = ['TRIMOVIL', 'MOTOCICLETA', 'MOTOTAXI', 'MOTOCAR', 'MOTO', 'CUATRIMOTO', 'TRICICLO'];
@@ -403,7 +417,7 @@ function obtenerListaIntervenidosForm() {
     mama: getValSafe('mama') || getValSafe('mama_1') || "S/D",
     ocupacion: getValSafe('ocupacion') || getValSafe('ocupacion_1') || "NO ESPECIFICA",
     domicilio: getValSafe('domicilio') || getValSafe('domicilio_1') || "NO ESPECIFICA",
-    asistido_confianza: getValSafe('asistido_confianza') || getValSafe('asistido_confianza_1'),
+    asistido_confianza: getValSafe('asistido_confianza') || getValSafe('asistido_confianza_registro') || getValSafe('asistido_confianza_1'),
     asistido_confianza_registro: getValSafe('asistido_confianza_registro') || getValSafe('asistido_confianza_registro_1')
   }];
 }
@@ -516,6 +530,20 @@ function obtenerDatosMapeadosSituacionVehicular() {
         .replace(/^_+|_+$/g, "");
 
       datosMapeados[claveEtiqueta] = codigoEstado;
+
+      // ALIAS ADICIONALES PARA PLANTILLAS DE VEHÍCULO MENOR Y MAYOR
+      if (claveEtiqueta.includes("velocimetro")) datosMapeados['sv_velocimetro'] = codigoEstado;
+      if (claveEtiqueta.includes("tacometro")) datosMapeados['sv_tacometro'] = codigoEstado;
+      if (claveEtiqueta.includes("freno_delantero")) datosMapeados['sv_freno_delantero'] = codigoEstado;
+      if (claveEtiqueta.includes("freno_trasero")) datosMapeados['sv_freno_trasero'] = codigoEstado;
+      if (claveEtiqueta.includes("empunadura") || claveEtiqueta.includes("acelerador")) datosMapeados['sv_acelerador'] = codigoEstado;
+      if (claveEtiqueta.includes("faro")) datosMapeados['sv_faro'] = codigoEstado;
+      if (claveEtiqueta.includes("bocina")) { datosMapeados['sv_bocina'] = codigoEstado; datosMapeados['sv_claxon'] = codigoEstado; }
+      if (claveEtiqueta.includes("embrague")) datosMapeados['sv_embrague'] = codigoEstado;
+      if (claveEtiqueta.includes("cadena")) datosMapeados['sv_cadena'] = codigoEstado;
+      if (claveEtiqueta.includes("tanque") || claveEtiqueta.includes("combustible")) datosMapeados['sv_tanque'] = codigoEstado;
+      if (claveEtiqueta.includes("toldo")) datosMapeados['sv_toldo'] = codigoEstado;
+      if (claveEtiqueta.includes("espejo")) datosMapeados['sv_espejos'] = codigoEstado;
     }
 
     datosMapeados['sv_observaciones'] = estadoSV.observaciones_situacion || "Sin observaciones adicionales.";
@@ -536,7 +564,6 @@ document.addEventListener('DOMContentLoaded', () => {
   delitoConfigurado = localStorage.getItem('pnp_delito_seleccionado') || "DILIGENCIA POLICIAL INDEPENDIENTE";
   const actasJSON = localStorage.getItem('pnp_actas_seleccionadas');
   
-  // Asumir 'acta_ocurrencia' si no se especificó ninguna selección previa en menu.html
   try {
     idsActasConfiguradas = actasJSON ? JSON.parse(actasJSON) : ["acta_ocurrencia"];
     if (!Array.isArray(idsActasConfiguradas) || idsActasConfiguradas.length === 0) {
@@ -572,7 +599,6 @@ if (formExpediente) {
 
     actasAProcesarSecuencia = [];
     
-    // Si la lista está vacía al procesar, forzar acta_ocurrencia
     if (!idsActasConfiguradas || idsActasConfiguradas.length === 0) {
       idsActasConfiguradas = ["acta_ocurrencia"];
     }
@@ -585,7 +611,6 @@ if (formExpediente) {
       );
 
       if (!coincide) {
-        // Fallback robusto hacia acta_ocurrencia si no se halla coincidencia directa
         if (String(idLimpio).toLowerCase().includes("ocurrencia")) {
           coincide = CATALOGO_ACTAS.find(a => a.id === "acta_ocurrencia");
         } else {
@@ -607,7 +632,6 @@ if (formExpediente) {
       }
     });
 
-    // Mover "acta_intervencion" al final si existe
     const indexIntervencion = actasAProcesarSecuencia.findIndex(a => a.id === 'acta_intervencion');
     if (indexIntervencion !== -1) {
       const [actaIntervencionObj] = actasAProcesarSecuencia.splice(indexIntervencion, 1);
