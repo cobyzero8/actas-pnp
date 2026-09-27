@@ -449,7 +449,7 @@
       <!-- SELECTOR DE FORMATO -->
       <div class="tipo-vehiculo-selector">
         <label for="select_tipo_formato">📌 Formato de Inspección:</label>
-        <select id="select_tipo_formato" onchange="cambiarFormatoTipoVehiculo(this.value)">
+        <select id="select_tipo_formato" onchange="cambiarFormatoTipoVehiculo(this.value); guardarSilenciosoSituacionVehicular();">
           <option value="MAYOR">VEHÍCULO MAYOR (Automóvil, Camioneta, SUV, Camión)</option>
           <option value="MOTOTAXI">VEHÍCULO MENOR: Mototaxi / Trimovil / Motocar (3 Ruedas)</option>
           <option value="MOTOCICLETA">VEHÍCULO MENOR: Motocicleta / Moto Lineal (2 Ruedas)</option>
@@ -458,7 +458,7 @@
 
       <div class="fuel-gauge-container">
         <label style="font-size: 12px; font-weight: bold; color: #9a3412;">⛽ NIVEL DE COMBUSTIBLE EN TANQUE:</label>
-        <select id="combustible_nivel" class="select-estado regular" style="font-size: 12px; padding: 6px 12px;" onchange="actualizarColorSelect(this)">
+        <select id="combustible_nivel" class="select-estado regular" style="font-size: 12px; padding: 6px 12px;" onchange="actualizarColorSelect(this); guardarSilenciosoSituacionVehicular();">
           <option value="RESERVA (R)">RESERVA (R)</option>
           <option value="1/4 DE TANQUE">1/4 DE TANQUE</option>
           <option value="1/2 TANQUE" selected>1/2 TANQUE</option>
@@ -482,7 +482,7 @@
         <div class="grid-check" id="sec_4"></div>
 
         <div class="section-title">📝 OBSERVACIONES, DAÑOS VISIBLES Y ESTADO GENERAL</div>
-        <textarea id="observaciones_situacion" class="obs-textarea" placeholder="Especifique rayaduras, abolladuras, accesorios no contemplados en la lista o detalles relevantes..."></textarea>
+        <textarea id="observaciones_situacion" class="obs-textarea" placeholder="Especifique rayaduras, abolladuras, accesorios no contemplados en la lista o detalles relevantes..." oninput="guardarSilenciosoSituacionVehicular()"></textarea>
 
         <div style="margin-top: 25px; display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #e2e8f0; padding-top: 15px;">
           <a href="formulario.html" onclick="notificarRegreso()" class="btn-action btn-back">⬅️ Cancelar / Volver</a>
@@ -849,6 +849,9 @@
                   obsArea.value += (obsArea.value ? '\n\n' : '') + `${headerMovil}${data.observaciones}`;
                 }
               }
+
+              // 4. GUARDAR AUTOMÁTICAMENTE EN LOCALSTORAGE AL RECIBIR DATOS DEL CELULAR
+              guardarSilenciosoSituacionVehicular();
             }
           })
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notificaciones_fotos' }, async (payload) => {
@@ -972,7 +975,7 @@
       const html = `
         <div class="check-item" onmouseenter="resaltarUbicacionItem('${item}')" onclick="resaltarUbicacionItem('${item}')">
           <label for="${fieldId}">${item}:</label>
-          <select id="${fieldId}" class="select-estado regular" data-nombre="${item}" onchange="actualizarColorSelect(this)">
+          <select id="${fieldId}" class="select-estado regular" data-nombre="${item}" onchange="actualizarColorSelect(this); guardarSilenciosoSituacionVehicular();">
             <option value="BUENO">BUENO (B)</option>
             <option value="REGULAR" selected>REGULAR (R)</option>
             <option value="MALO">MALO (M)</option>
@@ -1119,7 +1122,6 @@
 
     previewContainer.innerHTML = "";
     
-    // Admite cualquier número de imágenes disponibles (de 1 a 5 máximo)
     const listaFotos = Array.from(files).slice(0, 5);
 
     btnTrigger.disabled = true;
@@ -1288,6 +1290,9 @@ Responde ÚNICAMENTE en JSON estricto sin bloques de markdown:
 
       statusLabel.innerText = `✅ Evaluación completada con ${cantidadFotos} foto(s) (${contActualizados} partes analizadas).`;
 
+      // GUARDAR CAMBIOS EN LOCALSTORAGE
+      guardarSilenciosoSituacionVehicular();
+
     } catch (err) {
       console.error("Error en escáner IA:", err);
       statusLabel.innerHTML = `<span style="color:#b91c1c;">❌ ${err.message}</span>`;
@@ -1310,7 +1315,7 @@ Responde ÚNICAMENTE en JSON estricto sin bloques de markdown:
     localStorage.setItem('pnp_retorno_etapa_vehiculo', 'true');
   }
 
-  function guardarSituacionVehicular() {
+  function guardarSilenciosoSituacionVehicular() {
     const tipoFormato = document.getElementById('select_tipo_formato').value;
     const novedadesSec1 = [];
     const novedadesSec2 = [];
@@ -1369,7 +1374,10 @@ Responde ÚNICAMENTE en JSON estricto sin bloques de markdown:
     });
 
     localStorage.setItem('pnp_sv_estado_formulario', JSON.stringify(estadoFormSV));
+  }
 
+  function guardarSituacionVehicular() {
+    guardarSilenciosoSituacionVehicular();
     alert(`✅ Inspección del Acta de Situación Vehicular guardada con éxito.`);
     window.location.href = 'formulario.html';
   }
