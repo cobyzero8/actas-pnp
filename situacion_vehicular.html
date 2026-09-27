@@ -803,9 +803,16 @@
 
   try {
     if (typeof supabase !== 'undefined' && supabase.createClient) {
-      if (!supabaseClient) {
-        supabaseClient = supabase.createClient(url, key);
-      }
+      // Forzar cliente con cabeceras explícitas para WebSocket Auth
+      supabaseClient = supabase.createClient(url, key, {
+        auth: { persistSession: false },
+        global: {
+          headers: {
+            apikey: key,
+            Authorization: `Bearer ${key}`
+          }
+        }
+      });
 
       const placaActualRaw = document.getElementById('lbl_placa') ? document.getElementById('lbl_placa').innerText : '';
       const placaActual = String(placaActualRaw).trim().toUpperCase();
@@ -815,7 +822,7 @@
         statusRealtime.style.color = "#0284c7";
       }
 
-      // Configuración explícita de canal Broadcast con Acknowledgment
+      // Canal broadcast configurado con credenciales
       const channel = supabaseClient.channel('canal_fotos_movil', {
         config: {
           broadcast: { self: true, ack: true }
@@ -846,7 +853,6 @@
           const data = payload.payload || {};
           const placaMovil = String(data.placa || '').trim().toUpperCase();
 
-          // Coincidencia flexible de placa
           const coincidePlaca = !data.placa || 
                                 placaMovil === placaActual || 
                                 placaMovil === 'GENERAL' || 
@@ -875,7 +881,7 @@
               }
             }
 
-            // 2. Actualizar Estados de las Partes (Búsqueda insensible a mayúsculas/espacios)
+            // 2. Actualizar Estados de las Partes
             if (data.partes && typeof data.partes === 'object') {
               const partesNormalizadas = {};
               Object.keys(data.partes).forEach(k => {
@@ -928,6 +934,11 @@
             if (statusRealtime) {
               statusRealtime.innerText = "🟢 Tiempo real conectado. Listo para recibir datos del celular.";
               statusRealtime.style.color = "#16a34a";
+            }
+          } else if (status === 'CHANNEL_ERROR') {
+            if (statusRealtime) {
+              statusRealtime.innerText = "❌ Error de autenticación en Supabase. Revisa la Anon Key en config.js.";
+              statusRealtime.style.color = "#b91c1c";
             }
           }
         });
