@@ -5,13 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Acceso - Sistema de Actas PNP</title>
   <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- LIBRERÍAS DE SUPABASE Y CONFIGURACIÓN -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  
+  <style>
+    /* Ocultar la tarjeta momentáneamente mientras se verifica la sesión activa */
+    .login-wrapper.loading {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  </style>
 </head>
 <body class="login-page">
 
-<main class="login-wrapper">
+<main class="login-wrapper" id="loginWrapper">
   <div class="card login-card">
-    <h2 class="header-title">SISTEMA DE ACTAS</h2>
+    <h2 class="header-title">SISTEMA DE ACTAS PNP</h2>
     <p class="sub-title">Comisaría PNP / Control de Patrullaje</p>
 
     <div id="errorAlert" class="alert-msg alert-danger" style="display: none;"></div>
@@ -27,7 +38,9 @@
         <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
       </div>
 
-      <button type="submit" class="btn btn-primary">Ingresar al Sistema</button>
+      <button type="submit" id="btnIngresar" class="btn btn-primary" style="width: 100%;">
+        🔐 Ingresar al Sistema
+      </button>
     </form>
   </div>
 </main>
