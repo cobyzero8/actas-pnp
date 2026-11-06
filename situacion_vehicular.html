@@ -6,10 +6,11 @@
   <title>Acta de Situación Vehicular - PNP</title>
   <link rel="stylesheet" href="css/styles.css">
   
-  <!-- LIBRERÍAS Y ARCHIVO CENTRAL DE CONFIGURACIÓN -->
+  <!-- LIBRERÍAS, CONFIGURACIÓN Y AUTENTICACIÓN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
 
   <style>
     :root {
@@ -427,7 +428,10 @@
       <h2>🚗 ACTA DE SITUACIÓN VEHICULAR (INSPECCIÓN TÉCNICA PNP)</h2>
       <span style="font-size: 11px; opacity: 0.85;">Policía Nacional del Perú - Formato Oficial de Inventario</span>
     </div>
-    <a href="formulario.html" onclick="notificarRegreso()" class="btn-action btn-back">⬅️ Volver al Formulario</a>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <a href="formulario.html" onclick="notificarRegreso()" class="btn-action btn-back">⬅️ Volver al Formulario</a>
+      <button type="button" onclick="cerrarSesion()" class="btn-action" style="background: #ef4444; color: white;">🚪 Salir</button>
+    </div>
   </div>
 
   <div class="info-card">
@@ -621,7 +625,7 @@
     "VELOCÍMETRO": { x: 200, y: 90, zona: "Manubrio Central", desc: "Reloj velocímetro en tablero del chofer." },
     "TACÓMETRO": { x: 205, y: 80, zona: "Manubrio Central", desc: "Medidor de RPM de motor." },
     "PALANCA DE CAMBIOS": { x: 175, y: 115, zona: "Pedal Izquierdo Chofer", desc: "Selector manual/pedal de marchas." },
-    "FRENO DELANTERO": { x: 225, y: 70, zona: "Manubrio Derecho", desc: "Manija de freno delantero." },
+    "FRENO DELANTERO": { x: 225, y: 70, zona: "Manija Manubrio Derecho", desc: "Manija de freno delantero." },
     "EMPUÑADURA DEL ACELERADOR": { x: 225, y: 80, zona: "Manubrio Derecho", desc: "Puño del acelerador." },
     "INTERRUPTOR CONTROL DE FARO": { x: 195, y: 75, zona: "Comando Manubrio", desc: "Switch de luces alta/baja." },
     "PEDAL DEL FRENO TRASERO": { x: 165, y: 65, zona: "Piso Derecho Chofer", desc: "Pedal de freno posterior." },
@@ -790,168 +794,166 @@
   }
 
   function inicializarSupabaseRealtime() {
-  const { url, key } = obtenerSupabaseCreds();
-  const statusRealtime = document.getElementById('lbl_status_realtime');
+    const { url, key } = obtenerSupabaseCreds();
+    const statusRealtime = document.getElementById('lbl_status_realtime');
 
-  if (!url || !key) {
-    if (statusRealtime) {
-      statusRealtime.innerText = "⚠️ Revisa la configuración de Supabase URL / Anon Key.";
-      statusRealtime.style.color = "#b45309";
-    }
-    return;
-  }
-
-  try {
-    if (typeof supabase !== 'undefined' && supabase.createClient) {
-      // Forzar cliente con cabeceras explícitas para WebSocket Auth
-      supabaseClient = supabase.createClient(url, key, {
-        auth: { persistSession: false },
-        global: {
-          headers: {
-            apikey: key,
-            Authorization: `Bearer ${key}`
-          }
-        }
-      });
-
-      const placaActualRaw = document.getElementById('lbl_placa') ? document.getElementById('lbl_placa').innerText : '';
-      const placaActual = String(placaActualRaw).trim().toUpperCase();
-
+    if (!url || !key) {
       if (statusRealtime) {
-        statusRealtime.innerText = "⚡ Conectando canal en tiempo real...";
-        statusRealtime.style.color = "#0284c7";
+        statusRealtime.innerText = "⚠️ Revisa la configuración de Supabase URL / Anon Key.";
+        statusRealtime.style.color = "#b45309";
       }
+      return;
+    }
 
-      // Canal broadcast configurado con credenciales
-      const channel = supabaseClient.channel('canal_fotos_movil', {
-        config: {
-          broadcast: { self: true, ack: true }
-        }
-      });
-
-      channel
-        .on('broadcast', { event: 'foto_subida' }, async (payload) => {
-          const pData = payload.payload || {};
-          const placaMovil = String(pData.placa || '').trim().toUpperCase();
-
-          const coincide = !pData.placa || 
-                           placaMovil === placaActual || 
-                           placaMovil === 'GENERAL' || 
-                           placaActual === 'NO REGISTRA' || 
-                           placaActual === '-';
-
-          if (coincide) {
-            if (statusRealtime) {
-              statusRealtime.innerText = "📸 ¡Fotos recibidas desde el celular! Procesando con IA...";
-              statusRealtime.style.color = "#15803d";
-            }
-            await descargarYProcesarFotosSupabase(placaActualRaw);
-          }
-        })
-        .on('broadcast', { event: 'inspeccion_manual_enviada' }, (payload) => {
-          console.log("📥 Evento manual recibido del celular:", payload);
-          const data = payload.payload || {};
-          const placaMovil = String(data.placa || '').trim().toUpperCase();
-
-          const coincidePlaca = !data.placa || 
-                                placaMovil === placaActual || 
-                                placaMovil === 'GENERAL' || 
-                                placaActual === 'NO REGISTRA' || 
-                                placaActual === '-';
-
-          if (coincidePlaca) {
-            if (statusRealtime) {
-              statusRealtime.innerText = "📥 ¡Datos manuales recibidos del celular y aplicados!";
-              statusRealtime.style.color = "#166534";
-            }
-
-            // 1. Actualizar Nivel de Combustible
-            if (data.combustible) {
-              const combSelect = document.getElementById('combustible_nivel');
-              if (combSelect) {
-                const valMovil = String(data.combustible).trim().toUpperCase();
-                for (let opt of combSelect.options) {
-                  const optVal = opt.value.toUpperCase();
-                  if (optVal.includes(valMovil) || valMovil.includes(optVal)) {
-                    combSelect.value = opt.value;
-                    break;
-                  }
-                }
-                actualizarColorSelect(combSelect);
-              }
-            }
-
-            // 2. Actualizar Estados de las Partes
-            if (data.partes && typeof data.partes === 'object') {
-              const partesNormalizadas = {};
-              Object.keys(data.partes).forEach(k => {
-                partesNormalizadas[k.trim().toUpperCase()] = String(data.partes[k]).trim().toUpperCase();
-              });
-
-              document.querySelectorAll('select[id^="sv_"]').forEach(sel => {
-                const nombre = sel.getAttribute('data-nombre');
-                if (nombre) {
-                  const nombreNorm = nombre.trim().toUpperCase();
-                  if (partesNormalizadas[nombreNorm]) {
-                    sel.value = partesNormalizadas[nombreNorm];
-                    actualizarColorSelect(sel);
-                  }
-                }
-              });
-            }
-
-            // 3. Actualizar Observaciones
-            if (data.observaciones) {
-              const obsArea = document.getElementById('observaciones_situacion');
-              if (obsArea) {
-                const textoObs = String(data.observaciones).trim();
-                if (textoObs && !obsArea.value.includes(textoObs)) {
-                  const headerMovil = `[INSPECCIÓN MANUAL MÓVIL]: `;
-                  obsArea.value += (obsArea.value ? '\n\n' : '') + `${headerMovil}${textoObs}`;
-                }
-              }
-            }
-
-            // 4. Guardar automáticamente en localStorage
-            guardarSilenciosoSituacionVehicular();
-          }
-        })
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notificaciones_fotos' }, async (payload) => {
-          if (payload.new) {
-            const placaMovil = String(payload.new.placa || '').trim().toUpperCase();
-            if (!payload.new.placa || placaMovil === placaActual || placaMovil === 'GENERAL' || placaActual === 'NO REGISTRA') {
-              if (statusRealtime) {
-                statusRealtime.innerText = "📸 ¡Notificación recibida desde el celular!";
-                statusRealtime.style.color = "#15803d";
-              }
-              await descargarYProcesarFotosSupabase(placaActualRaw);
-            }
-          }
-        })
-        .subscribe((status) => {
-          console.log("Estado canal Supabase Realtime:", status);
-          if (status === 'SUBSCRIBED') {
-            if (statusRealtime) {
-              statusRealtime.innerText = "🟢 Tiempo real conectado. Listo para recibir datos del celular.";
-              statusRealtime.style.color = "#16a34a";
-            }
-          } else if (status === 'CHANNEL_ERROR') {
-            if (statusRealtime) {
-              statusRealtime.innerText = "❌ Error de autenticación en Supabase. Revisa la Anon Key en config.js.";
-              statusRealtime.style.color = "#b91c1c";
+    try {
+      if (typeof supabase !== 'undefined' && supabase.createClient) {
+        supabaseClient = supabase.createClient(url, key, {
+          auth: { persistSession: false },
+          global: {
+            headers: {
+              apikey: key,
+              Authorization: `Bearer ${key}`
             }
           }
         });
 
-    }
-  } catch (e) {
-    console.error("Error al inicializar Supabase Realtime:", e);
-    if (statusRealtime) {
-      statusRealtime.innerText = "❌ Error al conectar a Supabase Realtime.";
-      statusRealtime.style.color = "#b91c1c";
+        const placaActualRaw = document.getElementById('lbl_placa') ? document.getElementById('lbl_placa').innerText : '';
+        const placaActual = String(placaActualRaw).trim().toUpperCase();
+
+        if (statusRealtime) {
+          statusRealtime.innerText = "⚡ Conectando canal en tiempo real...";
+          statusRealtime.style.color = "#0284c7";
+        }
+
+        const channel = supabaseClient.channel('canal_fotos_movil', {
+          config: {
+            broadcast: { self: true, ack: true }
+          }
+        });
+
+        channel
+          .on('broadcast', { event: 'foto_subida' }, async (payload) => {
+            const pData = payload.payload || {};
+            const placaMovil = String(pData.placa || '').trim().toUpperCase();
+
+            const coincide = !pData.placa || 
+                             placaMovil === placaActual || 
+                             placaMovil === 'GENERAL' || 
+                             placaActual === 'NO REGISTRA' || 
+                             placaActual === '-';
+
+            if (coincide) {
+              if (statusRealtime) {
+                statusRealtime.innerText = "📸 ¡Fotos recibidas desde el celular! Procesando con IA...";
+                statusRealtime.style.color = "#15803d";
+              }
+              await descargarYProcesarFotosSupabase(placaActualRaw);
+            }
+          })
+          .on('broadcast', { event: 'inspeccion_manual_enviada' }, (payload) => {
+            console.log("📥 Evento manual recibido del celular:", payload);
+            const data = payload.payload || {};
+            const placaMovil = String(data.placa || '').trim().toUpperCase();
+
+            const coincidePlaca = !data.placa || 
+                                  placaMovil === placaActual || 
+                                  placaMovil === 'GENERAL' || 
+                                  placaActual === 'NO REGISTRA' || 
+                                  placaActual === '-';
+
+            if (coincidePlaca) {
+              if (statusRealtime) {
+                statusRealtime.innerText = "📥 ¡Datos manuales recibidos del celular y aplicados!";
+                statusRealtime.style.color = "#166534";
+              }
+
+              // 1. Nivel de Combustible
+              if (data.combustible) {
+                const combSelect = document.getElementById('combustible_nivel');
+                if (combSelect) {
+                  const valMovil = String(data.combustible).trim().toUpperCase();
+                  for (let opt of combSelect.options) {
+                    const optVal = opt.value.toUpperCase();
+                    if (optVal.includes(valMovil) || valMovil.includes(optVal)) {
+                      combSelect.value = opt.value;
+                      break;
+                    }
+                  }
+                  actualizarColorSelect(combSelect);
+                }
+              }
+
+              // 2. Estados de las Partes
+              if (data.partes && typeof data.partes === 'object') {
+                const partesNormalizadas = {};
+                Object.keys(data.partes).forEach(k => {
+                  partesNormalizadas[k.trim().toUpperCase()] = String(data.partes[k]).trim().toUpperCase();
+                });
+
+                document.querySelectorAll('select[id^="sv_"]').forEach(sel => {
+                  const nombre = sel.getAttribute('data-nombre');
+                  if (nombre) {
+                    const nombreNorm = nombre.trim().toUpperCase();
+                    if (partesNormalizadas[nombreNorm]) {
+                      sel.value = partesNormalizadas[nombreNorm];
+                      actualizarColorSelect(sel);
+                    }
+                  }
+                });
+              }
+
+              // 3. Observaciones
+              if (data.observaciones) {
+                const obsArea = document.getElementById('observaciones_situacion');
+                if (obsArea) {
+                  const textoObs = String(data.observaciones).trim();
+                  if (textoObs && !obsArea.value.includes(textoObs)) {
+                    const headerMovil = `[INSPECCIÓN MANUAL MÓVIL]: `;
+                    obsArea.value += (obsArea.value ? '\n\n' : '') + `${headerMovil}${textoObs}`;
+                  }
+                }
+              }
+
+              // 4. Guardar automáticamente
+              guardarSilenciosoSituacionVehicular();
+            }
+          })
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notificaciones_fotos' }, async (payload) => {
+            if (payload.new) {
+              const placaMovil = String(payload.new.placa || '').trim().toUpperCase();
+              if (!payload.new.placa || placaMovil === placaActual || placaMovil === 'GENERAL' || placaActual === 'NO REGISTRA') {
+                if (statusRealtime) {
+                  statusRealtime.innerText = "📸 ¡Notificación recibida desde el celular!";
+                  statusRealtime.style.color = "#15803d";
+                }
+                await descargarYProcesarFotosSupabase(placaActualRaw);
+              }
+            }
+          })
+          .subscribe((status) => {
+            console.log("Estado canal Supabase Realtime:", status);
+            if (status === 'SUBSCRIBED') {
+              if (statusRealtime) {
+                statusRealtime.innerText = "🟢 Tiempo real conectado. Listo para recibir datos del celular.";
+                statusRealtime.style.color = "#16a34a";
+              }
+            } else if (status === 'CHANNEL_ERROR') {
+              if (statusRealtime) {
+                statusRealtime.innerText = "❌ Error de autenticación en Supabase. Revisa la Anon Key en config.js.";
+                statusRealtime.style.color = "#b91c1c";
+              }
+            }
+          });
+
+      }
+    } catch (e) {
+      console.error("Error al inicializar Supabase Realtime:", e);
+      if (statusRealtime) {
+        statusRealtime.innerText = "❌ Error al conectar a Supabase Realtime.";
+        statusRealtime.style.color = "#b91c1c";
+      }
     }
   }
-}
 
   async function descargarYProcesarFotosSupabase(placa) {
     if (!supabaseClient) return;
@@ -1331,7 +1333,7 @@ Responde ÚNICAMENTE en JSON estricto sin bloques de markdown:
       }
 
       if (!response) {
-        throw new Error(`Error en la API de Gemini (${lastErr}). Revisa que tu API Key esté generada correctamente en Google AI Studio (aistudio.google.com).`);
+        throw new Error(`Error en la API de Gemini (${lastErr}). Revisa que tu API Key esté generada correctamente en Google AI Studio.`);
       }
 
       const data = await response.json();
