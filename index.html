@@ -45,15 +45,20 @@
 </main>
 
 <script src="js/auth.js"></script>
-  <script>
+<script>
+  // Al cargar index.html, limpiamos cualquier rastro de sesión previa guardada
+  if (window.supabaseClient) {
+    window.supabaseClient.auth.signOut().catch(() => {});
+  }
+  sessionStorage.clear();
+  localStorage.removeItem('pnp_user_role');
+
   // Detectar si la página se está cargando desde el caché del navegador (botón Atrás)
   window.addEventListener('pageshow', function(event) {
     if (event.persisted || (performance && performance.navigation && performance.navigation.type === 2)) {
-      // Limpiar cualquier dato de sesión local si regresa al login
+      // Limpiar datos locales y forzar recarga limpia para exigir credenciales
       localStorage.removeItem('pnp_user_role');
       sessionStorage.clear();
-      
-      // Opcional: Forzar una recarga limpia desde el servidor para invalidar estados residuales
       window.location.reload();
     }
   });
