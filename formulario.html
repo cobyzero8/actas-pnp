@@ -471,11 +471,6 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
       <a href="menu.html" style="text-decoration: none; color: var(--primary); font-weight: bold; font-size: 13px;">← Cambiar Delito / Actas</a>
       
-      <!-- BOTÓN GESTIÓN DE USUARIOS (VISIBLE SOLO PARA ROL ADMINISTRADOR) -->
-      <button type="button" id="btnAdminGestionUsuarios" onclick="window.location.href='usuarios.html'" class="btn btn-secondary" style="display: none; background: #b45309; color: white; border: none; padding: 6px 12px; font-size: 11px; font-weight: bold;">
-        👥 Gestionar Usuarios
-      </button>
-
       <!-- BOTÓN SCAN DNI REQUERIDO -->
       <a href="prueba.html" target="_blank" class="btn-scan-dni">
         📷 Scan DNI
@@ -630,7 +625,7 @@
                 <option value="debido a la escasa iluminación en la zona, el alto flujo vehicular y la falta de visibilidad, factores que impedían realizar una diligencia minuciosa y segura.">
                   2. Escasa iluminación / Alto flujo vehicular / Falta de visibilidad
                 </option>
-                <option value="debido a las inclemencias del tiempo (lluvias) y a la falta de un espacio adecuado que garantize el respeto a la dignidad y privacidad del intervenido.">
+                <option value="debido a las inclemencias del tiempo (lluvias) y a la falta de un espacio adecuado que garantice el respeto a la dignidad y privacidad del intervenido.">
                   3. Inclemencias del tiempo (lluvias) / Privacidad y dignidad
                 </option>
               </select>
@@ -995,9 +990,6 @@
   ];
 
   document.addEventListener('DOMContentLoaded', () => {
-    // Validar el rol del usuario actual y mostrar el botón de administración solo si es admin
-    verificarRolYMostrarBotonAdmin();
-
     const restaurado = restaurarEstadoFormulario();
 
     if (!restaurado) {
@@ -1045,28 +1037,6 @@
       mostrarEtapa(1);
     }
   });
-
-  // Listener para detectar cuando se presiona el botón "Atrás" del navegador y cerrar sesión si es necesario
-  window.addEventListener('pageshow', (event) => {
-    if (event.persisted || (performance && performance.navigation && performance.navigation.type === 2)) {
-      cerrarSesion();
-    }
-  });
-
-  function verificarRolYMostrarBotonAdmin() {
-    // Ajusta esta función según cómo almacenes el rol (localStorage, sessionStorage o Supabase session)
-    const rolUsuario = localStorage.getItem('pnp_user_role') || sessionStorage.getItem('pnp_user_role') || '';
-    const btnAdmin = document.getElementById('btnAdminGestionUsuarios');
-    
-    if (btnAdmin) {
-      // Comprobamos si es administrador (puedes ajustar el texto según tu base de datos: 'admin', 'administrador', etc.)
-      if (rolUsuario.toLowerCase() === 'admin' || rolUsuario.toLowerCase() === 'administrador') {
-        btnAdmin.style.display = 'inline-block';
-      } else {
-        btnAdmin.style.display = 'none'; // Se oculta por completo si es rol policía u otro
-      }
-    }
-  }
 
   async function obtenerUbicacionGPS(idInputLugar, idBoton) {
     if (!navigator.geolocation) {
@@ -2249,13 +2219,13 @@
     document.getElementById('agregar_intervencion_2').value = `--- Llegados al lugar de la ocurrencia, se constató de manera objetiva los siguientes hechos:\nSe intervino un accidente de tránsito (choque por alcance con daños materiales) entre dos vehículos particulares, producto de una maniobra intempestiva y frenado intempestivo en vía concurrida.\n\nParticipante(s) / Intervenido(s): ${personaNomInv} (DNI N.° ${persona.dni}, ${persona.edad} años).\n\nVehículo(s) Involucrado(s): Auto ${v1.marca} ${v1.modelo}, color ${v1.color}, placa ${v1.placa}, y Camioneta ${v2.marca} ${v2.modelo}, color ${v2.color}, placa ${v2.placa}.\n\nVerificación Documentaria RNT: Licencia de conducir A-I vigente, SOAT electrónico activo (La Positiva) y Certificado de Inspección Técnica Vehicular al día.\n\nHallazgos / Especies / Detalle: Conforme / Daños materiales leves en el parachoque posterior del vehículo impactado; sin registrarse lesionados ni heridos de consideración.`;
 
     document.getElementById('titulo_sec_3').value = "3. ACCIONES ADOPTADAS Y PUESTA A DISPOSICIÓN:";
-    document.getElementById('agregar_intervencion_3').value = `--- Se procedió al auxinilio, aislar y garantizar la seguridad en la zona. Asimismo, de los hechos descritos se comunicó al RMP ${fiscal}, trasladando la intervención y actuados a la ${unidadDisp} para el trámite de ley y diligencias correspondientes.`;
+    document.getElementById('agregar_intervencion_3').value = `--- Se procedió a prestar auxilio, aislar y garantizar la seguridad en la zona. Asimismo, de los hechos descritos se comunicó al RMP ${fiscal}, trasladando la intervención y actuados a la ${unidadDisp} para el trámite de ley y diligencias correspondientes.`;
 
     if (document.getElementById('detalle_hallazgo')) {
       document.getElementById('detalle_hallazgo').value = "Conforme / Daños materiales leves en el parachoque posterior del vehículo impactado; sin registrarse lesionados ni heridos de consideración.";
     }
-    if (motivo_justificatorio) {
-      // safe reference check
+    if (document.getElementById('motivo_justificatorio')) {
+      document.getElementById('motivo_justificatorio').value = "Se contó con la presencia del ciudadano intervenido, quien colaboró con la identificación y diligencias sin presentar oposición.";
     }
 
     minimizarPlantillas();
