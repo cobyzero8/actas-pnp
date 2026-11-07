@@ -7,7 +7,7 @@ const SUPABASE_ANON_KEY = (typeof CONFIG !== 'undefined' && CONFIG.SUPABASE_ANON
 if (!window.supabaseClient && typeof supabase !== 'undefined') {
   window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
-      storage: window.sessionStorage, // Se destruye al cerrar el navegador
+      storage: window.sessionStorage,
       autoRefreshToken: true,
       persistSession: true
     }
@@ -15,7 +15,7 @@ if (!window.supabaseClient && typeof supabase !== 'undefined') {
 }
 
 // ==========================================
-// 2. FUNCIÓN DE VERIFICACIÓN DE VIGENCIA Y ROL
+// 2. VERIFICACIÓN DE VIGENCIA Y ROL
 // ==========================================
 async function verificarVigenciaUsuario(userId) {
   const { data: perfil, error } = await window.supabaseClient
@@ -28,7 +28,7 @@ async function verificarVigenciaUsuario(userId) {
     return { valido: false, mensaje: "No se encontró el perfil del usuario asignado en la base de datos." };
   }
 
-  // 🔑 SI ES ADMINISTRADOR, ACCESO TOTAL SIN LÍMITE DE FECHAS
+  // Administrador con acceso total
   if (perfil.rol === 'admin') {
     return { valido: true };
   }
@@ -53,34 +53,31 @@ async function verificarVigenciaUsuario(userId) {
 }
 
 // ==========================================
-// 3. CONTROL DE SESIÓN AL CARGAR PÁGINAS
+// 3. CONTROL DE SESIÓN SIN BUCLES
 // ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
   if (!window.supabaseClient) return;
 
-  const { data: { session } } = await window.supabaseClient.auth.getSession();
   const currentPath = window.location.pathname.toLowerCase();
-  
-  // Detectar si estamos en el login (index.html, raíz o subcarpeta actas-pnp)
   const esPaginaLogin = currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath.endsWith('/actas-pnp') || currentPath.endsWith('/actas-pnp/');
 
-  if (session) {
-    const chequeo = await verificarVigenciaUsuario(session.user.id);
-    
-    if (!chequeo.valido) {
-      alert("⚠️ ACCESO DENEGADO:\n" + chequeo.mensaje);
-      await window.supabaseClient.auth.signOut();
-      sessionStorage.clear();
-      window.location.href = 'index.html';
-      return;
-    }
+  const { data: { session } } = await window.supabaseClient.auth.getSession();
 
+  if (session) {
+    // Si ya tiene sesión y está intentando ver el login, lo mandamos al formulario (SOLO SI ESTÁ EN EL LOGIN)
     if (esPaginaLogin) {
-      window.location.href = 'formulario.html';
+      const chequeo = await verificarVigenciaUsuario(session.user.id);
+      if (chequeo.valido) {
+        window.location.replace('formulario.html');
+      } else {
+        await window.supabaseClient.auth.signOut();
+        sessionStorage.clear();
+      }
     }
   } else {
+    // Si NO tiene sesión y está intentando entrar a una página protegida (como formulario.html), lo mandamos al login
     if (!esPaginaLogin) {
-      window.location.href = 'index.html';
+      window.location.replace('index.html');
     }
   }
 });
@@ -120,7 +117,7 @@ if (loginForm) {
       return;
     }
 
-    // Acceso permitido
-    window.location.href = 'formulario.html';
+    // 3. Redirección limpia sin bucles usando .replace()
+    window.location.replace('formulario.html');
   });
 }
