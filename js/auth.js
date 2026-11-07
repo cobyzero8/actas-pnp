@@ -52,25 +52,40 @@ async function verificarVigenciaUsuario(userId) {
   return { valido: true };
 }
 
+/// ==========================================
+// 3. CONTROL DE SESIÓN Y CIERRE FORZADO EN LOGIN
 // ==========================================
-// 3. FUNCIÓN GLOBAL DE CIERRE DE SESIÓN
-// ==========================================
-async function cerrarSesion() {
-  try {
-    if (window.supabaseClient) {
-      await window.supabaseClient.auth.signOut();
-    }
-  } catch (e) {
-    console.error("Error al cerrar sesión en Supabase:", e);
-  }
-  
-  // Limpiar almacenamiento local y de sesión
-  sessionStorage.clear();
-  localStorage.clear();
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!window.supabaseClient) return;
 
-  // Forzar redirección limpia al login
-  window.location.replace('index.html');
-}
+  const currentPath = window.location.pathname.toLowerCase();
+  const esPaginaLogin = currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath.endsWith('/actas-pnp') || currentPath.endsWith('/actas-pnp/');
+
+  // SI ESTÁS EN EL LOGIN (index.html): Forzamos el cierre de sesión explícitamente
+  if (esPaginaLogin) {
+    try {
+      await window.supabaseClient.auth.signOut();
+    } catch (e) {
+      console.error("Error al limpiar sesión en Supabase:", e);
+    }
+    sessionStorage.clear();
+    localStorage.clear();
+    return; // Nos detenemos aquí para que se quede en el login pidiendo credenciales
+  }
+
+  // SI ESTÁS EN UNA PÁGINA PROTEGIDA (formulario.html): Validamos que exista sesión
+  const { data: { session } } = await window.supabaseClient.auth.getSession();
+
+  if (!session) {
+    window.location.replace('index.html');
+    return;
+  }
+
+  const chequeo = await verificarVigenciaUsuario(session.user.id);
+  if (!chequeo.valido) {
+    await cerrarSesion();
+  }
+});
 
 // ==========================================
 // 4. CONTROL DE SESIÓN SIN BUCLES Y GESTIÓN DE RETROCESO (BFCache)
