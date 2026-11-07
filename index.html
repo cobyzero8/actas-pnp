@@ -45,5 +45,18 @@
 </main>
 
 <script src="js/auth.js"></script>
+  <script>
+  // Detectar si la página se está cargando desde el caché del navegador (botón Atrás)
+  window.addEventListener('pageshow', function(event) {
+    if (event.persisted || (performance && performance.navigation && performance.navigation.type === 2)) {
+      // Limpiar cualquier dato de sesión local si regresa al login
+      localStorage.removeItem('pnp_user_role');
+      sessionStorage.clear();
+      
+      // Opcional: Forzar una recarga limpia desde el servidor para invalidar estados residuales
+      window.location.reload();
+    }
+  });
+</script>
 </body>
 </html>
