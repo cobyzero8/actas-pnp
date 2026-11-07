@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar Nuevo Usuario - Sistema PNP</title>
+  <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- SUPABASE Y CONFIGURACIÓN -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+
+  <style>
+    body {
+      background-color: #f1f5f9;
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 20px;
+      color: #0f172a;
+    }
+    .reg-container {
+      max-width: 600px;
+      margin: 30px auto;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .reg-header {
+      background: linear-gradient(135deg, #003366 0%, #002244 100%);
+      color: #ffffff;
+      padding: 16px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .reg-header h2 { margin: 0; font-size: 18px; text-transform: uppercase; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-weight: bold; font-size: 12px; color: #334155; margin-bottom: 5px; text-transform: uppercase; }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .btn-action {
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-save { background: #166534; color: white; width: 100%; justify-content: center; padding: 12px; font-size: 14px; margin-top: 10px; }
+    .btn-back { background: #64748b; color: white; text-decoration: none; }
+    .alert-box { padding: 10px; border-radius: 6px; font-size: 12px; margin-bottom: 15px; display: none; }
+    .alert-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
+    .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #4ade80; }
+  </style>
+</head>
+<body>
+
+<div class="reg-container">
+  <div class="reg-header">
+    <h2>👤 REGISTRAR NUEVO EFECTIVO / USUARIO</h2>
+    <a href="formulario.html" class="btn-action btn-back">⬅️ Volver</a>
+  </div>
+
+  <div id="alertaForm" class="alert-box"></div>
+
+  <form id="registroUsuarioForm">
+    <div class="form-group">
+      <label for="nuevo_email">Correo Electrónico (Institucional):</label>
+      <input type="email" id="nuevo_email" placeholder="efectivo@pnp.gob.pe" required>
+    </div>
+
+    <div class="form-group">
+      <label for="nuevo_password">Contraseña Temporal:</label>
+      <input type="password" id="nuevo_password" placeholder="Mínimo 6 caracteres" required>
+    </div>
+
+    <div class="form-group">
+      <label for="nuevo_nombre">Grado y Nombre Completo:</label>
+      <input type="text" id="nuevo_nombre" placeholder="Ej. SO1 PNP Carlos Pérez Gómez" required>
+    </div>
+
+    <div class="form-group">
+      <label for="nuevo_rol">Rol en el Sistema:</label>
+      <select id="nuevo_rol">
+        <option value="policia" selected>Policía / Operativo (Acceso restringido por fechas)</option>
+        <option value="admin">Administrador (Acceso total sin restricciones)</option>
+      </select>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+      <div class="form-group">
+        <label for="fecha_inicio">Fecha de Inicio de Acceso:</label>
+        <input type="datetime-local" id="fecha_inicio" required>
+      </div>
+
+      <div class="form-group">
+        <label for="fecha_fin">Fecha de Fin (Vencimiento):</label>
+        <input type="datetime-local" id="fecha_fin" required>
+      </div>
+    </div>
+
+    <button type="submit" class="btn-action btn-save">
+      💾 Crear Cuenta y Habilitar Acceso
+    </button>
+  </form>
+</div>
+
+<script>
+  // 🔒 CANDADO DE SEGURIDAD Y CONFIGURACIÓN INICIAL
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (!window.supabaseClient) return;
+
+    // 1. Verificar sesión activa
+    const { data: { session } } = await window.supabaseClient.auth.getSession();
+    if (!session) {
+      window.location.replace('index.html');
+      return;
+    }
+
+    // 2. Verificar si el usuario actual es administrador
+    const { data: perfil, error } = await window.supabaseClient
+      .from('perfiles')
+      .select('rol')
+      .eq('id', session.user.id)
+      .single();
+
+    if (error || !perfil || perfil.rol !== 'admin') {
+      alert("⚠️ ACCESO DENEGADO:\nEsta sección es exclusiva para el Administrador del sistema.");
+      window.location.replace('formulario.html');
+      return;
+    }
+
+    // 3. Autocompletar fechas por defecto (Hoy hasta fin de mes)
+    const ahora = new Date();
+    const anio = ahora.getFullYear();
+    const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+    const diaActual = String(ahora.getDate()).padStart(2, '0');
+    
+    document.getElementById('fecha_inicio').value = `${anio}-${mes}-${diaActual}T00:00`;
+
+    const finMes = new Date(anio, ahora.getMonth() + 1, 0);
+    const diaFin = String(finMes.getDate()).padStart(2, '0');
+    document.getElementById('fecha_fin').value = `${anio}-${mes}-${diaFin}T23:59`;
+  });
+
+  // Manejar el envío del formulario de registro
+  document.getElementById('registroUsuarioForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById('nuevo_email').value.trim();
+    const password = document.getElementById('nuevo_password').value.trim();
+    const nombre = document.getElementById('nuevo_nombre').value.trim();
+    const rol = document.getElementById('nuevo_rol').value;
+    const fechaInicioInput = document.getElementById('fecha_inicio').value;
+    const fechaFinInput = document.getElementById('fecha_fin').value;
+
+    const alerta = document.getElementById('alertaForm');
+    alerta.style.display = 'none';
+
+    try {
+      // 1. Crear usuario en Auth de Supabase
+      const { data: authData, error: authError } = await window.supabaseClient.auth.signUp({
+        email: email,
+        password: password
+      });
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        const userId = authData.user.id;
+
+        // 2. Insertar su perfil con fechas y rol en la tabla 'perfiles'
+        const { error: perfilError } = await window.supabaseClient
+          .from('perfiles')
+          .insert([
+            {
+              id: userId,
+              email: email,
+              nombre: nombre,
+              rol: rol,
+              fecha_inicio: new Date(fechaInicioInput).toISOString(),
+              fecha_fin: new Date(fechaFinInput).toISOString(),
+              activo: true
+            }
+          ]);
+
+        if (perfilError) throw perfilError;
+
+        alerta.innerText = "✅ ¡Usuario registrado y parametrizado con éxito!";
+        alerta.className = "alert-box alert-success";
+        alerta.style.display = "block";
+
+        document.getElementById('registroUsuarioForm').reset();
+      }
+
+    } catch (err) {
+      alerta.innerText = "❌ Error al registrar: " + err.message;
+      alerta.className = "alert-box alert-danger";
+      alerta.style.display = "block";
+    }
+  });
+</script>
+
+</body>
+</html>
