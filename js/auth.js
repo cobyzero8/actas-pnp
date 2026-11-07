@@ -1,25 +1,36 @@
-// Configuración de Supabase
-const SUPABASE_URL = 'https://hicjmlcdnrcjriuqhppb.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpY2ptbGNkbnJjanJpdXFocHBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NDYxOTMsImV4cCI6MjA5ODUyMjE5M30.GIJbvJXKv-QkKx13xrImrUCf-kbRyOapW4QNA83qYb8';
+// ==========================================
+// 1. INICIALIZACIÓN ÚNICA DE SUPABASE
+// ==========================================
+const SUPABASE_URL = (typeof CONFIG !== 'undefined' && CONFIG.SUPABASE_URL) ? CONFIG.SUPABASE_URL : 'https://hicjmlcdnrcjriuqhppb.supabase.co';
+const SUPABASE_ANON_KEY = (typeof CONFIG !== 'undefined' && CONFIG.SUPABASE_ANON_KEY) ? CONFIG.SUPABASE_ANON_KEY : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpY2ptbGNkbnJjanJpdXFocHBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NDYxOTMsImV4cCI6MjA5ODUyMjE5M30.GIJbvJXKv-QkKx13xrImrUCf-kbRyOapW4QNA83qYb8';
 
-window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    storage: window.sessionStorage, // Se destruye al cerrar el navegador
-    autoRefreshToken: true,
-    persistSession: true
-  }
-});
+if (!window.supabaseClient && typeof supabase !== 'undefined') {
+  window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      storage: window.sessionStorage, // Se destruye al cerrar el navegador
+      autoRefreshToken: true,
+      persistSession: true
+    }
+  });
+}
 
-// Función para verificar la vigencia de la cuenta del usuario
+// ==========================================
+// 2. FUNCIÓN DE VERIFICACIÓN DE VIGENCIA Y ROL
+// ==========================================
 async function verificarVigenciaUsuario(userId) {
   const { data: perfil, error } = await window.supabaseClient
     .from('perfiles')
-    .select('fecha_inicio, fecha_fin, activo')
+    .select('rol, fecha_inicio, fecha_fin, activo') // 🔑 Incluimos 'rol' para reconocer al admin
     .eq('id', userId)
     .single();
 
   if (error || !perfil) {
-    return { valido: false, mensaje: "No se encontró el perfil del usuario asignado." };
+    return { valido: false, mensaje: "No se encontró el perfil del usuario asignado en la base de datos." };
+  }
+
+  // 🔑 SI ES ADMINISTRADOR, ACCESO TOTAL SIN LÍMITE DE FECHAS
+  if (perfil.rol === 'admin') {
+    return { valido: true };
   }
 
   if (!perfil.activo) {
@@ -41,14 +52,17 @@ async function verificarVigenciaUsuario(userId) {
   return { valido: true };
 }
 
-// Verificar sesión y vigencia al cargar cualquier página protegida
+// ==========================================
+// 3. CONTROL DE SESIÓN AL CARGAR PÁGINAS
+// ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
+  if (!window.supabaseClient) return;
+
   const { data: { session } } = await window.supabaseClient.auth.getSession();
   const currentPath = window.location.pathname.toLowerCase();
   const esPaginaLogin = currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath.endsWith('/actas-pnp');
 
   if (session) {
-    // Validar fecha límite antes de darle acceso
     const chequeo = await verificarVigenciaUsuario(session.user.id);
     
     if (!chequeo.valido) {
@@ -59,19 +73,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    // Si todo está ok y está en el login, mandarlo al formulario
     if (esPaginaLogin) {
       window.location.href = 'formulario.html';
     }
   } else {
-    // Si no tiene sesión y quiere entrar a una subpágina, expulsarlo
     if (!esPaginaLogin) {
       window.location.href = 'index.html';
     }
   }
 });
 
-// Evento de Login
+// ==========================================
+// 4. MANEJO DEL FORMULARIO DE LOGIN
+// ==========================================
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
   loginForm.addEventListener('submit', async (e) => {
@@ -93,7 +107,7 @@ if (loginForm) {
       return;
     }
 
-    // 2. Verificar fechas de inicio y fin
+    // 2. Verificar fechas de inicio, fin y rol admin
     const chequeo = await verificarVigenciaUsuario(data.user.id);
     if (!chequeo.valido) {
       if (errorAlert) {
