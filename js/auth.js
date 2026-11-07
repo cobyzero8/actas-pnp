@@ -20,7 +20,7 @@ if (!window.supabaseClient && typeof supabase !== 'undefined') {
 async function verificarVigenciaUsuario(userId) {
   const { data: perfil, error } = await window.supabaseClient
     .from('perfiles')
-    .select('rol, fecha_inicio, fecha_fin, activo') // 🔑 Incluimos 'rol' para reconocer al admin
+    .select('rol, fecha_inicio, fecha_fin, activo')
     .eq('id', userId)
     .single();
 
@@ -60,7 +60,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const { data: { session } } = await window.supabaseClient.auth.getSession();
   const currentPath = window.location.pathname.toLowerCase();
-  const esPaginaLogin = currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath.endsWith('/actas-pnp');
+  
+  // Detectar si estamos en el login (index.html, raíz o subcarpeta actas-pnp)
+  const esPaginaLogin = currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath.endsWith('/actas-pnp') || currentPath.endsWith('/actas-pnp/');
 
   if (session) {
     const chequeo = await verificarVigenciaUsuario(session.user.id);
