@@ -53,7 +53,27 @@ async function verificarVigenciaUsuario(userId) {
 }
 
 // ==========================================
-// 3. CONTROL DE SESIÓN SIN BUCLES
+// 3. FUNCIÓN GLOBAL DE CIERRE DE SESIÓN
+// ==========================================
+async function cerrarSesion() {
+  try {
+    if (window.supabaseClient) {
+      await window.supabaseClient.auth.signOut();
+    }
+  } catch (e) {
+    console.error("Error al cerrar sesión en Supabase:", e);
+  }
+  
+  // Limpiar almacenamiento local y de sesión
+  sessionStorage.clear();
+  localStorage.clear();
+
+  // Forzar redirección limpia al login
+  window.location.replace('index.html');
+}
+
+// ==========================================
+// 4. CONTROL DE SESIÓN SIN BUCLES Y GESTIÓN DE RETROCESO (BFCache)
 // ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
   if (!window.supabaseClient) return;
@@ -64,14 +84,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const { data: { session } } = await window.supabaseClient.auth.getSession();
 
   if (session) {
-    // Si ya tiene sesión y está intentando ver el login, lo mandamos al formulario (SOLO SI ESTÁ EN EL LOGIN)
+    // Si ya tiene sesión y está intentando ver el login, lo mandamos al formulario
     if (esPaginaLogin) {
       const chequeo = await verificarVigenciaUsuario(session.user.id);
       if (chequeo.valido) {
         window.location.replace('formulario.html');
       } else {
-        await window.supabaseClient.auth.signOut();
-        sessionStorage.clear();
+        await cerrarSesion();
       }
     }
   } else {
@@ -82,8 +101,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+// Interceptar el evento 'pageshow' para detectar si el usuario usa el botón "Atrás" del navegador
+window.addEventListener('pageshow', async (event) => {
+  // event.persisted es true si la página se cargó desde la memoria caché (Back-Forward Cache)
+  if (event.persisted || (performance && performance.navigation && performance.navigation.type === 2)) {
+    const currentPath = window.location.pathname.toLowerCase();
+    const esPaginaLogin = currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath.endsWith('/actas-pnp') || currentPath.endsWith('/actas-pnp/');
+
+    // Si el usuario está en el formulario y retrocedió, cerramos sesión por seguridad de inmediato
+    if (!esPaginaLogin) {
+      await cerrarSesion();
+    }
+  }
+});
+
 // ==========================================
-// 4. MANEJO DEL FORMULARIO DE LOGIN
+// 5. MANEJO DEL FORMULARIO DE LOGIN
 // ==========================================
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
