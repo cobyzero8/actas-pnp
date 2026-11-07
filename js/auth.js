@@ -29,7 +29,7 @@ async function verificarVigenciaUsuario(userId) {
   }
 
   // Administrador con acceso total
-  if (perfil.rol === 'admin') {
+  if (perfil.rol === 'admin' || perfil.rol === 'administrador') {
     return { valido: true };
   }
 
@@ -78,14 +78,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   const currentPath = window.location.pathname.toLowerCase();
   const esPaginaLogin = currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath.endsWith('/actas-pnp') || currentPath.endsWith('/actas-pnp/');
 
-  // SI ESTÁS EN EL LOGIN (index.html): Forzamos limpieza explícita de sesión anterior
+  // SI ESTÁS EN EL LOGIN (index.html): Evaluamos si ya hay una sesión activa para recordar al admin
   if (esPaginaLogin) {
-    try {
-      await window.supabaseClient.auth.signOut();
-    } catch (e) {}
-    sessionStorage.clear();
-    localStorage.clear();
-    return; // Nos detenemos aquí para esperar credenciales
+    const { data: { session } } = await window.supabaseClient.auth.getSession();
+    if (session) {
+      const { data: perfil } = await window.supabaseClient
+        .from('perfiles')
+        .select('rol')
+        .eq('id', session.user.id)
+        .single();
+
+      const rol = perfil ? perfil.rol.toLowerCase() : 'policia';
+      if (rol === 'admin' || rol === 'administrador') {
+        if (typeof mostrarPanelAdminEnIndex === 'function') {
+          mostrarPanelAdminEnIndex();
+          return;
+        }
+      } else {
+        window.location.replace('formulario.html');
+        return;
+      }
+    }
+    return;
   }
 
   // SI ESTÁS EN UNA PÁGINA PROTEGIDA (formulario.html u otra):
@@ -108,12 +122,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 // 5. GESTIÓN DE RETROCESO (BFCache del Navegador)
 // ==========================================
 window.addEventListener('pageshow', async (event) => {
-  // Si el usuario presiona "Atrás" y la página se recupera de la caché del navegador
   if (event.persisted || (performance && performance.navigation && performance.navigation.type === 2)) {
     const currentPath = window.location.pathname.toLowerCase();
     const esPaginaLogin = currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath.endsWith('/actas-pnp') || currentPath.endsWith('/actas-pnp/');
 
-    // Si retrocedió y está en una página protegida, cerramos sesión por seguridad
     if (!esPaginaLogin) {
       await cerrarSesion();
     }
@@ -121,8 +133,39 @@ window.addEventListener('pageshow', async (event) => {
 });
 
 // ==========================================
-// 6. MANEJO DEL FORMULARIO DE LOGIN
+// 6. MANEJO DEL FORMULARIO DE LOGIN Y PANEL DINÁMICO ADMIN
 // ==========================================
+function mostrarPanelAdminEnIndex() {
+  const loginWrapper = document.getElementById('loginWrapper');
+  if (!loginWrapper) {
+    window.location.replace('formulario.html');
+    return;
+  }
+
+  loginWrapper.innerHTML = `
+    <div class="card login-card" style="max-width: 450px; text-align: center;">
+      <h2 class="header-title" style="color: #003366; margin-bottom: 5px;">PANEL DE ADMINISTRACIÓN</h2>
+      <p class="sub-title" style="margin-bottom: 25px;">Bienvenido, Administrador. Seleccione una opción:</p>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button type="button" onclick="window.location.href='formulario.html'" class="btn btn-primary" style="padding: 14px; font-size: 14px; cursor: pointer;">
+          📝 Llenar Actas / Formulario
+        </button>
+
+        <button type="button" onclick="window.location.href='registro_usuario.html'" class="btn btn-secondary" style="padding: 14px; font-size: 14px; background: #b45309; color: white; border: none; cursor: pointer;">
+          👥 Registrar / Gestionar Usuarios
+        </button>
+      </div>
+
+      <div style="margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+        <button type="button" onclick="cerrarSesion()" class="btn btn-secondary" style="background: #ef4444; color: white; border: none; width: 100%; padding: 10px; cursor: pointer;">
+          🚪 Cerrar Sesión
+        </button>
+      </div>
+    </div>
+  `;
+}
+
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
   loginForm.addEventListener('submit', async (e) => {
@@ -155,7 +198,20 @@ if (loginForm) {
       return;
     }
 
-    // 3. Redirección limpia al formulario
-    window.location.replace('formulario.html');
+    // 3. Obtener el rol exacto para redirección dinámica
+    const { data: perfilData } = await window.supabaseClient
+      .from('perfiles')
+      .select('rol')
+      .eq('id', data.user.id)
+      .single();
+
+    const rolUsuario = perfilData ? perfilData.rol.toLowerCase() : 'policia';
+    sessionStorage.setItem('pnp_user_role', rolUsuario);
+
+    if (rolUsuario === 'admin' || rolUsuario === 'administrador') {
+      mostrarPanelAdminEnIndex();
+    } else {
+      window.location.replace('formulario.html');
+    }
   });
 }
